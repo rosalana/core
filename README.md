@@ -235,7 +235,7 @@ Real-time communication typically stays local to each app’s front-end and back
 
 ## License
 
-Rosalana Core is open-source under the [MIT license](LICENSE), allowing you to freely use, modify, and distribute it with minimal restrictions.
+Rosalana Core is open-source under the [MIT license](/LICENCE), allowing you to freely use, modify, and distribute it with minimal restrictions.
 
 For details on how to contribute or how the Rosalana ecosystem is maintained, please refer to each repository’s individual guidelines.
 
