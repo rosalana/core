@@ -10,11 +10,14 @@ abstract class GlobalEvent implements ShouldQueue
 {
     use Dispatchable, SerializesModels;
 
-    /**
-     * Pokud chceš odlišit fronty, můžeš nastavit:
-     */
-    public $connection = 'global-rabbit';   // jméno connection z config/queue.php
-    public $queue = 'global-events';        // jméno fronty
+    public $connection;
+    public $queue;
 
-    // Případné sdílené property nebo metody pro globální eventy
+    public function __construct()
+    {
+        $this->connection = config('rosalana.events.global_connection');
+        $this->queue = config('rosalana.events.global_queue');
+    }
+
+    // Můžeš doplnit další metody, logging, atd.
 }

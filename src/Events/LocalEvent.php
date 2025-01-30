@@ -10,12 +10,14 @@ abstract class LocalEvent implements ShouldQueue
 {
     use Dispatchable, SerializesModels;
 
-    /**
-     * Můžeš tady definovat např. $connection, pokud chceš
-     * aby se lokální eventy zpracovávaly jen "lokální" frontou.
-     *
-     * public $connection = 'local-db';
-     */
+    public $connection;
+    public $queue;
 
-    // Případné sdílené property nebo metody pro lokální eventy
+    public function __construct()
+    {
+        $this->connection = config('rosalana.events.local_connection');
+        $this->queue = config('rosalana.events.local_queue');
+    }
+
+    // Případné další metody či property, které jsou pro lokální eventy společné
 }
