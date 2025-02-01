@@ -3,6 +3,7 @@
 namespace Rosalana\Core\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Rosalana\Core\Services\BasecampManager;
 
 class RosalanaCoreServiceProvider extends ServiceProvider
 {
@@ -12,7 +13,11 @@ class RosalanaCoreServiceProvider extends ServiceProvider
     public function register()
     {
         // Merge default balíčkový config s configem hostitelské aplikace
-        $this->mergeConfigFrom(__DIR__.'/../../config/rosalana.php', 'rosalana');
+        $this->mergeConfigFrom(__DIR__ . '/../../config/rosalana.php', 'rosalana');
+
+        $this->app->singleton('rosalana.basecamp', function ($app) {
+            return new BasecampManager();
+        });
     }
 
     /**
@@ -22,7 +27,7 @@ class RosalanaCoreServiceProvider extends ServiceProvider
     {
         // Publikování configu, pokud chceš, aby si ho uživatel mohl zkopírovat
         $this->publishes([
-            __DIR__.'/../../config/rosalana.php' => config_path('rosalana.php'),
+            __DIR__ . '/../../config/rosalana.php' => config_path('rosalana.php'),
         ], 'rosalana-config');
 
         // Případné další věci: load migrací, plugin routes, watchers, atd.

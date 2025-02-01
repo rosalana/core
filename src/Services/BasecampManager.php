@@ -2,7 +2,6 @@
 
 namespace Rosalana\Core\Services;
 
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 
 class BasecampManager
