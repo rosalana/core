@@ -2,7 +2,7 @@
 
 namespace Rosalana\Core\Services\Basecamp;
 
-class AppService extends Service
+class AppsService extends Service
 {
     //
 }

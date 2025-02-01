@@ -3,7 +3,7 @@
 namespace Rosalana\Core\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Rosalana\Core\Services\Basecamp\AppService;
+use Rosalana\Core\Services\Basecamp\AppsService;
 use Rosalana\Core\Services\Basecamp\Manager;
 
 class RosalanaCoreServiceProvider extends ServiceProvider
@@ -21,7 +21,7 @@ class RosalanaCoreServiceProvider extends ServiceProvider
         });
 
         $this->app->resolving('rosalana.basecamp', function (Manager $manager) {
-            $manager->registerService('apps', new AppService());
+            $manager->registerService('apps', new AppsService());
         });
     }
 
