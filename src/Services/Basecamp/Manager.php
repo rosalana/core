@@ -49,8 +49,9 @@ class Manager
      */
     public function withAuth(string $token): self
     {
+        $new = clone $this;
         $this->headers['Authorization'] = 'Bearer ' . $token;
-        return clone $this;
+        return $new;
     }
 
     /**
