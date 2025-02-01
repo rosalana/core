@@ -2,6 +2,7 @@
 
 namespace Rosalana\Core\Services\Basecamp;
 
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
 class Manager
@@ -59,7 +60,7 @@ class Manager
      */
     public function get(string $endpoint)
     {
-        return Http::withHeaders($this->headers)->get($this->url . $endpoint);
+        return $this->request('get', $endpoint);
     }
 
     /**
@@ -67,7 +68,7 @@ class Manager
      */
     public function post(string $endpoint, array $data = [])
     {
-        return Http::withHeaders($this->headers)->post($this->url . $endpoint, $data);
+        return $this->request('post', $endpoint, $data);
     }
 
     /**
@@ -75,7 +76,7 @@ class Manager
      */
     public function put(string $endpoint, array $data = [])
     {
-        return Http::withHeaders($this->headers)->put($this->url . $endpoint, $data);
+        return $this->request('put', $endpoint, $data);
     }
 
     /**
@@ -83,7 +84,7 @@ class Manager
      */
     public function patch(string $endpoint, array $data = [])
     {
-        return Http::withHeaders($this->headers)->patch($this->url . $endpoint, $data);
+        return $this->request('patch', $endpoint, $data);
     }
 
     /**
@@ -91,7 +92,17 @@ class Manager
      */
     public function delete(string $endpoint)
     {
-        return Http::withHeaders($this->headers)->delete($this->url . $endpoint);
+        return $this->request('delete', $endpoint);
+    }
+
+    /**
+     * General method for making requests.
+     */
+    protected function request(string $method, string $endpoint, array $data = []): Response
+    {
+        return Http::withHeaders($this->headers)
+            ->$method($this->url . $endpoint, $data)
+            ->throw();
     }
 
     /**
