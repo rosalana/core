@@ -4,7 +4,7 @@ namespace Rosalana\Core\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
-class CoreServiceProvider extends ServiceProvider
+class RosalanaCoreServiceProvider extends ServiceProvider
 {
     /**
      * Register everything in the container.
