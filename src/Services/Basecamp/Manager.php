@@ -1,10 +1,10 @@
 <?php
 
-namespace Rosalana\Core\Services;
+namespace Rosalana\Core\Services\Basecamp;
 
 use Illuminate\Support\Facades\Http;
 
-class BasecampManager
+class Manager
 {
     /**
      * Base URL of the Rosalana Basecamp.
