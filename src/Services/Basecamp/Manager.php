@@ -65,7 +65,7 @@ class Manager
     /**
      * General method for making POST requests.
      */
-    public function post(string $endpoint, array $data)
+    public function post(string $endpoint, array $data = [])
     {
         return Http::withHeaders($this->headers)->post($this->url . $endpoint, $data);
     }
@@ -73,9 +73,17 @@ class Manager
     /**
      * General method for making PUT requests.
      */
-    public function put(string $endpoint, array $data)
+    public function put(string $endpoint, array $data = [])
     {
         return Http::withHeaders($this->headers)->put($this->url . $endpoint, $data);
+    }
+
+    /**
+     * General method for making PATCH requests.
+     */
+    public function patch(string $endpoint, array $data = [])
+    {
+        return Http::withHeaders($this->headers)->patch($this->url . $endpoint, $data);
     }
 
     /**
@@ -84,14 +92,6 @@ class Manager
     public function delete(string $endpoint)
     {
         return Http::withHeaders($this->headers)->delete($this->url . $endpoint);
-    }
-
-    /**
-     * General method for making PATCH requests.
-     */
-    public function patch(string $endpoint, array $data)
-    {
-        return Http::withHeaders($this->headers)->patch($this->url . $endpoint, $data);
     }
 
     /**
