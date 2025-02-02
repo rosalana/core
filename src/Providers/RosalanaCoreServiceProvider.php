@@ -35,6 +35,8 @@ class RosalanaCoreServiceProvider extends ServiceProvider
             __DIR__ . '/../../config/rosalana.php' => config_path('rosalana.php'),
         ], 'rosalana-config');
 
-        // Případné další věci: load migrací, plugin routes, watchers, atd.
+        $this->commands([
+            \Rosalana\Core\Console\Commands\InstallCommand::class,
+        ]);
     }
 }
