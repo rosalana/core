@@ -12,7 +12,7 @@ class InstallCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'core:install';
+    protected $signature = 'rosalana:core:install';
 
     /**
      * The console command description.
@@ -37,6 +37,8 @@ class InstallCommand extends Command
             '--provider' => "Rosalana\Core\Providers\RosalanaCoreServiceProvider",
             '--tag' => "rosalana-config"
         ]);
+
+        $this->info('Updating .env file...');
 
         // Environment...
         if (! file_exists(base_path('.env'))) {
