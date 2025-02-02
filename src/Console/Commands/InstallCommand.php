@@ -32,6 +32,7 @@ class InstallCommand extends Command
 
         $this->info('Publishing configuration...');
 
+        // Configurations...
         $this->call('vendor:publish', [
             '--provider' => "Rosalana\Core\Providers\RosalanaCoreServiceProvider",
             '--tag' => "rosalana-config"
@@ -42,7 +43,7 @@ class InstallCommand extends Command
             copy(base_path('.env.example'), base_path('.env'));
         }
 
-        // Dopsat na konec .env
+        // Write to .env
         file_put_contents(
             base_path('.env'),
             PHP_EOL .
