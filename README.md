@@ -12,6 +12,7 @@ Rosalana Core is the shared foundation for all applications in the Rosalana ecos
     - [Basecamp Connection](#basecamp-connection)
 - [Installation](#installation)
 - [Configuration](#configuration)
+- [May Show in the Future](#may-show-in-the-future)
 - [License](#license)
 
 
@@ -103,6 +104,8 @@ return [
 ## License
 
 Rosalana Core is open-source under the [MIT license](/LICENCE), allowing you to freely use, modify, and distribute it with minimal restrictions.
+
+You may not be able to use our systems but you can use our code to build your own.
 
 For details on how to contribute or how the Rosalana ecosystem is maintained, please refer to each repository’s individual guidelines.
 
