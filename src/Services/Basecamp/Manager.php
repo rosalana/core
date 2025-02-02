@@ -37,9 +37,9 @@ class Manager
 
     public function __construct()
     {
-        $this->url = config('rosalana.auth.basecamp_url');
-        $this->secret = config('rosalana.auth.app_secret');
-        $this->origin = config('rosalana.auth.app_origin');
+        $this->url = config('rosalana.basecamp.url');
+        $this->secret = config('rosalana.basecamp.secret');
+        $this->origin = config('rosalana.basecamp.origin');
 
         $this->headers['X-App-Secret'] = $this->secret;
         $this->headers['Origin'] = $this->origin;

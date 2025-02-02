@@ -21,17 +21,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Rosalana Auth Settings
+    | Rosalana Basecamp Auth Settings
     |--------------------------------------------------------------------------
     |
     | Here you can define the settings for the Rosalana Auth.
-    | This settings are used for authorizate your app to the Rosalana Basecamp.
+    | This settings are used for authorizate your app to the Rosalana Basecamp
+    | to use Basecamp services.
     |
     */
-    'auth' => [
-        'basecamp_url' => env('ROSALANA_BASECAMP_URL', 'http://localhost:8000'),
-        'app_secret' => env('ROSALANA_APP_SECRET', 'secret'),
-        'app_origin' => env('FRONTEND_URL', 'http://localhost:3000'),
+    'basecamp' => [
+        'url' => env('ROSALANA_BASECAMP_URL', 'http://localhost:8000'),
+        'secret' => env('ROSALANA_APP_SECRET', 'secret'),
+        'origin' => env('FRONTEND_URL', 'http://localhost:3000'),
     ],
 
 ];
