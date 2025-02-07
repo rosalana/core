@@ -32,7 +32,6 @@ return [
     'basecamp' => [
         'url' => env('ROSALANA_BASECAMP_URL', 'http://localhost:8000'),
         'secret' => env('ROSALANA_APP_SECRET', 'secret'),
-        'origin' => env('FRONTEND_URL', 'http://localhost:3000'),
     ],
 
 ];

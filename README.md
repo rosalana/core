@@ -4,7 +4,7 @@ Rosalana Core is the shared foundation for all applications in the Rosalana ecos
 
 > For more advanced features that are specific to certain functionalities, Rosalana provides additional packages.
 
->`rosalana/*` packages are meant to be used in Laravel applications with SPA frontends.
+>`rosalana/*` packages are meant to be used in Laravel applications with [Inertia](https://inertiajs.com/)
 
 ## Table of Contents
 
@@ -90,7 +90,6 @@ return [
     'basecamp' => [
         'url' => env('ROSALANA_BASECAMP_URL'),
         'secret' => env('ROSALANA_CLIENT_SECRET'),
-        'origin' => env('FRONTEND_URL'),
     ],
 ];
 ```

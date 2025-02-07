@@ -18,11 +18,6 @@ class Manager
     protected string $secret;
 
     /**
-     * Origin of the client app.
-     */
-    protected string $origin;
-
-    /**
      * Headers for the HTTP requests.
      */
     protected array $headers = [
@@ -39,10 +34,8 @@ class Manager
     {
         $this->url = config('rosalana.basecamp.url');
         $this->secret = config('rosalana.basecamp.secret');
-        $this->origin = config('rosalana.basecamp.origin');
 
         $this->headers['X-App-Secret'] = $this->secret;
-        $this->headers['Origin'] = $this->origin;
     }
 
     /**
