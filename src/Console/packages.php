@@ -10,6 +10,6 @@
 |
 */
 return [
-    'rosalana/core' => false,
-    'rosalana/accounts' => false,
+    'rosalana/core',
+    'rosalana/accounts'
 ];

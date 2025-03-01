@@ -35,8 +35,10 @@ class RosalanaCoreServiceProvider extends ServiceProvider
             __DIR__ . '/../../config/rosalana.php' => config_path('rosalana.php'),
         ], 'rosalana-config');
 
-        $this->commands([
-            \Rosalana\Core\Console\Commands\InstallCommand::class,
-        ]);
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \Rosalana\Core\Console\Commands\InstallCommand::class,
+            ]);
+        }
     }
 }
