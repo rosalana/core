@@ -5,6 +5,7 @@ namespace Rosalana\Core\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Laravel\Prompts\Concerns\Colors;
+use Rosalana\Core\Console\Packages;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
@@ -12,8 +13,8 @@ use function Laravel\Prompts\text;
 
 class InstallCommand extends Command
 {
-
     use Colors;
+    use Packages;
     /**
      * The name and signature of the console command.
      *
@@ -36,19 +37,20 @@ class InstallCommand extends Command
     public function handle()
     {
 
+        $installed = $this->installed();
 
-        $role = select(
+        $options = collect($installed)->mapWithKeys(function ($version, $key) {
+            return [$key => $key . ' ' . $this->cyan($version)];
+        })->toArray();
+
+        $package = select(
             label: 'What role should the user have?',
-            options: [
-                'member' => 'Member'.$this->green('(basic account)'),
-                'contributor' => 'Contributor'.  $this->blue('(contributor privileges)'),
-                'owner' => 'Owner'. $this->cyan('(full access)'),
-            ],
+            options: $options,
             default: 'owner'
         );
         
 
-        $this->info("You selected: $role");
+        $this->info("You selected: $package");
 
 
 
@@ -88,10 +90,5 @@ class InstallCommand extends Command
         // $package = $this->choice('Which package would you like to install?', $packages->toArray());
     }
 
-    protected function hasComposerPackage($package)
-    {
-        $packages = json_decode(file_get_contents(base_path('composer.json')), true);
 
-        return $packages['require'][$package] ?? $packages['require-dev'][$package] ?? null;
-    }
 }

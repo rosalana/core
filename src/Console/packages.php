@@ -1,15 +1,30 @@
 <?php
-/*
-|--------------------------------------------------------------------------
-| Rosalana Core Installed
-|--------------------------------------------------------------------------
-|
-| This file is loaded by the Rosalana Core package. It is used to store
-| the installed state of rosalana packages. This file is used to determine
-| if the package has been installed or not and with the correct version.
-|
-*/
-return [
-    'rosalana/core',
-    'rosalana/accounts'
-];
+
+namespace Rosalana\Core\Console;
+
+trait Packages
+{
+    public function available()
+    {
+        return [
+            'rosalana/core',
+            'rosalana/accounts'
+        ];
+    }
+
+    public function installed()
+    {
+        return collect(array_filter($this->available(), function ($package) {
+            return $this->hasComposerPackage($package);
+        }))->mapWithKeys(function ($package) {
+            return [$package => $this->hasComposerPackage($package)];
+        });
+    }
+
+    protected function hasComposerPackage($package)
+    {
+        $packages = json_decode(file_get_contents(base_path('composer.json')), true);
+
+        return $packages['require'][$package] ?? $packages['require-dev'][$package] ?? null;
+    }
+}
