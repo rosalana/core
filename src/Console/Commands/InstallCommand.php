@@ -44,9 +44,9 @@ class InstallCommand extends Command
         })->toArray();
 
         $package = select(
-            label: 'What role should the user have?',
+            label: 'What package would you like to install?',
             options: $options,
-            default: 'owner'
+            default: null,
         );
         
 
