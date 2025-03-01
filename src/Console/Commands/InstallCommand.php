@@ -5,7 +5,7 @@ namespace Rosalana\Core\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Laravel\Prompts\Concerns\Colors;
-use Rosalana\Core\Console\Packages;
+use Rosalana\Core\Services\Package;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
@@ -14,7 +14,6 @@ use function Laravel\Prompts\text;
 class InstallCommand extends Command
 {
     use Colors;
-    use Packages;
     /**
      * The name and signature of the console command.
      *
@@ -39,20 +38,22 @@ class InstallCommand extends Command
 
         // $installed = $this->installed();
 
-        $published = $this->published();
+        // $published = $this->published();
 
-        $options = $published->mapWithKeys(function ($version, $key) {
-            return [$key => $key . ' ' . $version];
-        })->toArray();
+        // $options = $published->mapWithKeys(function ($version, $key) {
+        //     return [$key => $key . ' ' . $version];
+        // })->toArray();
 
-        $package = select(
-            label: 'What package would you like to install?',
-            options: $options,
-            default: null,
-        );
+        // $package = select(
+        //     label: 'What package would you like to install?',
+        //     options: $options,
+        //     default: null,
+        // );
+
+        dd((new Package)->all());
         
 
-        $this->info("You selected: $package");
+        // $this->info("You selected: $package");
 
 
 
