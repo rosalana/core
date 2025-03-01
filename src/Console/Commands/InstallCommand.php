@@ -37,10 +37,12 @@ class InstallCommand extends Command
     public function handle()
     {
 
-        $installed = $this->installed();
+        // $installed = $this->installed();
 
-        $options = collect($installed)->mapWithKeys(function ($version, $key) {
-            return [$key => $key . ' ' . $this->cyan($version)];
+        $published = $this->published();
+
+        $options = $published->mapWithKeys(function ($version, $key) {
+            return [$key => $key . ' ' . $version];
         })->toArray();
 
         $package = select(
