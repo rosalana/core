@@ -34,7 +34,7 @@ class InstallCommand extends Command
     {
 
 
-        select(
+        $item = select(
             label: 'Which starter kit would you like to install?',
             options: [
                 'none' => 'None',
@@ -44,6 +44,8 @@ class InstallCommand extends Command
             ],
             default: 'none',
         );
+
+        $this->info("You selected: $item");
 
 
 
