@@ -28,12 +28,12 @@ abstract class Package implements PackageInterface
         return $this->published();
     }
 
-    public function installedVersion(): string
+    public function installedVersion(): string|null
     {
         return InstalledVersions::getVersion($this->name);
     }
 
-    public function publishedVersion(): string
+    public function publishedVersion(): string|null
     {
         return config('rosalana.installed.' . $this->name);
     }

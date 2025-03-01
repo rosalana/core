@@ -22,10 +22,10 @@ interface PackageInterface
     /**
      * Currently installed version of the package.
      */
-    public function installedVersion(): string;
+    public function installedVersion(): string|null;
 
     /**
      * Last published version of the package.
      */
-    public function publishedVersion(): string;
+    public function publishedVersion(): string|null;
 }
