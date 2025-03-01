@@ -11,7 +11,7 @@ abstract class Package implements PackageInterface
     protected ?string $installedVersion;
     protected ?string $lastPublishedVersion;
     protected bool $published;
-    protected bool $status;
+    protected string $status;
 
     public function __construct()
     {
