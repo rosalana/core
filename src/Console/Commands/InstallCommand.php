@@ -38,7 +38,7 @@ class InstallCommand extends Command
 
         $installed->each(function ($version, $package) {
             if ($version) {
-                $this->info("Package [{$package}] is already installed.");
+                $this->info("Package [{$package}] is already installed. Version [{$version}].");
             } else {
                 $this->info("Package [{$package}] is not installed.");
             }
