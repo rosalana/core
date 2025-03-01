@@ -4,6 +4,7 @@ namespace Rosalana\Core\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
@@ -11,6 +12,8 @@ use function Laravel\Prompts\text;
 
 class InstallCommand extends Command
 {
+
+    use Colors;
     /**
      * The name and signature of the console command.
      *
@@ -37,9 +40,9 @@ class InstallCommand extends Command
         $role = select(
             label: 'What role should the user have?',
             options: [
-                'member' => 'Member <fg=green>(basic account)</>',
-                'contributor' => 'Contributor <fg=green>(contributor privileges)</>',
-                'owner' => 'Owner <fg=green>(full access)</>',
+                'member' => 'Member'.$this->green('(basic account)'),
+                'contributor' => 'Contributor'.  $this->blue('(contributor privileges)'),
+                'owner' => 'Owner'. $this->cyan('(full access)'),
             ],
             default: 'owner'
         );
