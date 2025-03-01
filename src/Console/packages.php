@@ -86,7 +86,7 @@ trait Packages
      */
     protected function hasPublished($package)
     {
-        $packageFilesExists = new $this->getPackageNamespace($package) . '\\Providers\\' . 'EnsurePublished'();
+        $packageFilesExists = new ($this->getPackageNamespace($package) . '\\Providers\\EnsurePublished')();
 
         $rosalanaConfig = config('rosalana.installed', []);
 
