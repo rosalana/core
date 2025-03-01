@@ -34,15 +34,18 @@ class InstallCommand extends Command
         // find installed packages
         $installed = collect($packages)->mapWithKeys(function ($package) {
             return [$package => $this->hasComposerPackage($package)];
+        })->filter(function ($installed) {
+            return $installed !== null;
         });
 
-        $installed->each(function ($version, $package) {
-            if ($version) {
-                $this->info("Package [{$package}] is already installed. Version [{$version}].");
-            } else {
-                $this->info("Package [{$package}] is not installed.");
-            }
-        });
+        $choices = [];
+        foreach ($installed as $package => $version) {
+            // Výstup: "rosalana/core          0.3.3" s verzí zeleně
+            $choices[] = sprintf('%-30s <fg=green>%s</>', $package, $version);
+        }
+
+        $selected = $this->choice('Vyberte balíček:', $choices);
+        $this->info("Vybral jste: $selected");
 
 
 

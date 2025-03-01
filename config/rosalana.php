@@ -34,4 +34,15 @@ return [
         'secret' => env('ROSALANA_APP_SECRET', 'secret'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Rosalana Core Installed
+    |--------------------------------------------------------------------------
+    |
+    | All installed Rosalana packages. This array is used to determine if the
+    | package has been installed or not and with the correct version.
+    |
+    */
+    'installed' => [],
+
 ];
