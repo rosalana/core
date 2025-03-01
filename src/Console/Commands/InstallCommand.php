@@ -34,18 +34,18 @@ class InstallCommand extends Command
     {
 
 
-        $item = select(
-            label: 'Which starter kit would you like to install?',
+        $role = select(
+            label: 'What role should the user have?',
             options: [
-                'none' => 'None',
-                'react' => 'React',
-                'vue' => 'Vue',
-                'livewire' => 'Livewire',
+                'member' => 'Member <fg=green>(basic account)</>',
+                'contributor' => 'Contributor <fg=green>(contributor privileges)</>',
+                'owner' => 'Owner <fg=green>(full access)</>',
             ],
-            default: 'none',
+            default: 'owner'
         );
+        
 
-        $this->info("You selected: $item");
+        $this->info("You selected: $role");
 
 
 
