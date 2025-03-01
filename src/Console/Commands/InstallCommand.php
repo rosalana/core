@@ -5,6 +5,10 @@ namespace Rosalana\Core\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 
+use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\text;
+
 class InstallCommand extends Command
 {
     /**
@@ -28,24 +32,39 @@ class InstallCommand extends Command
      */
     public function handle()
     {
+
+
+        select(
+            label: 'Which starter kit would you like to install?',
+            options: [
+                'none' => 'None',
+                'react' => 'React',
+                'vue' => 'Vue',
+                'livewire' => 'Livewire',
+            ],
+            default: 'none',
+        );
+
+
+
         // get available packages
-        $packages = (new Filesystem)->getRequire(base_path('vendor/rosalana/core/src/Console/packages.php'));
+        // $packages = (new Filesystem)->getRequire(base_path('vendor/rosalana/core/src/Console/packages.php'));
 
-        // find installed packages
-        $installed = collect($packages)->mapWithKeys(function ($package) {
-            return [$package => $this->hasComposerPackage($package)];
-        })->filter(function ($installed) {
-            return $installed !== null;
-        });
+        // // find installed packages
+        // $installed = collect($packages)->mapWithKeys(function ($package) {
+        //     return [$package => $this->hasComposerPackage($package)];
+        // })->filter(function ($installed) {
+        //     return $installed !== null;
+        // });
 
-        $choices = [];
-        foreach ($installed as $package => $version) {
-            // Výstup: "rosalana/core          0.3.3" s verzí zeleně
-            $choices[] = sprintf('%-30s <fg=green>%s</>', $package, $version);
-        }
+        // $choices = [];
+        // foreach ($installed as $package => $version) {
+        //     // Výstup: "rosalana/core          0.3.3" s verzí zeleně
+        //     $choices[] = sprintf('%-30s <fg=green>%s</>', $package, $version);
+        // }
 
-        $selected = $this->choice('Vyberte balíček:', $choices);
-        $this->info("Vybral jste: $selected");
+        // $selected = $this->choice('Vyberte balíček:', $choices);
+        // $this->info("Vybral jste: $selected");
 
 
 
