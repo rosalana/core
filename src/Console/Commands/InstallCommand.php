@@ -3,7 +3,7 @@
 namespace Rosalana\Core\Console\Commands;
 
 use Illuminate\Console\Command;
-
+use Illuminate\Filesystem\Filesystem;
 
 class InstallCommand extends Command
 {
@@ -12,14 +12,14 @@ class InstallCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'rosalana:core:install';
+    protected $signature = 'rosalana:install';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Install the Rosalana Core package';
+    protected $description = 'Install the Rosalana packages';
 
     /**
      * Execute the console command.
@@ -28,33 +28,19 @@ class InstallCommand extends Command
      */
     public function handle()
     {
-        $this->info('Installing Rosalana Core package...');
+        // get info from the ./installed.php file
+        $installed = (new Filesystem)->getRequire(base_path('vendor/rosalana/core/src/Console/installed.php'));
 
-        $this->info('Publishing configuration...');
+        // show select menu for uninstalled packages
+        $packages = collect($installed)->filter(function ($installed) {
+            return ! $installed;
+        })->keys();
 
-        // Configurations...
-        $this->call('vendor:publish', [
-            '--provider' => "Rosalana\Core\Providers\RosalanaCoreServiceProvider",
-            '--tag' => "rosalana-config"
-        ]);
-
-        $this->info('Updating .env file...');
-
-        // Environment...
-        if (! file_exists(base_path('.env'))) {
-            copy(base_path('.env.example'), base_path('.env'));
+        if ($packages->isEmpty()) {
+            $this->info('All Rosalana packages are already installed.');
+            return;
         }
 
-        // Write to .env
-        file_put_contents(
-            base_path('.env'),
-            PHP_EOL .
-                'JWT_SECRET=' . PHP_EOL .
-                'ROSALANA_BASECAMP_URL=http://localhost:8000' . PHP_EOL .
-                'ROSALANA_APP_SECRET=' . PHP_EOL,
-            FILE_APPEND
-        );
-
-        $this->info('Installed Rosalana Core package');
+        $package = $this->choice('Which package would you like to install?', $packages->toArray());
     }
 }
