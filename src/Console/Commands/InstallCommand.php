@@ -3,7 +3,6 @@
 namespace Rosalana\Core\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Filesystem\Filesystem;
 use Laravel\Prompts\Concerns\Colors;
 use Rosalana\Core\Console\InternalCommands;
 use Rosalana\Core\PackageStatus;
@@ -40,8 +39,6 @@ class InstallCommand extends Command
     {
 
         $installed = Package::installed();
-
-        dump($installed);
 
         $options = $installed->mapWithKeys(function ($package) {
             $label = '';

@@ -21,6 +21,10 @@ class Core implements Package
             '--provider' => "Rosalana\Core\Providers\RosalanaCoreServiceProvider",
             '--tag' => "rosalana-config"
         ]);
+
+        $this->addToEnv('JWT_SECRET=');
+        $this->addToEnv('ROSALANA_BASECAMP_URL=http://localhost:8000');
+        $this->addToEnv('ROSALANA_APP_SECRET=');
     }
 
     public function refresh(): void {}

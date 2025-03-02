@@ -2,11 +2,11 @@
 
 namespace Rosalana\Core\Console;
 
-use Illuminate\Support\Arr;
+use Illuminate\Filesystem\Filesystem;
 
 trait InternalCommands
 {
-    function updateConfig(string $key, $value): void
+    public function updateConfig(string $key, $value): void
     {
         $configFile = config_path('rosalana.php');
 
@@ -43,5 +43,39 @@ trait InternalCommands
         }
 
         file_put_contents($configFile, $newContents);
+    }
+
+    public function addToEnv(string $value, ?string $after = null): void
+    {
+        $files = new Filesystem;
+
+        if (! $files->exists(base_path('.env'))) {
+            copy(base_path('.env.example'), base_path('.env'));
+        }
+
+        // kontrola zda už value v .env neexistuje
+        if (strpos(file_get_contents(base_path('.env')), $value) !== false) {
+            return;
+        }
+
+
+        if ($after === null) {
+            file_put_contents(
+                base_path('.env'),
+                PHP_EOL . $value . PHP_EOL,
+                FILE_APPEND
+            );
+        } else {
+            file_put_contents(
+                base_path('.env'),
+                preg_replace(
+                    '/^' . preg_quote($after, '/') . '$/m',
+                    $after . PHP_EOL . $value,
+                    file_get_contents(
+                        base_path('.env')
+                    )
+                )
+            );
+        }
     }
 }
