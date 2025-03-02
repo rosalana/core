@@ -66,11 +66,11 @@ trait InternalCommands
                 $firstLine = array_shift($lines);
                 $lastLine  = array_pop($lines);
                 $middleLines = array_map(fn($line) => "        " . $line, $lines);
-                $formattedExported = $firstLine . "\n" . implode("\n", $middleLines) . "\n" . $lastLine;
+                $formattedExported = $firstLine . "\n" . implode("\n", $middleLines) . "\n" . "    " . $lastLine;
             } else {
                 $formattedExported = $exported;
             }
-            $newEntry = "    '{$key}' => " . $formattedExported . ",\n";
+            $newEntry = "\n    '{$key}' => " . $formattedExported . ",\n";
             $pattern = "/(\n\s*\]\s*;)/s";
             $newContents = preg_replace($pattern, $newEntry . "$1", $contents);
             if ($newContents === null) {
