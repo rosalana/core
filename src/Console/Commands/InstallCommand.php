@@ -39,7 +39,7 @@ class InstallCommand extends Command
 
         $options = Package::all()->mapWithKeys(function ($package) {
             return [$package->name => $package->installedVersion];
-        });
+        })->toArray();
 
 
         $package = select(
