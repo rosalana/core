@@ -49,8 +49,8 @@ class PublishCommand extends Command
             $label = '';
             match ($package->status) {
                 PackageStatus::NOT_PUBLISHED => $label = $package->name . $this->red(" ({$package->status->value})"),
-                PackageStatus::OLD_VERSION => $label = $package->name . $this->yellow(" ({$package->status->value} $package->publishedVersion -> $package->installedVersion)"),
-                PackageStatus::UP_TO_DATE => $label = $package->name . $this->cyan(" ({$package->status->value} $package->installedVersion)"),
+                PackageStatus::OLD_VERSION => $label = $package->name . $this->dim(" $package->publishedVersion -> $package->installedVersion") . $this->yellow(" ({$package->status->value})"),
+                PackageStatus::UP_TO_DATE => $label = $package->name . $this->dim(" $package->installedVersion") . $this->cyan(" ({$package->status->value})"),
             };
             return [$package->name => $label];
         })->toArray();
@@ -73,7 +73,7 @@ class PublishCommand extends Command
             options: fn(string $value) => $publishOptions
                 ->mapWithKeys(function ($option, $key) {
                     return [$key => $option['label']];
-                })->prepend('Publish all', 'all')
+                })->prepend($this->cyan('Publish all'), 'all')
                 ->filter(fn($label) => str_contains(strtolower($label), strtolower($value)))
                 ->toArray(),
         );
