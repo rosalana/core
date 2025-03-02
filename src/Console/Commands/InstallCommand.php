@@ -41,13 +41,13 @@ class InstallCommand extends Command
         });
 
 
-        $package = select(
-            label: 'What package would you like to install?',
-            options: $options,
-            default: null,
-        );
+        // $package = select(
+        //     label: 'What package would you like to install?',
+        //     options: $options,
+        //     default: null,
+        // );
 
-        $this->info("You selected: $package");
+        // $this->info("You selected: $package");
 
         dd($options);
 
