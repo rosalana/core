@@ -4,6 +4,7 @@ namespace Rosalana\Core\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use InternalCommands;
 use Laravel\Prompts\Concerns\Colors;
 use PhpParser\Node\Expr\FuncCall;
 use Rosalana\Core\PackageStatus;
@@ -16,6 +17,7 @@ use function Laravel\Prompts\text;
 class InstallCommand extends Command
 {
     use Colors;
+    use InternalCommands;
     /**
      * The name and signature of the console command.
      *
@@ -62,6 +64,8 @@ class InstallCommand extends Command
         });
 
         $package->publish();
+
+        $this->updateConfig("installed.{$package->name}", $package->installedVersion);
 
         $this->info("Package $package->name published");
     }
