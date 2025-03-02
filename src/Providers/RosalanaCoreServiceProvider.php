@@ -35,5 +35,10 @@ class RosalanaCoreServiceProvider extends ServiceProvider
                 \Rosalana\Core\Console\Commands\PublishCommand::class,
             ]);
         }
+
+        // Publikování configu, pokud chceš, aby si ho uživatel mohl zkopírovat
+        $this->publishes([
+            __DIR__ . '/../../config/rosalana.php' => config_path('rosalana.php'),
+        ], 'rosalana-config');
     }
 }
