@@ -3,13 +3,12 @@
 namespace Rosalana\Core;
 
 use Composer\InstalledVersions;
-use Rosalana\Core\Console\InternalCommands;
+use Illuminate\Process\Exceptions\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use Rosalana\Core\Contracts\Package as PackageContract;
 
 class Package implements PackageContract
 {
-    use InternalCommands;
 
     public string $name;
     public ?string $installedVersion;
@@ -44,10 +43,6 @@ class Package implements PackageContract
         $process = new Process(['composer', 'require', "$this->name " . ($version ? ':' . $version : '')]);
         $process->setTimeout(null);
         $process->run();
-
-        if (!$process->isSuccessful()) {
-            $this->components->error($process->getErrorOutput());
-        }
     }
 
     /**
