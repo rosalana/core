@@ -79,7 +79,6 @@ class PublishCommand extends Command
         );
 
         spin(function () use ($searchOptions, $publishOptions, $package) {
-            sleep(3);
             if ($searchOptions === 'all') {
                 $publishOptions->each(function ($option) {
                     $option['run']();
@@ -87,7 +86,7 @@ class PublishCommand extends Command
             } else {
                 $publishOptions[$searchOptions]['run']();
             }
-            
+
             // update the installed version in the config
             $this->updateConfig('installed', [
                 $package->name => $package->installedVersion
