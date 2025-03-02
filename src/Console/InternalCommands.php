@@ -63,7 +63,6 @@ trait InternalCommands
             file_put_contents(
                 base_path('.env'),
                 PHP_EOL . $value . PHP_EOL,
-                FILE_APPEND
             );
         } else {
             file_put_contents(
