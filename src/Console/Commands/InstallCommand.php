@@ -57,7 +57,7 @@ class InstallCommand extends Command
             default: null,
         );
 
-        $package = $installed->find(function ($p) use ($selectedPackage) {
+        $package = $installed->first(function ($p) use ($selectedPackage) {
             return $p->name === $selectedPackage;
         });
 
