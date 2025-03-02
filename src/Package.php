@@ -8,7 +8,7 @@ use Rosalana\Core\Contracts\Package as PackageContract;
 class Package implements PackageContract
 {
     protected string $name;
-    protected string $installedVersion;
+    protected ?string $installedVersion;
     protected ?string $publishedVersion;
     protected bool $published;
     protected bool $installed;
