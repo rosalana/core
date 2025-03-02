@@ -70,7 +70,7 @@ class Package implements PackageContract
      */
     public function resolvePublished(): bool
     {
-        return $this->package?->resolvePublished() ?? false;
+        return $this->package?->resolvePublished() && !is_null($this->resolvePublishedVersion());
     }
 
     /**
