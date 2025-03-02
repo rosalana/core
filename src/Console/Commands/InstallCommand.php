@@ -36,6 +36,10 @@ class InstallCommand extends Command
     public function handle()
     {
 
+        $packages = Package::installed();
+
+        dd($packages);
+
         // $installed = $this->installed();
 
         // $published = $this->published();
@@ -49,8 +53,6 @@ class InstallCommand extends Command
         //     options: $options,
         //     default: null,
         // );
-
-        dd(Package::all()->toArray());
         
 
         // $this->info("You selected: $package");
