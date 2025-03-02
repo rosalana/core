@@ -70,15 +70,15 @@ class PublishCommand extends Command
 
         $searchOptions = search(
             label: 'What would you like to publish?',
-            options: fn (string $value) => $publishOptions
-            ->mapWithKeys(function ($option, $key) {
-                return [$key => $option['label']];
-            })->prepend('Publish all', 'all')
-            ->filter(fn ($label) => str_contains(strtolower($label), strtolower($value)))
-            ->toArray(),
+            options: fn(string $value) => $publishOptions
+                ->mapWithKeys(function ($option, $key) {
+                    return [$key => $option['label']];
+                })->prepend('Publish all', 'all')
+                ->filter(fn($label) => str_contains(strtolower($label), strtolower($value)))
+                ->toArray(),
         );
 
-        spin(function () use ($searchOptions, $publishOptions) {
+        spin(function () use ($searchOptions, $publishOptions, $package) {
             sleep(3);
             if ($searchOptions === 'all') {
                 $publishOptions->each(function ($option) {
@@ -87,12 +87,14 @@ class PublishCommand extends Command
             } else {
                 $publishOptions[$searchOptions]['run']();
             }
+            
+            // update the installed version in the config
+            $this->updateConfig('installed', [
+                $package->name => $package->installedVersion
+            ]);
         }, "Publishing $searchOptions for $package->name");
 
-        // update the installed version in the config
-        $this->updateConfig('installed', [
-            $package->name => $package->installedVersion
-        ]);
+
 
         $this->components->success("Published $searchOptions for $package->name");
     }
