@@ -64,7 +64,9 @@ class InstallCommand extends Command
 
         $package->publish();
 
-        $this->updateConfig("installed.{$package->name}", $package->installedVersion);
+        $this->updateConfig('installed', [
+            $package->name => $package->installedVersion
+        ]);
 
         $this->info("Package $package->name published");
     }

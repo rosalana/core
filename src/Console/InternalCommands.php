@@ -6,23 +6,24 @@ use Illuminate\Support\Arr;
 
 trait InternalCommands
 {
-    public function updateConfig(string $path, $value): void
+    function updateConfig(string $path, $value): void
     {
-        // Například pokud máš konfiguraci v config/rosalana.php
-        $file = config_path('rosalana.php');
-    
-        if (!file_exists($file)) {
-            throw new \Exception("Config file {$file} does not exist.");
+        // Například konfigurace v config/rosalana.php
+        $configFile = config_path('rosalana.php');
+
+        if (!file_exists($configFile)) {
+            throw new \Exception("Config file {$configFile} does not exist.");
         }
-    
+
         // Načtení konfigurace jako pole
-        $config = include $file;
-    
-        // Nastavení nové hodnoty do pole na dané cestě
+        $config = include $configFile;
+
+        // Nastavení nové hodnoty pro klíč 'installed'
         Arr::set($config, $path, $value);
-    
-        // Převod pole do PHP kódu a zápis zpět do souboru
+
+        // Převod pole na PHP kód pomocí var_export
         $content = "<?php\n\nreturn " . var_export($config, true) . ";\n";
-        file_put_contents($file, $content);
+
+        file_put_contents($configFile, $content);
     }
 }
