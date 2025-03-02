@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Laravel\Prompts\Concerns\Colors;
 use PhpParser\Node\Expr\FuncCall;
+use Rosalana\Core\PackageStatus;
 use Rosalana\Core\Services\Package;
 
 use function Laravel\Prompts\confirm;
@@ -38,7 +39,14 @@ class InstallCommand extends Command
     {
 
         $options = Package::all()->mapWithKeys(function ($package) {
-            return [$package->name => "$package->name ($package->installedVersion)"];
+            $label = '';
+            match ($package->status) {
+                PackageStatus::NOT_PUBLISHED => $label = $this->red("$package->name ({$package->status->value})"),
+                PackageStatus::OLD_VERSION => $label = $this->yellow("$package->name ({$package->status->value} $package->publishedVersion -> $package->installedVersion)"),
+                PackageStatus::UP_TO_DATE => $label = $this->cyan("$package->name ({$package->status->value} $package->installedVersion)"),
+                PackageStatus::NOT_INSTALLED => $label = $this->red("$package->name ({$package->status->value})"),
+            };
+            return [$package->name => $label];
         })->toArray();
 
 
