@@ -65,13 +65,15 @@ class AddCommand extends Command
             return $p->name === $selectedPackage;
         });
 
+        $processLabel = $version ? "Installing {$package->name} {$this->dim("($version)")}" : "Installing {$package->name}";
+
         spin(function () use ($package, $version) {
             try {
                 $package->install($version);
             } catch (\Illuminate\Process\Exceptions\ProcessFailedException $e) {
                 exit(1);
             }
-        }, "Installing {$package->name} {($version ? 'at version ' . $version : '')}");
+        }, $processLabel);
 
 
         $this->updateConfig('installed', [
