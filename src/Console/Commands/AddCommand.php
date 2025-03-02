@@ -71,7 +71,7 @@ class AddCommand extends Command
             } catch (\Illuminate\Process\Exceptions\ProcessFailedException $e) {
                 exit(1);
             }
-        }, "Installing {$package->name}");
+        }, "Installing {$package->name} {($version ? 'at version ' . $version : '')}");
 
 
         $this->updateConfig('installed', [
