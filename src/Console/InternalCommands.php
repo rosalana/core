@@ -6,24 +6,42 @@ use Illuminate\Support\Arr;
 
 trait InternalCommands
 {
-    function updateConfig(string $path, $value): void
+    function updateConfig(string $key, $value): void
     {
-        // Například konfigurace v config/rosalana.php
         $configFile = config_path('rosalana.php');
 
         if (!file_exists($configFile)) {
             throw new \Exception("Config file {$configFile} does not exist.");
         }
 
-        // Načtení konfigurace jako pole
-        $config = include $configFile;
+        $contents = file_get_contents($configFile);
 
-        // Nastavení nové hodnoty pro klíč 'installed'
-        Arr::set($config, $path, $value);
+        // Připravíme novou část pro 'installed'
+        // (Předpokládáme, že chceme odsazení 4 mezery pro tento klíč.)
+        if ($key === 'installed' && is_array($value)) {
+            $newArrayContent = "[\n";
+            foreach ($value as $k => $v) {
+                // Upravíme odsazení (4+4=8 mezer) – upravte dle vlastních preferencí
+                $newArrayContent .= "        '" . addslashes($k) . "' => '" . addslashes($v) . "',\n";
+            }
+            $newArrayContent .= "    ]";
+        } else {
+            // Můžeš doplnit podporu pro jiné klíče, pokud je to potřeba.
+            $newArrayContent = var_export($value, true);
+        }
 
-        // Převod pole na PHP kód pomocí var_export
-        $content = "<?php\n\nreturn " . var_export($config, true) . ";\n";
+        // Regulární výraz hledá klíč 'installed' následovaný => a hranatými závorkami (obsahem uvnitř)
+        // Používáme /s flag, aby tečka odpovídala i novým řádkům.
+        $pattern = "/('installed'\s*=>\s*)\[[^\]]*\]/s";
 
-        file_put_contents($configFile, $content);
+        $replacement = "$1" . $newArrayContent;
+
+        $newContents = preg_replace($pattern, $replacement, $contents);
+
+        if ($newContents === null) {
+            throw new \Exception("Chyba při aktualizaci konfigurace.");
+        }
+
+        file_put_contents($configFile, $newContents);
     }
 }
