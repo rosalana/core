@@ -30,14 +30,9 @@ class RosalanaCoreServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // Publikování configu, pokud chceš, aby si ho uživatel mohl zkopírovat
-        $this->publishes([
-            __DIR__ . '/../../config/rosalana.php' => config_path('rosalana.php'),
-        ], 'rosalana-config');
-
         if ($this->app->runningInConsole()) {
             $this->commands([
-                \Rosalana\Core\Console\Commands\InstallCommand::class,
+                \Rosalana\Core\Console\Commands\PublishCommand::class,
             ]);
         }
     }
