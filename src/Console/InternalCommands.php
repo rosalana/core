@@ -4,6 +4,7 @@ namespace Rosalana\Core\Console;
 
 use Illuminate\Console\Concerns\InteractsWithIO;
 use Illuminate\Filesystem\Filesystem;
+use Symfony\Component\VarExporter\VarExporter;
 
 trait InternalCommands
 {
@@ -25,42 +26,37 @@ trait InternalCommands
         $pattern = "/(['\"])" . preg_quote($key, '/') . "\\1\s*=>\s*(\[[^\]]*\])/s";
 
         if (preg_match($pattern, $contents, $matches)) {
-            // $matches[2] obsahuje řetězec reprezentující pole, např. "[ 'rosalana/core' => 'dev-master', ]"
+            // $matches[2] obsahuje řetězec s existujícím polem
             $currentArray = [];
             $code = 'return ' . $matches[2] . ';';
             try {
                 $currentArray = eval($code);
             } catch (\Throwable $e) {
-                // Pokud eval selže, předpokládáme prázdné pole
                 $currentArray = [];
             }
             if (!is_array($currentArray)) {
                 $currentArray = [];
             }
-            // Sloučíme existující hodnoty s novými; nové hodnoty přepíší staré pro stejné klíče
+            // Nové hodnoty přepíší existující pro stejné klíče
             $merged = array_merge($currentArray, $value);
-
-            // Vytvoříme nový řetězec reprezentující pole – lze volit krátkou syntaxi, zde var_export vrací "array(...)".
-            $newArrayContent = var_export($merged, true);
-
-            // Nahrazujeme původní definici klíče novou definicí.
-            $replacement = "$1{$key}$1 => " . $newArrayContent;
+            // Exportujeme pole pomocí VarExporter (krátká syntaxe s hranatými závorkami)
+            $exported = VarExporter::export($merged);
+            $replacement = "$1{$key}$1 => " . $exported;
             $newContents = preg_replace($pattern, $replacement, $contents);
-
             if ($newContents === null) {
                 throw new \Exception("Chyba při aktualizaci konfigurace.");
             }
-
-            $files->put($configFile, $newContents);
         } else {
-            $newEntry = "    '{$key}' => " . var_export($value, true) . ",\n";
+            // Pokud klíč neexistuje, vložíme nový záznam před uzavírací závorku pole
+            $exported = VarExporter::export($value);
+            $newEntry = "    '{$key}' => " . $exported . ",\n";
             $pattern = "/(\n\s*\]\s*;)/s";
             $newContents = preg_replace($pattern, $newEntry . "$1", $contents);
             if ($newContents === null) {
                 throw new \Exception("Chyba při přidávání nového klíče do konfigurace.");
             }
-            $files->put($configFile, $newContents);
         }
+        $files->put($configFile, $newContents);
     }
 
     public function setEnvValue(string $key, ?string $value = null): void
