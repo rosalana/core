@@ -58,14 +58,6 @@ class Package implements PackageContract
     }
 
     /**
-     * Refresh the published files.
-     */
-    public function refresh(): void
-    {
-        $this->package?->refresh();
-    }
-
-    /**
      * Determine if the package is published.
      */
     public function resolvePublished(): bool

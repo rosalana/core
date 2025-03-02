@@ -13,9 +13,4 @@ interface Package
      * Return an array of options to publish.
      */
     public function publish(): array;
-
-    /**
-     * Refresh the published files.
-     */
-    public function refresh(): void;
 }

@@ -3,23 +3,28 @@
 namespace Rosalana\Core\Console\Commands;
 
 use Illuminate\Console\Command;
+use Rosalana\Core\Console\InternalCommands;
+use Rosalana\Core\Services\Package;
 
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\spin;
 
 class AddCommand extends Command
 {
+    use InternalCommands;
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'rosalana:core:install';
+    protected $signature = 'rosalana:add';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Install the Rosalana Core package';
+    protected $description = 'Add Rosalana package to your application';
 
     /**
      * Execute the console command.
@@ -28,33 +33,36 @@ class AddCommand extends Command
      */
     public function handle()
     {
-        $this->info('Installing Rosalana Core package...');
+        $notInstalled = Package::notInstalled();
 
-        $this->info('Publishing configuration...');
-
-        // Configurations...
-        $this->call('vendor:publish', [
-            '--provider' => "Rosalana\Core\Providers\RosalanaCoreServiceProvider",
-            '--tag' => "rosalana-config"
-        ]);
-
-        $this->info('Updating .env file...');
-
-        // Environment...
-        if (! file_exists(base_path('.env'))) {
-            copy(base_path('.env.example'), base_path('.env'));
+        if (env('APP_ENV') === 'production') {
+            $this->components->error('You cannot install packages in production');
+            return;
         }
 
-        // Write to .env
-        file_put_contents(
-            base_path('.env'),
-            PHP_EOL .
-                'JWT_SECRET=' . PHP_EOL .
-                'ROSALANA_BASECAMP_URL=http://localhost:8000' . PHP_EOL .
-                'ROSALANA_APP_SECRET=' . PHP_EOL,
-            FILE_APPEND
+        $options = $notInstalled->mapWithKeys(function ($package) {
+            return [$package->name => Package::getDescription($package->name)];
+        })->toArray();
+
+        $selectedPackage = select(
+            label: 'What package would you like to install?',
+            options: $options,
+            default: null,
         );
 
-        $this->info('Installed Rosalana Core package');
+        $package = $notInstalled->first(function ($p) use ($selectedPackage) {
+            return $p->name === $selectedPackage;
+        });
+
+        spin(function () use ($package) {
+            $package->install();
+        }, "Installing {$package->name}");
+
+
+        $this->updateConfig('installed', [
+            $package->name => null
+        ]);
+
+        $this->components->success("{$package->name} has been installed");
     }
 }

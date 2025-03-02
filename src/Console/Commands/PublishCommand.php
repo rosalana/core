@@ -28,7 +28,7 @@ class PublishCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Publish the Rosalana package files';
+    protected $description = 'Publish files from a Rosalana package';
 
     /**
      * Execute the console command.

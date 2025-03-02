@@ -11,9 +11,14 @@ class Package
      * List of available packages in the ecosystem.
      */
     public static array $packages = [
-        'rosalana/core',
-        'rosalana/accounts',
+        'rosalana/core' => 'Core constracts and services',
+        'rosalana/accounts' => 'Package for managing user accounts and authentication',
     ];
+
+    public static function getDescription(string $package): string
+    {
+        return self::$packages[$package];
+    }
 
     /**
      * Get the all packages.
@@ -22,7 +27,7 @@ class Package
     {
         $result = [];
 
-        foreach (self::$packages as $package) {
+        foreach (self::$packages as $package => $description) {
             $result[] = new AbstractPackage($package);
         }
 
@@ -34,7 +39,7 @@ class Package
      */
     public static function find(string $name): ?AbstractPackage
     {
-        if (in_array($name, self::$packages)) {
+        if (array_key_exists($name, self::$packages)) {
             return new AbstractPackage($name);
         } else {
             return null;
@@ -47,6 +52,14 @@ class Package
     public static function installed(): Collection
     {
         return self::all()->filter(fn($package) => $package->installed);
+    }
+
+    /**
+     * Get the not installed packages.
+     */
+    public static function notInstalled(): Collection
+    {
+        return self::all()->filter(fn($package) => !$package->installed);
     }
 
     /**

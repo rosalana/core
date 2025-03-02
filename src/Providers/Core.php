@@ -2,7 +2,6 @@
 
 namespace Rosalana\Core\Providers;
 
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Rosalana\Core\Console\InternalCommands;
 use Rosalana\Core\Contracts\Package;
@@ -38,6 +37,4 @@ class Core implements Package
             ]
         ];
     }
-
-    public function refresh(): void {}
 }
