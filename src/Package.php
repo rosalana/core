@@ -36,10 +36,13 @@ class Package implements PackageContract
     /**
      * Získá nainstalovanou verzi pomocí Composeru.
      */
-    protected function resolveInstalledVersion(): string
+    protected function resolveInstalledVersion(): ?string
     {
-        // Pokud není nalezena, vrací prázdný řetězec (můžeš upravit dle potřeby)
-        return InstalledVersions::getVersion($this->name) ?? '';
+        try {
+            return InstalledVersions::getVersion($this->name);
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     protected function resolveInstalled(): bool
