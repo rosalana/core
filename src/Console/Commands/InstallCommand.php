@@ -41,6 +41,8 @@ class InstallCommand extends Command
 
         $installed = Package::installed();
 
+        dump($installed);
+
         $options = $installed->mapWithKeys(function ($package) {
             $label = '';
             match ($package->status) {
