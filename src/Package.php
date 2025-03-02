@@ -10,7 +10,7 @@ abstract class Package
     protected string $installedVersion;
     protected ?string $publishedVersion;
     protected bool $published;
-    protected string $publishStatus;
+    protected PublishStatus $publishStatus;
 
     public function __construct()
     {
@@ -61,14 +61,20 @@ abstract class Package
      * - 'old version' pokud je publikován, ale verze se liší,
      * - 'not published' pokud balíček není publikován.
      */
-    protected function determinePublishStatus(): string
+    protected function determinePublishStatus(): PublishStatus
     {
         if ($this->published) {
             if ($this->installedVersion === $this->publishedVersion) {
-                return 'up to date';
+                return PublishStatus::UP_TO_DATE;
             }
-            return 'old version';
+            return PublishStatus::OLD_VERSION;
         }
-        return 'not published';
+        return PublishStatus::NOT_PUBLISHED;
     }
+}
+
+enum PublishStatus: string {
+    case UP_TO_DATE = 'up to date';
+    case OLD_VERSION = 'old version';
+    case NOT_PUBLISHED = 'not published';
 }
