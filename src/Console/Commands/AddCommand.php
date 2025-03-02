@@ -70,7 +70,7 @@ class AddCommand extends Command
                 $package->install($version);
             } catch (\Illuminate\Process\Exceptions\ProcessFailedException $e) {
                 $this->components->error($e->getMessage());
-                return;
+                exit(1);
             }
         }, "Installing {$package->name}");
 
