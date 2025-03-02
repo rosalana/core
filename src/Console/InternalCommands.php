@@ -49,7 +49,7 @@ trait InternalCommands
                 $middleLines = array_map(function ($line) {
                     return "    " . $line;
                 }, $lines);
-                $formattedExported = $firstLine . "\n" . implode("\n", $middleLines) . "\n" . $lastLine;
+                $formattedExported = $firstLine . "\n" . implode("\n", $middleLines) . "\n" . "    " . $lastLine;
             } else {
                 $formattedExported = $exported;
             }
