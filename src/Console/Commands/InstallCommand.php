@@ -38,26 +38,29 @@ class InstallCommand extends Command
     public function handle()
     {
 
-        $options = Package::installed()->mapWithKeys(function ($package) {
+        $installed = Package::installed();
+
+        $options = $installed->mapWithKeys(function ($package) {
             $label = '';
             match ($package->status) {
                 PackageStatus::NOT_PUBLISHED => $label = $package->name . $this->red(" ({$package->status->value})"),
                 PackageStatus::OLD_VERSION => $label = $package->name . $this->yellow(" ({$package->status->value} $package->publishedVersion -> $package->installedVersion)"),
                 PackageStatus::UP_TO_DATE => $label = $package->name . $this->cyan(" ({$package->status->value} $package->installedVersion)"),
             };
-            return [$package => $label];
+            return [$package->name => $label];
         })->toArray();
 
 
-        $package = select(
+        $selectedPackage = select(
             label: 'What package would you like to install?',
             options: $options,
             default: null,
         );
 
-        dump($package);
+        $package = $installed->find(function ($p) use ($selectedPackage) {
+            return $p->name === $selectedPackage;
+        });
 
-        // Installing selectedPackage
-        // Package::find($package)->publish();
+        dump($package);
     }
 }
