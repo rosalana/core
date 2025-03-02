@@ -15,8 +15,8 @@ class Core implements Package
     public function publish(): void 
     {
         Artisan::call('vendor:publish', [
-            '--provider' => 'Rosalana\\Core\\RosalanaCoreServiceProvider',
-            '--force'    => true,
+            '--provider' => "Rosalana\Core\Providers\RosalanaCoreServiceProvider",
+            '--tag' => "rosalana-config"
         ]);
     }
 
