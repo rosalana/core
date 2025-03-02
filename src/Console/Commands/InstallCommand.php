@@ -36,9 +36,21 @@ class InstallCommand extends Command
     public function handle()
     {
 
-        $packages = Package::installed();
+        $options = Package::installed()->map(function ($package) {
+            return [$package->name => $package->name . ' ' . $package->installedVersion];
+        });
 
-        dd($packages);
+
+        $package = select(
+            label: 'What package would you like to install?',
+            options: $options,
+            default: null,
+        );
+
+        $this->info("You selected: $package");
+
+        dd($options);
+
 
         // $installed = $this->installed();
 
