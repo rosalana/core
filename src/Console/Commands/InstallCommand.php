@@ -41,9 +41,9 @@ class InstallCommand extends Command
         $options = Package::installed()->mapWithKeys(function ($package) {
             $label = '';
             match ($package->status) {
-                PackageStatus::NOT_PUBLISHED => $label = $this->red("$package->name ({$package->status->value})"),
-                PackageStatus::OLD_VERSION => $label = $this->yellow("$package->name ({$package->status->value} $package->publishedVersion -> $package->installedVersion)"),
-                PackageStatus::UP_TO_DATE => $label = $this->cyan("$package->name ({$package->status->value} $package->installedVersion)"),
+                PackageStatus::NOT_PUBLISHED => $label = $package->name . $this->red(" ({$package->status->value})"),
+                PackageStatus::OLD_VERSION => $label = $package->name . $this->yellow(" ({$package->status->value} $package->publishedVersion -> $package->installedVersion)"),
+                PackageStatus::UP_TO_DATE => $label = $package->name . $this->cyan(" ({$package->status->value} $package->installedVersion)"),
             };
             return [$package->name => $label];
         })->toArray();
@@ -73,7 +73,7 @@ class InstallCommand extends Command
         //     options: $options,
         //     default: null,
         // );
-        
+
 
         // $this->info("You selected: $package");
 
@@ -114,6 +114,4 @@ class InstallCommand extends Command
 
         // $package = $this->choice('Which package would you like to install?', $packages->toArray());
     }
-
-
 }
