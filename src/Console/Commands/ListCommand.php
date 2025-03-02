@@ -32,7 +32,7 @@ class ListCommand extends Command
     {
         $this->components->info('Available packages');
 
-        $this->components->table(
+        $this->table(
             ['Package', 'Description', 'Installed', 'Published'],
             Package::all()->map(function ($package) {
                 return [
