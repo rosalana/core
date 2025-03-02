@@ -65,7 +65,7 @@ trait InternalCommands
             if (count($lines) >= 3) {
                 $firstLine = array_shift($lines);
                 $lastLine  = array_pop($lines);
-                $middleLines = array_map(fn($line) => "        " . $line, $lines);
+                $middleLines = array_map(fn($line) => "    " . $line, $lines);
                 $formattedExported = $firstLine . "\n" . implode("\n", $middleLines) . "\n" . "    " . $lastLine;
             } else {
                 $formattedExported = $exported;
