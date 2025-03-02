@@ -30,6 +30,19 @@ class ListCommand extends Command
      */
     public function handle()
     {
-        dd(Package::all());
+        $this->components->info('Available packages');
+
+        $this->components->table(
+            ['Package', 'Description', 'Installed', 'Published'],
+            Package::all()->map(function ($package) {
+                return [
+                    $package->name,
+                    $package->description,
+                    $package->installedVersion ?? 'Not installed',
+                    $package->publishedVersion ?? 'Not published',
+                ];
+            })
+        );
+
     }
 }
