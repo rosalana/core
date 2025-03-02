@@ -47,7 +47,7 @@ trait InternalCommands
                 $firstLine = array_shift($lines);  // první řádek (např. "[")
                 $lastLine  = array_pop($lines);      // poslední řádek (např. "]")
                 $middleLines = array_map(function ($line) {
-                    return "        " . $line;
+                    return "    " . $line;
                 }, $lines);
                 $formattedExported = $firstLine . "\n" . implode("\n", $middleLines) . "\n" . $lastLine;
             } else {
