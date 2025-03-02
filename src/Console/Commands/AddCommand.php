@@ -3,15 +3,18 @@
 namespace Rosalana\Core\Console\Commands;
 
 use Illuminate\Console\Command;
+use Laravel\Prompts\Concerns\Colors;
 use Rosalana\Core\Console\InternalCommands;
 use Rosalana\Core\Services\Package;
 
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\text;
 
 class AddCommand extends Command
 {
     use InternalCommands;
+    use Colors;
     /**
      * The name and signature of the console command.
      *
@@ -41,7 +44,7 @@ class AddCommand extends Command
         }
 
         $options = $notInstalled->mapWithKeys(function ($package) {
-            return [$package->name => Package::getDescription($package->name)];
+            return [$package->name => "$package->name ({$this->dim(Package::getDescription($package->name))})"];
         })->toArray();
 
         $selectedPackage = select(
@@ -50,12 +53,20 @@ class AddCommand extends Command
             default: null,
         );
 
+        $version = text(
+            label: 'Would you like to install a specific version?',
+        );
+
+        if ($version === '') {
+            $version = null;
+        }
+
         $package = $notInstalled->first(function ($p) use ($selectedPackage) {
             return $p->name === $selectedPackage;
         });
 
-        spin(function () use ($package) {
-            $package->install();
+        spin(function () use ($package, $version) {
+            $package->install($version);
         }, "Installing {$package->name}");
 
 

@@ -3,11 +3,14 @@
 namespace Rosalana\Core;
 
 use Composer\InstalledVersions;
-use Rosalana\Core\Console\ComposerManager;
+use Rosalana\Core\Console\InternalCommands;
+use Symfony\Component\Process\Process;
 use Rosalana\Core\Contracts\Package as PackageContract;
 
 class Package implements PackageContract
 {
+    use InternalCommands;
+
     public string $name;
     public ?string $installedVersion;
     public ?string $publishedVersion;
@@ -36,9 +39,15 @@ class Package implements PackageContract
     /**
      * Install the package from scratch.
      */
-    public function install(): void
+    public function install(?string $version): void
     {
-        (new ComposerManager())->require($this->name);
+        $process = new Process(['composer', 'require', "$this->name " . ($version ? ':' . $version : '')]);
+        $process->setTimeout(null);
+        $process->run();
+
+        if (!$process->isSuccessful()) {
+            $this->components->error($process->getErrorOutput());
+        }
     }
 
     /**
@@ -46,7 +55,7 @@ class Package implements PackageContract
      */
     public function update(): void 
     {
-        (new ComposerManager())->update($this->name);
+        //
     }
 
     /**
