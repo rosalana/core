@@ -14,7 +14,7 @@ trait InternalCommands
         $configFile = config_path('rosalana.php');
 
         if (!file_exists($configFile)) {
-            $this->components->error('The rosalana.php config file does not exist. Please publish it.');
+            $this->components->warn('The rosalana.php config file does not exist. Please publish it.');
             return;
         }
 

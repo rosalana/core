@@ -79,6 +79,7 @@ class PublishCommand extends Command
         );
 
         spin(function () use ($searchOptions, $publishOptions) {
+            sleep(3);
             if ($searchOptions === 'all') {
                 $publishOptions->each(function ($option) {
                     $option['run']();
