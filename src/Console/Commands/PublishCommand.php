@@ -21,14 +21,14 @@ class InstallCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'rosalana:install';
+    protected $signature = 'rosalana:publish';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Install the Rosalana packages';
+    protected $description = 'Publish the Rosalana package files';
 
     /**
      * Execute the console command.
@@ -39,6 +39,11 @@ class InstallCommand extends Command
     {
 
         $installed = Package::installed();
+
+        if (env('APP_ENV') === 'production') {
+            $this->components->error('You cannot publish packages in production');
+            return;
+        }
 
         $options = $installed->mapWithKeys(function ($package) {
             $label = '';

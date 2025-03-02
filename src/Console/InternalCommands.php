@@ -2,10 +2,13 @@
 
 namespace Rosalana\Core\Console;
 
+use Illuminate\Console\Concerns\InteractsWithIO;
 use Illuminate\Filesystem\Filesystem;
 
 trait InternalCommands
 {
+    use InteractsWithIO;
+
     public function updateConfig(string $key, $value): void
     {
         $configFile = config_path('rosalana.php');
@@ -16,22 +19,16 @@ trait InternalCommands
 
         $contents = file_get_contents($configFile);
 
-        // Připravíme novou část pro 'installed'
-        // (Předpokládáme, že chceme odsazení 4 mezery pro tento klíč.)
         if ($key === 'installed' && is_array($value)) {
             $newArrayContent = "[\n";
             foreach ($value as $k => $v) {
-                // Upravíme odsazení (4+4=8 mezer) – upravte dle vlastních preferencí
                 $newArrayContent .= "        '" . addslashes($k) . "' => '" . addslashes($v) . "',\n";
             }
             $newArrayContent .= "    ]";
         } else {
-            // Můžeš doplnit podporu pro jiné klíče, pokud je to potřeba.
             $newArrayContent = var_export($value, true);
         }
 
-        // Regulární výraz hledá klíč 'installed' následovaný => a hranatými závorkami (obsahem uvnitř)
-        // Používáme /s flag, aby tečka odpovídala i novým řádkům.
         $pattern = "/('installed'\s*=>\s*)\[[^\]]*\]/s";
 
         $replacement = "$1" . $newArrayContent;
@@ -45,7 +42,7 @@ trait InternalCommands
         file_put_contents($configFile, $newContents);
     }
 
-    function setEnvValue(string $key, ?string $value = null): void
+    public function setEnvValue(string $key, ?string $value = null): void
     {
         $files = new Filesystem();
         $envFile = base_path('.env');
@@ -56,7 +53,6 @@ trait InternalCommands
     
         $envContent = $files->get($envFile);
     
-        // Regulární výraz pro hledání řádku s daným klíčem (multiline mód)
         $pattern = "/^{$key}=.*/m";
         $newLine = "{$key}={$value}";
     
@@ -64,13 +60,16 @@ trait InternalCommands
             if ($value === null) {
                 return;
             }
-            // Pokud klíč již existuje, nahradí jeho hodnotu
             $envContent = preg_replace($pattern, $newLine, $envContent);
         } else {
-            // Pokud klíč neexistuje, přidá nový řádek na konec souboru
-            $envContent .= "\n" . $newLine . "\n";
+            $envContent .= "\n" . $newLine;
         }
     
         $files->put($envFile, $envContent);
+    }
+
+    public function publishFiles(string $from, string $to): void
+    {
+        //
     }
 }
