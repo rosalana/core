@@ -52,9 +52,9 @@ class Package implements PackageContract
     /**
      * Publish the package.
      */
-    public function publish(): void
+    public function publish(): array
     {
-        $this->package?->publish();
+        return $this->package?->publish() ?? [];
     }
 
     /**

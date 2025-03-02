@@ -2,6 +2,7 @@
 
 namespace Rosalana\Core\Providers;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Rosalana\Core\Console\InternalCommands;
 use Rosalana\Core\Contracts\Package;
@@ -15,16 +16,27 @@ class Core implements Package
         return file_exists(config_path('rosalana.php'));
     }
 
-    public function publish(): void 
+    public function publish(): array
     {
-        Artisan::call('vendor:publish', [
-            '--provider' => "Rosalana\Core\Providers\RosalanaCoreServiceProvider",
-            '--tag' => "rosalana-config"
-        ]);
-
-        $this->setEnvValue('JWT_SECRET');
-        $this->setEnvValue('ROSALANA_BASECAMP_URL', 'http://localhost:8000');
-        $this->setEnvValue('ROSALANA_APP_SECRET');
+        return [
+            'config' => [
+                'label' => 'Publish Rosalana configuration',
+                'run' => function () {
+                    Artisan::call('vendor:publish', [
+                        '--provider' => "Rosalana\Core\Providers\RosalanaCoreServiceProvider",
+                        '--tag' => "rosalana-config"
+                    ]);
+                }
+            ],
+            'env' => [
+                'label' => 'Set environment variables',
+                'run' => function () {
+                    $this->setEnvValue('JWT_SECRET');
+                    $this->setEnvValue('ROSALANA_BASECAMP_URL', 'http://localhost:8000');
+                    $this->setEnvValue('ROSALANA_APP_SECRET');
+                }
+            ]
+        ];
     }
 
     public function refresh(): void {}

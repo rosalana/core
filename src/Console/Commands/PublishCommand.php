@@ -66,7 +66,21 @@ class PublishCommand extends Command
             return $p->name === $selectedPackage;
         });
 
-        $package->publish();
+        $publishOptions = collect($package->publish());
+
+        $selectedOption = select(
+            label: 'What would you like to publish?',
+            options: $publishOptions
+                ->mapWithKeys(function ($option, $key) {
+                    return [$key => $option['label']];
+                })
+                ->add('all', 'All files')
+                ->toArray(),
+            default: 'all',
+        );
+
+        $this->info("Publishing $selectedOption for $package->name");
+
 
         $this->updateConfig('installed', [
             $package->name => $package->installedVersion

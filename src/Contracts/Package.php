@@ -10,9 +10,9 @@ interface Package
     public function resolvePublished(): bool;
 
     /**
-     * Publish the package.
+     * Return an array of options to publish.
      */
-    public function publish(): void;
+    public function publish(): array;
 
     /**
      * Refresh the published files.
