@@ -45,7 +45,7 @@ class InstallCommand extends Command
                 PackageStatus::OLD_VERSION => $label = $package->name . $this->yellow(" ({$package->status->value} $package->publishedVersion -> $package->installedVersion)"),
                 PackageStatus::UP_TO_DATE => $label = $package->name . $this->cyan(" ({$package->status->value} $package->installedVersion)"),
             };
-            return [$package->name => $label];
+            return [$package => $label];
         })->toArray();
 
 
@@ -55,63 +55,9 @@ class InstallCommand extends Command
             default: null,
         );
 
-        $this->info("You selected: $package");
+        dump($package);
 
-        // dump($options);
-
-
-        // $installed = $this->installed();
-
-        // $published = $this->published();
-
-        // $options = $published->mapWithKeys(function ($version, $key) {
-        //     return [$key => $key . ' ' . $version];
-        // })->toArray();
-
-        // $package = select(
-        //     label: 'What package would you like to install?',
-        //     options: $options,
-        //     default: null,
-        // );
-
-
-        // $this->info("You selected: $package");
-
-
-
-        // get available packages
-        // $packages = (new Filesystem)->getRequire(base_path('vendor/rosalana/core/src/Console/packages.php'));
-
-        // // find installed packages
-        // $installed = collect($packages)->mapWithKeys(function ($package) {
-        //     return [$package => $this->hasComposerPackage($package)];
-        // })->filter(function ($installed) {
-        //     return $installed !== null;
-        // });
-
-        // $choices = [];
-        // foreach ($installed as $package => $version) {
-        //     // Výstup: "rosalana/core          0.3.3" s verzí zeleně
-        //     $choices[] = sprintf('%-30s <fg=green>%s</>', $package, $version);
-        // }
-
-        // $selected = $this->choice('Vyberte balíček:', $choices);
-        // $this->info("Vybral jste: $selected");
-
-
-
-
-
-        // show select menu for uninstalled packages
-        // $packages = collect($installed)->filter(function ($installed) {
-        //     return ! $installed;
-        // })->keys();
-
-        // if ($packages->isEmpty()) {
-        //     $this->info('All Rosalana packages are already installed.');
-        //     return;
-        // }
-
-        // $package = $this->choice('Which package would you like to install?', $packages->toArray());
+        // Installing selectedPackage
+        // Package::find($package)->publish();
     }
 }

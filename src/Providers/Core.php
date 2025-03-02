@@ -11,7 +11,10 @@ class Core implements Package
         return file_exists(config_path('rosalana.php'));
     }
 
-    public function publish(): void {}
+    public function publish(): void 
+    {
+
+    }
 
     public function refresh(): void {}
 }
