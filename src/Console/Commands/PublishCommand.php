@@ -9,6 +9,7 @@ use Rosalana\Core\PackageStatus;
 use Rosalana\Core\Services\Package;
 
 use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\search;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
@@ -74,12 +75,25 @@ class PublishCommand extends Command
                 ->mapWithKeys(function ($option, $key) {
                     return [$key => $option['label']];
                 })
-                ->add('all', 'All files')
+                ->prepend('Publish all files', 'all')
                 ->toArray(),
             default: 'all',
         );
 
         $this->info("Publishing $selectedOption for $package->name");
+
+        $searchOptions = search(
+            label: 'Search for files to publish',
+            options: fn (string $value) => $publishOptions
+            ->mapWithKeys(function ($option, $key) {
+                return [$key => $option['label']];
+            })
+            ->filter(fn ($label) => str_contains(strtolower($label), strtolower($value)))
+            ->toArray(),
+        );
+
+        $this->info("Publishing $searchOptions for $package->name");
+
 
 
         $this->updateConfig('installed', [
