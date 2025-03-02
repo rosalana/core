@@ -15,7 +15,7 @@ interface Package
     public function publish(): void;
 
     /**
-     * Update the package.
+     * Refresh the published files.
      */
-    public function update(): void;
+    public function refresh(): void;
 }

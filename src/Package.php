@@ -3,6 +3,7 @@
 namespace Rosalana\Core;
 
 use Composer\InstalledVersions;
+use Rosalana\Core\Console\ComposerManager;
 use Rosalana\Core\Contracts\Package as PackageContract;
 
 class Package implements PackageContract
@@ -33,6 +34,46 @@ class Package implements PackageContract
     }
 
     /**
+     * Install the package from scratch.
+     */
+    public function install(): void
+    {
+        (new ComposerManager())->require($this->name);
+    }
+
+    /**
+     * Update the package to the latest version.
+     */
+    public function update(): void 
+    {
+        (new ComposerManager())->update($this->name);
+    }
+
+    /**
+     * Publish the package.
+     */
+    public function publish(): void
+    {
+        $this->package?->publish();
+    }
+
+    /**
+     * Refresh the published files.
+     */
+    public function refresh(): void
+    {
+        $this->package?->refresh();
+    }
+
+    /**
+     * Determine if the package is published.
+     */
+    public function resolvePublished(): bool
+    {
+        return $this->package?->resolvePublished() ?? false;
+    }
+
+    /**
      * Get the installed version of the package.
      */
     protected function resolveInstalledVersion(): ?string
@@ -58,30 +99,6 @@ class Package implements PackageContract
     protected function resolvePublishedVersion(): ?string
     {
         return config('rosalana.installed.' . $this->name);
-    }
-
-    /**
-     * Determine if the package is published.
-     */
-    public function resolvePublished(): bool
-    {
-        return $this->package?->resolvePublished() ?? false;
-    }
-
-    /**
-     * Publish the package.
-     */
-    public function publish(): void
-    {
-        $this->package?->publish();
-    }
-
-    /**
-     * Update the package.
-     */
-    public function update(): void
-    {
-        $this->package?->update();
     }
 
     /**
