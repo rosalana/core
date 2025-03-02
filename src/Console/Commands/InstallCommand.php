@@ -4,9 +4,8 @@ namespace Rosalana\Core\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
-use InternalCommands;
 use Laravel\Prompts\Concerns\Colors;
-use PhpParser\Node\Expr\FuncCall;
+use Rosalana\Core\Console\InternalCommands;
 use Rosalana\Core\PackageStatus;
 use Rosalana\Core\Services\Package;
 
