@@ -22,9 +22,9 @@ class Core implements Package
             '--tag' => "rosalana-config"
         ]);
 
-        $this->addToEnv('JWT_SECRET=');
-        $this->addToEnv('ROSALANA_BASECAMP_URL=http://localhost:8000');
-        $this->addToEnv('ROSALANA_APP_SECRET=');
+        $this->setEnvValue('JWT_SECRET');
+        $this->setEnvValue('ROSALANA_BASECAMP_URL', 'http://localhost:8000');
+        $this->setEnvValue('ROSALANA_APP_SECRET');
     }
 
     public function refresh(): void {}

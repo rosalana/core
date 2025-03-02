@@ -45,37 +45,32 @@ trait InternalCommands
         file_put_contents($configFile, $newContents);
     }
 
-    public function addToEnv(string $value, ?string $after = null): void
+    function setEnvValue(string $key, ?string $value = null): void
     {
-        $files = new Filesystem;
-
-        if (! $files->exists(base_path('.env'))) {
-            copy(base_path('.env.example'), base_path('.env'));
+        $files = new Filesystem();
+        $envFile = base_path('.env');
+    
+        if (!$files->exists($envFile)) {
+            throw new \Exception("Soubor .env neexistuje na cestě: {$envFile}");
         }
-
-        // kontrola zda už value v .env neexistuje
-        if (strpos(file_get_contents(base_path('.env')), $value) !== false) {
-            return;
-        }
-
-
-        if ($after === null) {
-            file_put_contents(
-                base_path('.env'),
-                PHP_EOL . $value . PHP_EOL,
-                FILE_APPEND
-            );
+    
+        $envContent = $files->get($envFile);
+    
+        // Regulární výraz pro hledání řádku s daným klíčem (multiline mód)
+        $pattern = "/^{$key}=.*/m";
+        $newLine = "{$key}={$value}";
+    
+        if (preg_match($pattern, $envContent)) {
+            if ($value === null) {
+                return;
+            }
+            // Pokud klíč již existuje, nahradí jeho hodnotu
+            $envContent = preg_replace($pattern, $newLine, $envContent);
         } else {
-            file_put_contents(
-                base_path('.env'),
-                preg_replace(
-                    '/^' . preg_quote($after, '/') . '$/m',
-                    $after . PHP_EOL . $value,
-                    file_get_contents(
-                        base_path('.env')
-                    )
-                )
-            );
+            // Pokud klíč neexistuje, přidá nový řádek na konec souboru
+            $envContent .= "\n" . $newLine . "\n";
         }
+    
+        $files->put($envFile, $envContent);
     }
 }
