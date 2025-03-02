@@ -3,40 +3,35 @@
 namespace Rosalana\Core;
 
 use Composer\InstalledVersions;
+use Rosalana\Core\Contracts\Package as PackageContract;
 
-abstract class Package
+class Package implements PackageContract
 {
     protected string $name;
     protected string $installedVersion;
     protected ?string $publishedVersion;
     protected bool $published;
-    protected PublishStatus $publishStatus;
+    protected bool $installed;
+    protected PackageStatus $status;
 
-    public function __construct()
+    protected ?PackageContract $package = null;
+
+    public function __construct(string $name)
     {
         // Inicializace hodnot – voláme metody, které mohou být specifické pro každou implementaci
-        $this->name = $this->resolveName();
+        $this->name = $name;
+
+        $packageClass = $this->resolvePackageClass();
+        if (class_exists($packageClass)) {
+            $this->package = new $packageClass();
+        }
+
         $this->installedVersion = $this->resolveInstalledVersion();
+        $this->installed = $this->resolveInstalled();
         $this->publishedVersion = $this->resolvePublishedVersion();
         $this->published = $this->resolvePublished();
-        $this->publishStatus = $this->determinePublishStatus();
+        $this->status = $this->determinePublishStatus();
     }
-
-    /**
-     * Metoda, která vrací název balíčku (např. 'rosalana/core').
-     * Musí být implementována v konkrétní třídě.
-     */
-    abstract protected function resolveName(): string;
-
-    /**
-     * Metoda, kterou implementace určí, zda je balíček publikován.
-     */
-    abstract protected function resolvePublished(): bool;
-
-    /**
-     * Metoda, která definuje, co se má stát při publikaci balíčku.
-     */
-    abstract public function publish(): void;
 
     /**
      * Získá nainstalovanou verzi pomocí Composeru.
@@ -44,7 +39,12 @@ abstract class Package
     protected function resolveInstalledVersion(): string
     {
         // Pokud není nalezena, vrací prázdný řetězec (můžeš upravit dle potřeby)
-        return InstalledVersions::getVersion($this->resolveName()) ?? '';
+        return InstalledVersions::getVersion($this->name) ?? '';
+    }
+
+    protected function resolveInstalled(): bool
+    {
+        return !is_null($this->installedVersion);
     }
 
     /**
@@ -52,7 +52,17 @@ abstract class Package
      */
     protected function resolvePublishedVersion(): ?string
     {
-        return config('rosalana.installed.' . $this->resolveName());
+        return config('rosalana.installed.' . $this->name);
+    }
+
+    public function resolvePublished(): bool
+    {
+        return $this->package?->resolvePublished() ?? false;
+    }
+
+    public function publish(): void
+    {
+        $this->package?->publish();
     }
 
     /**
@@ -61,20 +71,37 @@ abstract class Package
      * - 'old version' pokud je publikován, ale verze se liší,
      * - 'not published' pokud balíček není publikován.
      */
-    protected function determinePublishStatus(): PublishStatus
+    protected function determinePublishStatus(): PackageStatus
     {
+        if (!$this->installed) {
+            return PackageStatus::NOT_INSTALLED;
+        }
+
         if ($this->published) {
             if ($this->installedVersion === $this->publishedVersion) {
-                return PublishStatus::UP_TO_DATE;
+                return PackageStatus::UP_TO_DATE;
             }
-            return PublishStatus::OLD_VERSION;
+            return PackageStatus::OLD_VERSION;
         }
-        return PublishStatus::NOT_PUBLISHED;
+        return PackageStatus::NOT_PUBLISHED;
+    }
+
+    protected function resolvePackageClass(): string
+    {
+        $name = $this->resolvePackageName();
+        return '\\Rosalana\\' . $name . '\\Providers\\' . $name;
+    }
+
+    protected function resolvePackageName(): string
+    {
+        return ucfirst(explode('/', $this->name)[1]);
     }
 }
 
-enum PublishStatus: string {
+enum PackageStatus: string
+{
     case UP_TO_DATE = 'up to date';
     case OLD_VERSION = 'old version';
     case NOT_PUBLISHED = 'not published';
+    case NOT_INSTALLED = 'not installed';
 }

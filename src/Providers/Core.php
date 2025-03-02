@@ -2,15 +2,10 @@
 
 namespace Rosalana\Core\Providers;
 
-use Rosalana\Core\Package;
+use Rosalana\Core\Contracts\Package;
 
-class Core extends Package
+class Core implements Package
 {
-    public function resolveName(): string
-    {
-        return 'rosalana/core';
-    }
-
     public function resolvePublished(): bool
     {
         return file_exists(config_path('rosalana.php'));

@@ -2,6 +2,8 @@
 
 namespace Rosalana\Core\Services;
 
+use Rosalana\Core\Package as AbstractPackage;
+
 class Package
 {
     /**
@@ -40,6 +42,38 @@ class Package
      * @return array Instance balíčků (objekty implementující příslušný kontrakt/abstraktní třídu).
      */
     public static function all(): array
+    {
+        $result = [];
+
+        foreach (self::$packages as $package) {
+            $result[] = new AbstractPackage($package);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Statická metoda find() pro získání konkrétního balíčku podle názvu.
+     *
+     * @param string $name Název balíčku.
+     * @return mixed Instance balíčku (objekt implementující příslušný kontrakt/abstraktní třídu).
+     */
+    public static function find(string $name)
+    {
+        $class = self::getPackageClass($name);
+        if (class_exists($class)) {
+            return new $class();
+        }
+
+        return null;
+    }
+
+    /**
+     * Statická metoda installed() pro získání všech nainstalovaných balíčků.
+     *
+     * @return array Instance nainstalovaných balíčků (objekty implementující příslušný kontrakt/abstraktní třídu).
+     */
+    public static function available(): array
     {
         $result = [];
 
