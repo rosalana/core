@@ -2,6 +2,7 @@
 
 namespace Rosalana\Core\Providers;
 
+use Illuminate\Support\Facades\Artisan;
 use Rosalana\Core\Contracts\Package;
 
 class Core implements Package
@@ -13,7 +14,10 @@ class Core implements Package
 
     public function publish(): void 
     {
-
+        Artisan::call('vendor:publish', [
+            '--provider' => 'Rosalana\\Core\\RosalanaCoreServiceProvider',
+            '--force'    => true,
+        ]);
     }
 
     public function refresh(): void {}

@@ -61,6 +61,8 @@ class InstallCommand extends Command
             return $p->name === $selectedPackage;
         });
 
-        dump($package);
+        $package->publish();
+
+        $this->info("Package $package->name published");
     }
 }
