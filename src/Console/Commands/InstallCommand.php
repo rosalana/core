@@ -38,12 +38,6 @@ class InstallCommand extends Command
     {
 
         $options = Package::all()->mapWithKeys(function ($package) {
-            return $package->name;
-        });
-
-        dump($options);
-
-        $options = Package::all()->mapWithKeys(function ($package) {
             return [$package->name => $package->installedVersion];
         });
 
