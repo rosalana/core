@@ -1,7 +1,8 @@
 <?php
 
-use Illuminate\Support\Arr;
+namespace Rosalana\Core\Console;
 
+use Illuminate\Support\Arr;
 
 trait InternalCommands
 {
