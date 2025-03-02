@@ -68,6 +68,6 @@ class InstallCommand extends Command
             $package->name => $package->installedVersion
         ]);
 
-        $this->info("Package $package->name published");
+        $this->components->success("Package $package->name has been published");
     }
 }
