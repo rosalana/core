@@ -78,7 +78,7 @@ class PublishCommand extends Command
             ->toArray(),
         );
 
-        spin(function ($searchOptions) use ($publishOptions) {
+        spin(function () use ($searchOptions, $publishOptions) {
             if ($searchOptions === 'all') {
                 $publishOptions->each(function ($option) {
                     $option['run']();
