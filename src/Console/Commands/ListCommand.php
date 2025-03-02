@@ -37,7 +37,7 @@ class ListCommand extends Command
             Package::all()->map(function ($package) {
                 return [
                     $package->name,
-                    $package->description,
+                    Package::getDescription($package->name),
                     $package->installedVersion ?? 'Not installed',
                     $package->publishedVersion ?? 'Not published',
                 ];
