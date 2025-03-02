@@ -50,7 +50,7 @@ class InstallCommand extends Command
         //     default: null,
         // );
 
-        dd((new Package)->all());
+        dd(Package::all());
         
 
         // $this->info("You selected: $package");

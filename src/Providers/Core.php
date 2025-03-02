@@ -6,18 +6,18 @@ use Rosalana\Core\Package;
 
 class Core extends Package
 {
-    public function name(): string
+    public function resolveName(): string
     {
         return 'rosalana/core';
     }
 
-    public function published(): bool
+    public function resolvePublished(): bool
     {
         return file_exists(config_path('rosalana.php'));
     }
 
-    public function install(): void
+    public function publish(): void
     {
-        // What to do when the package is installed
+        // What to do when the package wanna be published
     }
 }
