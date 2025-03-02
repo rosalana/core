@@ -2,12 +2,13 @@
 
 namespace Rosalana\Core\Services;
 
+use Illuminate\Support\Collection;
 use Rosalana\Core\Package as AbstractPackage;
 
 class Package
 {
     /**
-     * Seznam dostupných balíčků v ekosystému.
+     * List of available packages in the ecosystem.
      */
     public static array $packages = [
         'rosalana/core',
@@ -15,33 +16,9 @@ class Package
     ];
 
     /**
-     * Vrátí název balíčku, např. z "rosalana/core" získá "Core".
+     * Get the all packages.
      */
-    protected static function getPackageName(string $package): string
-    {
-        return ucfirst(explode('/', $package)[1]);
-    }
-
-    /**
-     * Sestaví plně kvalifikovaný název třídy balíčku.
-     *
-     * Předpokládáme, že každá implementace je umístěna v namespace:
-     * \Rosalana\{PackageName}\Providers\{PackageName}
-     *
-     * Například pro "rosalana/core" vrátí "\Rosalana\Core\Providers\Core".
-     */
-    protected static function getPackageClass(string $package): string
-    {
-        $name = self::getPackageName($package);
-        return '\\Rosalana\\' . $name . '\\Providers\\' . $name;
-    }
-
-    /**
-     * Statická metoda all() pro získání všech balíčků, které jsou definovány a jejich třídy existují.
-     *
-     * @return array Instance balíčků (objekty implementující příslušný kontrakt/abstraktní třídu).
-     */
-    public static function all(): array
+    public static function all(): Collection
     {
         $result = [];
 
@@ -49,41 +26,34 @@ class Package
             $result[] = new AbstractPackage($package);
         }
 
-        return $result;
+        return collect($result);
     }
 
     /**
-     * Statická metoda find() pro získání konkrétního balíčku podle názvu.
-     *
-     * @param string $name Název balíčku.
-     * @return mixed Instance balíčku (objekt implementující příslušný kontrakt/abstraktní třídu).
+     * Find a package by name.
      */
-    public static function find(string $name)
+    public static function find(string $name): ?AbstractPackage
     {
-        $class = self::getPackageClass($name);
-        if (class_exists($class)) {
-            return new $class();
+        if (in_array($name, self::$packages)) {
+            return new AbstractPackage($name);
+        } else {
+            return null;
         }
-
-        return null;
     }
 
     /**
-     * Statická metoda installed() pro získání všech nainstalovaných balíčků.
-     *
-     * @return array Instance nainstalovaných balíčků (objekty implementující příslušný kontrakt/abstraktní třídu).
+     * Get the installed packages.
      */
-    public static function available(): array
+    public static function installed(): Collection
     {
-        $result = [];
+        return self::all()->filter(fn($package) => $package->installed);
+    }
 
-        foreach (self::$packages as $package) {
-            $class = self::getPackageClass($package);
-            if (class_exists($class)) {
-                $result[] = new $class();
-            }
-        }
-
-        return $result;
+    /**
+     * Get the published packages.
+     */
+    public static function published(): Collection
+    {
+        return self::all()->filter(fn($package) => $package->published);
     }
 }

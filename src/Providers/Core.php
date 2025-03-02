@@ -15,4 +15,9 @@ class Core implements Package
     {
         // What to do when the package wanna be published
     }
+
+    public function update(): void
+    {
+        // What to do when the package wanna be updated
+    }
 }

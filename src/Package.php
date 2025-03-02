@@ -18,7 +18,6 @@ class Package implements PackageContract
 
     public function __construct(string $name)
     {
-        // Inicializace hodnot – voláme metody, které mohou být specifické pro každou implementaci
         $this->name = $name;
 
         $packageClass = $this->resolvePackageClass();
@@ -34,7 +33,7 @@ class Package implements PackageContract
     }
 
     /**
-     * Získá nainstalovanou verzi pomocí Composeru.
+     * Get the installed version of the package.
      */
     protected function resolveInstalledVersion(): ?string
     {
@@ -45,34 +44,52 @@ class Package implements PackageContract
         }
     }
 
+    /**
+     * Determine if the package is installed.
+     */
     protected function resolveInstalled(): bool
     {
         return !is_null($this->installedVersion);
     }
 
     /**
-     * Načte publikovanou verzi z konfiguračního souboru (např. rosalana.php).
+     * Get the last published version of the package.
      */
     protected function resolvePublishedVersion(): ?string
     {
         return config('rosalana.installed.' . $this->name);
     }
 
+    /**
+     * Determine if the package is published.
+     */
     public function resolvePublished(): bool
     {
         return $this->package?->resolvePublished() ?? false;
     }
 
+    /**
+     * Publish the package.
+     */
     public function publish(): void
     {
         $this->package?->publish();
     }
 
     /**
-     * Vyhodnotí stav publikace:
-     * - 'up to date' pokud je publikován a verze odpovídá,
-     * - 'old version' pokud je publikován, ale verze se liší,
-     * - 'not published' pokud balíček není publikován.
+     * Update the package.
+     */
+    public function update(): void
+    {
+        $this->package?->update();
+    }
+
+    /**
+     * Evaluate publication status:
+     * - 'up to date' if published and version matches,
+     * - 'old version' if published but version differs,
+     * - 'not published' if package is not published,
+     * - 'not installed' if package is not installed.
      */
     protected function determinePublishStatus(): PackageStatus
     {
@@ -89,12 +106,18 @@ class Package implements PackageContract
         return PackageStatus::NOT_PUBLISHED;
     }
 
+    /**
+     * Resolve the package class.
+     */
     protected function resolvePackageClass(): string
     {
         $name = $this->resolvePackageName();
         return '\\Rosalana\\' . $name . '\\Providers\\' . $name;
     }
 
+    /**
+     * Resolve the package name.
+     */
     protected function resolvePackageName(): string
     {
         return ucfirst(explode('/', $this->name)[1]);

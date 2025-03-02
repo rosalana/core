@@ -13,4 +13,9 @@ interface Package
      * Publish the package.
      */
     public function publish(): void;
+
+    /**
+     * Update the package.
+     */
+    public function update(): void;
 }
