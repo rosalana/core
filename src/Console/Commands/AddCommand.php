@@ -66,7 +66,12 @@ class AddCommand extends Command
         });
 
         spin(function () use ($package, $version) {
-            $package->install($version);
+            try {
+                $package->install($version);
+            } catch (\Illuminate\Process\Exceptions\ProcessFailedException $e) {
+                $this->components->error($e->getMessage());
+                return;
+            }
         }, "Installing {$package->name}");
 
 

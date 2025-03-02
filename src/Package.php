@@ -4,7 +4,7 @@ namespace Rosalana\Core;
 
 use Composer\InstalledVersions;
 use Illuminate\Process\Exceptions\ProcessFailedException;
-use Symfony\Component\Process\Process;
+use Illuminate\Support\Facades\Process;
 use Rosalana\Core\Contracts\Package as PackageContract;
 
 class Package implements PackageContract
@@ -40,9 +40,11 @@ class Package implements PackageContract
      */
     public function install(?string $version): void
     {
-        $process = new Process(['composer', 'require', "$this->name " . ($version ? ':' . $version : '')]);
-        $process->setTimeout(null);
-        $process->run();
+        $result = Process::run(['composer', 'require', "$this->name " . ($version ? ':' . $version : '')]);
+
+        if ($result->failed()) {
+            throw new ProcessFailedException($result);
+        }
     }
 
     /**
