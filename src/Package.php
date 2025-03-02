@@ -8,14 +8,14 @@ use Rosalana\Core\Contracts\Package as PackageContract;
 
 class Package implements PackageContract
 {
-    protected string $name;
-    protected ?string $installedVersion;
-    protected ?string $publishedVersion;
-    protected bool $published;
-    protected bool $installed;
-    protected PackageStatus $status;
+    public string $name;
+    public ?string $installedVersion;
+    public ?string $publishedVersion;
+    public bool $published;
+    public bool $installed;
+    public PackageStatus $status;
 
-    protected ?PackageContract $package = null;
+    public ?PackageContract $package = null;
 
     public function __construct(string $name)
     {
