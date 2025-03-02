@@ -83,11 +83,11 @@ class PublishCommand extends Command
         $this->info("Publishing $selectedOption for $package->name");
 
         $searchOptions = search(
-            label: 'Search for files to publish',
+            label: 'What would you like to publish?',
             options: fn (string $value) => $publishOptions
             ->mapWithKeys(function ($option, $key) {
                 return [$key => $option['label']];
-            })
+            })->prepend('Publish all files', 'all')
             ->filter(fn ($label) => str_contains(strtolower($label), strtolower($value)))
             ->toArray(),
         );
