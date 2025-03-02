@@ -5,7 +5,7 @@ namespace Rosalana\Core\Console\Commands;
 use Illuminate\Console\Command;
 
 
-class InstallCommand extends Command
+class AddCommand extends Command
 {
     /**
      * The name and signature of the console command.
