@@ -8,10 +8,9 @@ use Rosalana\Core\Console\InternalCommands;
 use Rosalana\Core\PackageStatus;
 use Rosalana\Core\Services\Package;
 
-use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\search;
 use function Laravel\Prompts\select;
-use function Laravel\Prompts\text;
+use function Laravel\Prompts\spin;
 
 class PublishCommand extends Command
 {
@@ -69,37 +68,31 @@ class PublishCommand extends Command
 
         $publishOptions = collect($package->publish());
 
-        $selectedOption = select(
-            label: 'What would you like to publish?',
-            options: $publishOptions
-                ->mapWithKeys(function ($option, $key) {
-                    return [$key => $option['label']];
-                })
-                ->prepend('Publish all files', 'all')
-                ->toArray(),
-            default: 'all',
-        );
-
-        $this->info("Publishing $selectedOption for $package->name");
-
         $searchOptions = search(
             label: 'What would you like to publish?',
             options: fn (string $value) => $publishOptions
             ->mapWithKeys(function ($option, $key) {
                 return [$key => $option['label']];
-            })->prepend('Publish all files', 'all')
+            })->prepend('Publish all', 'all')
             ->filter(fn ($label) => str_contains(strtolower($label), strtolower($value)))
             ->toArray(),
         );
 
-        $this->info("Publishing $searchOptions for $package->name");
+        spin(function ($searchOptions) use ($publishOptions) {
+            if ($searchOptions === 'all') {
+                $publishOptions->each(function ($option) {
+                    $option['run']();
+                });
+            } else {
+                $publishOptions[$searchOptions]['run']();
+            }
+        }, "Publishing $searchOptions for $package->name");
 
-
-
+        // update the installed version in the config
         $this->updateConfig('installed', [
             $package->name => $package->installedVersion
         ]);
 
-        $this->components->success("Package $package->name has been published");
+        $this->components->success("Published $searchOptions for $package->name");
     }
 }

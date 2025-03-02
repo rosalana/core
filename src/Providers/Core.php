@@ -20,7 +20,7 @@ class Core implements Package
     {
         return [
             'config' => [
-                'label' => 'Publish Rosalana configuration',
+                'label' => 'Publish rosalana.php config file',
                 'run' => function () {
                     Artisan::call('vendor:publish', [
                         '--provider' => "Rosalana\Core\Providers\RosalanaCoreServiceProvider",
@@ -29,7 +29,7 @@ class Core implements Package
                 }
             ],
             'env' => [
-                'label' => 'Set environment variables',
+                'label' => 'Set default environment variables',
                 'run' => function () {
                     $this->setEnvValue('JWT_SECRET');
                     $this->setEnvValue('ROSALANA_BASECAMP_URL', 'http://localhost:8000');
