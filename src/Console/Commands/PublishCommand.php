@@ -42,7 +42,7 @@ class PublishCommand extends Command
 
         if (env('APP_ENV') === 'production') {
             $this->components->error('You cannot publish packages in production');
-            return;
+            return 1;
         }
 
         $options = $installed->mapWithKeys(function ($package) {

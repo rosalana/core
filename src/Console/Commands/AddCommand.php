@@ -40,52 +40,51 @@ class AddCommand extends Command
 
         if (env('APP_ENV') === 'production') {
             $this->components->error('You cannot install packages in production');
-            return;
+            return 1;
         }
 
         $options = $notInstalled->mapWithKeys(function ($package) {
             return [$package->name => "$package->name ({$this->dim(Package::getDescription($package->name))})"];
         })->toArray();
 
-        $this->error('Available packages');
-        $this->components->error('Available packages');
-        $this->fail('Available packages');
-        $this->warn('Available packages');
-        $this->components->warn('Available packages');
+        $selectedPackage = select(
+            label: 'What package would you like to install?',
+            options: $options,
+            default: null,
+        );
 
-        // $selectedPackage = select(
-        //     label: 'What package would you like to install?',
-        //     options: $options,
-        //     default: null,
-        // );
+        $version = text(
+            label: 'Would you like to install a specific version?',
+        );
 
-        // $version = text(
-        //     label: 'Would you like to install a specific version?',
-        // );
+        if ($version === '') {
+            $version = null;
+        }
 
-        // if ($version === '') {
-        //     $version = null;
-        // }
+        $package = $notInstalled->first(function ($p) use ($selectedPackage) {
+            return $p->name === $selectedPackage;
+        });
 
-        // $package = $notInstalled->first(function ($p) use ($selectedPackage) {
-        //     return $p->name === $selectedPackage;
-        // });
+        $processLabel = $version ? "Installing {$package->name} {$this->dim("($version)")}" : "Installing {$package->name}";
 
-        // $processLabel = $version ? "Installing {$package->name} {$this->dim("($version)")}" : "Installing {$package->name}";
+        spin(function () use ($package, $version) {
+            try {
+                $package->install($version);
+            } catch (\Illuminate\Process\Exceptions\ProcessFailedException $e) {
 
-        // spin(function () use ($package, $version) {
-        //     try {
-        //         $package->install($version);
-        //     } catch (\Illuminate\Process\Exceptions\ProcessFailedException $e) {
-        //         exit(1);
-        //     }
-        // }, $processLabel);
+                $this->line('HELLO');
+
+                $this->components->error($e->getMessage());
+
+                return 1;
+            }
+        }, $processLabel);
 
 
-        // $this->updateConfig('installed', [
-        //     $package->name => null
-        // ]);
+        $this->updateConfig('installed', [
+            $package->name => null
+        ]);
 
-        // $this->components->success("{$package->name} has been installed");
+        $this->components->success("{$package->name} has been installed");
     }
 }
