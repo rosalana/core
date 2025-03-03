@@ -71,7 +71,7 @@ class AddCommand extends Command
                 $result = $package->install($version);
 
                 if ($result->failed()) {
-                    $this->red($result->errorOutput());
+                    echo $this->red($result->errorOutput());
                     exit(1);
                 }
         }, $processLabel);
