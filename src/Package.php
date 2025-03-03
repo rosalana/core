@@ -41,13 +41,7 @@ class Package implements PackageContract
     public function install(?string $version): ProcessResult
     {
         $versionString = $version ? ':' . $version : '';
-        $result = Process::run(['composer', 'require', "$this->name" . $versionString]);
-
-        return $result;
-        // if ($result->failed()) {
-        //     return $result;
-            // throw new ProcessFailedException($result);
-        // }
+        return Process::run(['composer', 'require', "$this->name" . $versionString]);
     }
 
     /**

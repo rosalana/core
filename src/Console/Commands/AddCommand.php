@@ -68,22 +68,12 @@ class AddCommand extends Command
         $processLabel = $version ? "Installing {$package->name} {$this->dim("($version)")}" : "Installing {$package->name}";
 
         spin(function () use ($package, $version) {
-            try {
                 $result = $package->install($version);
-                $this->line($result->output());
 
-                $this->line("\n 🚀  {$package->name} has been installed \n");
-
-                $this->line($result->errorOutput());
-
-            } catch (\Illuminate\Process\Exceptions\ProcessFailedException $e) {
-
-                $this->line('HELLO');
-
-                $this->components->error($e->getMessage());
-
-                exit(1);
-            }
+                if ($result->failed()) {
+                    $this->components->error($this->red($result->errorOutput()));
+                    exit(1);
+                }
         }, $processLabel);
 
 
