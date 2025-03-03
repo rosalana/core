@@ -70,8 +70,11 @@ class AddCommand extends Command
         spin(function () use ($package, $version) {
             try {
                 $result = $package->install($version);
-                // dump($result->output());
-                dump($result->errorOutput());
+                $this->line($result->output());
+
+                $this->line("\n 🚀  {$package->name} has been installed \n");
+
+                $this->line($result->errorOutput());
 
             } catch (\Illuminate\Process\Exceptions\ProcessFailedException $e) {
 
