@@ -47,15 +47,10 @@ class Package implements PackageContract
     /**
      * Update the package to the latest version.
      */
-    public function update(?string $version): void 
+    public function update(?string $version): ProcessResult
     {
         $versionString = $version ? ':' . $version : '';
-        $result = Process::run(['composer', 'update', "$this->name" . $versionString]);
-
-        if ($result->failed()) {
-            echo $result->errorOutput();
-            throw new ProcessFailedException($result);
-        }
+        return Process::run(['composer', 'update', "$this->name" . $versionString]);
     }
 
     /**
