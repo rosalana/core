@@ -3,6 +3,7 @@
 namespace Rosalana\Core;
 
 use Composer\InstalledVersions;
+use Illuminate\Contracts\Process\ProcessResult;
 use Illuminate\Process\Exceptions\ProcessFailedException;
 use Illuminate\Support\Facades\Process;
 use Rosalana\Core\Contracts\Package as PackageContract;
@@ -37,7 +38,7 @@ class Package implements PackageContract
     /**
      * Install the package from scratch.
      */
-    public function install(?string $version)
+    public function install(?string $version): ProcessResult
     {
         $versionString = $version ? ':' . $version : '';
         $result = Process::run(['composer', 'require', "$this->name" . $versionString]);
@@ -45,7 +46,7 @@ class Package implements PackageContract
         return $result;
         // if ($result->failed()) {
         //     return $result;
-        //     // throw new ProcessFailedException($result);
+            // throw new ProcessFailedException($result);
         // }
     }
 
