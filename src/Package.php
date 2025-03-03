@@ -37,15 +37,16 @@ class Package implements PackageContract
     /**
      * Install the package from scratch.
      */
-    public function install(?string $version): void
+    public function install(?string $version)
     {
         $versionString = $version ? ':' . $version : '';
         $result = Process::run(['composer', 'require', "$this->name" . $versionString]);
 
-        if ($result->failed()) {
-            echo $result->errorOutput();
-            throw new ProcessFailedException($result);
-        }
+        return $result;
+        // if ($result->failed()) {
+        //     return $result;
+        //     // throw new ProcessFailedException($result);
+        // }
     }
 
     /**

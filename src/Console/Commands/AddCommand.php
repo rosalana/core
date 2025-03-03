@@ -69,14 +69,15 @@ class AddCommand extends Command
 
         spin(function () use ($package, $version) {
             try {
-                $package->install($version);
+                $result = $package->install($version);
+                dd($result);
             } catch (\Illuminate\Process\Exceptions\ProcessFailedException $e) {
 
                 $this->line('HELLO');
 
                 $this->components->error($e->getMessage());
 
-                return 1;
+                exit(1);
             }
         }, $processLabel);
 
