@@ -161,7 +161,7 @@ class RosalanaConfig
     {
         $lines = [];
     
-        $lines[] = ""; // empty line before the section
+        $lines[] = "\n"; // empty line before the section
 
         if (!empty($section->getComment()['label']) || !empty($section->getComment()['description'])) {
             $lines[] = static::renderComment($section->getComment());
@@ -173,7 +173,7 @@ class RosalanaConfig
         }
         $lines[] = "    ],";
         
-        // $lines[] = "\n"; // empty line after the section
+        $lines[] = "\n"; // empty line after the section
     
         return $lines;
     }
