@@ -88,8 +88,9 @@ class PublishCommand extends Command
             }
 
             RosalanaConfig::get('installed')
-            ->set($package->name, var_export($package->installedVersion, true))
-            ->save();
+                ->set($package->name, var_export($package->installedVersion, true))
+                ->save();
+                
         }, "Publishing $searchOptions for $package->name");
 
 
