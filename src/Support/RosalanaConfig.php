@@ -48,10 +48,10 @@ class RosalanaConfig
                     //     continue; // prázdný řádek
                     // }
 
+                    dump($line);
                     if (str_starts_with($line, '/*')) break; // konec komentáře
 
 
-                    dump($line);
                     // if (str_starts_with($line, '|')) {
                     //     $content = trim(substr($line, 1));
                     //     dump($content);
