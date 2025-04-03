@@ -39,8 +39,7 @@ class UpdateCommand extends Command
         }
 
         $current = Package::version();
-
-        dump("Current version: {$this->dim($current)}");
+        $this->line('Current version: ' . $this->dim($current));
 
         $availableVersions = [];
 
@@ -60,8 +59,6 @@ class UpdateCommand extends Command
             ->toArray();
 
         $options = array_merge(['current' => $this->cyan("Keep current version ({$this->dim($current)})")], $options);
-
-        dump($options);
 
         $major = select(
             label: 'Which ecosystem version would you like to update to?',
@@ -93,7 +90,10 @@ class UpdateCommand extends Command
                     }
                 }
             },
-            "Updating Rosalana ecosystem to version {$this->dim($versionToUpdate)}..."
+            "Updating Rosalana ecosystem to version {$this->dim($versionToUpdate ?: $current)}..."
         );
+
+        $this->line("\n");
+        $this->components->success('Rosalana ecosystem updated successfully to version ' . $this->dim($versionToUpdate ?: $current));
     }
 }
