@@ -4,6 +4,8 @@ namespace Rosalana\Core\Services;
 
 use Illuminate\Support\Collection;
 use Symfony\Component\Process\Process;
+use Illuminate\Contracts\Process\ProcessResult;
+use Illuminate\Support\Facades\Process as ProcessFacade;
 use Rosalana\Core\Package as AbstractPackage;
 
 class Package
@@ -32,8 +34,6 @@ class Package
         if ($coreVersion === 'dev-master') {
             return 'dev-master';
         }
-
-        dump('Core version: '. $coreVersion);
     
         // Odstraň prefix 'v' pokud existuje (např. v0.3.5 → 0.3.5)
         $normalized = ltrim($coreVersion, 'v');
@@ -74,6 +74,13 @@ class Package
         sort($versions); // seřaď podle major verze
 
         return $versions;
+    }
+
+    public static function switchVersion(string $version): ProcessResult
+    {
+        $packages = Package::installed()->map(fn($p) => "$p->name:$version")->all();
+
+        return ProcessFacade::run(['composer', 'require', ...$packages, '--with-all-dependencies']);
     }
 
     /**

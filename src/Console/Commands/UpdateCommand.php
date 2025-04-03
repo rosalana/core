@@ -42,7 +42,7 @@ class UpdateCommand extends Command
         if ($current === "dev-master") {
             $this->info('Current version: ' . $this->red("Version dev (do not use in production)"));
         } else {
-            $this->info('Current version: ' . $this->dim('v' . $current . '.x.x'));
+            $this->info('Current version: ' . $this->dim('v' . trim($current, '^') . '.x.x'));
         }
 
         $availableVersions = [];
@@ -75,13 +75,11 @@ class UpdateCommand extends Command
         spin(
             function () use ($versionToUpdate) {
                 if ($versionToUpdate) {
-                    foreach (Package::installed() as $package) {
-                        $result = $package->install($versionToUpdate);
-                        if ($result->failed()) {
-                            $this->line("\n");
-                            echo $this->red($result->errorOutput());
-                            exit(1);
-                        }
+                    $result = Package::switchVersion($versionToUpdate);
+                    if ($result->failed()) {
+                        $this->line("\n");
+                        echo $this->red($result->errorOutput());
+                        exit(1);
                     }
                 } else {
                     foreach (Package::installed() as $package) {
