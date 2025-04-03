@@ -57,12 +57,23 @@ class UpdateCommand extends Command
         }
 
         $options = collect($availableVersions)
-            ->mapWithKeys(function ($version) {
-                return [$version === 'dev-master' ? 'dev-master' : "^$version" => $version === 'dev-master' ? $this->red("Version dev (do not use in production)") : "Version {$version}.x.x"];
+            ->mapWithKeys(function ($version) use ($current) {
+                return [
+                    $version === 'dev-master' ? 'dev-master' : "^$version" => 
+                        (
+                            $version === 'dev-master' 
+                                ? $this->red("Version dev (do not use in production)") 
+                                : "Version {$version}.x.x"
+                        ) . (
+                            $version === $current || "^$version" === $current 
+                                ? $this->cyan(" (current)") 
+                                : ''
+                        )
+                ];
             })
             ->toArray();
 
-        $options = array_merge(['current' => $this->cyan("Keep current version ({$this->dim($current)})")], $options);
+        // $options = array_merge(['current' => $this->cyan("Keep current version ({$this->dim($current)})")], $options);
 
         dump($options);
         dump($current);
@@ -70,30 +81,19 @@ class UpdateCommand extends Command
         $major = select(
             label: 'Which ecosystem version would you like to update to?',
             options: $options,
-            default: 'current',
+            default: $current,
         );
 
-        $versionToUpdate = $major === 'current' ? null : "$major";
+        // $versionToUpdate = $major === 'current' ? null : "$major";
 
         spin(
-            function () use ($versionToUpdate) {
-                if ($versionToUpdate) {
-                    $result = Package::switchVersion($versionToUpdate);
+            function () use ($major) {
+                    $result = Package::switchVersion($major);
                     if ($result->failed()) {
                         $this->line("\n");
                         echo $this->red($result->errorOutput());
                         exit(1);
                     }
-                } else {
-                    foreach (Package::installed() as $package) {
-                        $result = $package->update($versionToUpdate);
-                        if ($result->failed()) {
-                            $this->line("\n");
-                            echo $this->red($result->errorOutput());
-                            exit(1);
-                        }
-                    }
-                }
             },
             "Updating Rosalana ecosystem to version " . ($versionToUpdate ?? $current) . "..."
         );
