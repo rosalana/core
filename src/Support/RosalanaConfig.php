@@ -110,11 +110,13 @@ class RosalanaConfig
             throw new \RuntimeException("Invalid format of config file: missing return block");
         }
     
-        for ($i = $returnEnd - 1; $i > $returnStart; $i--) {
+        for ($i = $returnEnd; $i > $returnStart; $i--) {
             if (trim($lines[$i]) === '') {
                 array_splice($lines, $i, 1);
             }
         }
+
+
 
         dump($lines);
     
