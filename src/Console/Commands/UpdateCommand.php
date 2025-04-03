@@ -59,18 +59,30 @@ class UpdateCommand extends Command
 
         $options = array_merge(['current' => $this->cyan("Keep current version ({$this->dim($current)})")], $options);
 
-        dd($options);
-
         $major = select(
             label: 'Which ecosystem version would you like to update to?',
             options: $options,
             default: 'current',
         );
 
-        // $versionToUpdate = match ($major) {
-        //     'current' => null,
-        //     'dev' => 'dev-master',
-        //     default => explode('.', $major)[0],
-        // };
+        $versionToUpdate = $major === 'current' ? $current : $major;
+
+        spin(
+            function () use ($versionToUpdate) {
+                // update core
+                $core = Package::find('rosalana/core');
+                $core->update($versionToUpdate);
+
+                // update other packages
+                $packages = Package::installed()->filter(function ($package) {
+                    return $package->name !== 'rosalana/core';
+                });
+
+                foreach ($packages as $package) {
+                    $package->update($versionToUpdate);
+                }
+            },
+            "Updating Rosalana ecosystem to version {$this->dim($versionToUpdate)}..."
+        );
     }
 }
