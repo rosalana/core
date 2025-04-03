@@ -52,19 +52,23 @@ class UpdateCommand extends Command
         }
 
         $options = collect($availableVersions)
-            ->map(function ($version) {
-                return $version === 'dev-master' ? $this->red("Version dev (do not use in production)") : "Version {$version}.x.x";
+            ->mapWithKeys(function ($version) {
+                return [$version => $version === 'dev-master' ? $this->red("Version dev (do not use in production)") : "Version {$version}.x.x"];
             })
             ->toArray();
-        
-        $options = array_merge(['current' => $this->cyan("Keep current version ({$this->dim($current)})")], $options);
 
-        dump($options);
+        $options = array_merge(['current' => $this->cyan("Keep current version ({$this->dim($current)})")], $options);
 
         $major = select(
             label: 'Which ecosystem version would you like to update to?',
             options: $options,
             default: 'current',
         );
+
+        // $versionToUpdate = match ($major) {
+        //     'current' => null,
+        //     'dev' => 'dev-master',
+        //     default => explode('.', $major)[0],
+        // };
     }
 }
