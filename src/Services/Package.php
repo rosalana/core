@@ -28,14 +28,20 @@ class Package
     public static function version(): ?string
     {
         $coreVersion = static::find('rosalana/core')->installedVersion;
-
+    
         if ($coreVersion === 'dev-master') {
             return 'dev-master';
-        } elseif (preg_match('/^(\d+)\./', $coreVersion, $matches)) {
-            return $matches[1];
-        } else {
-            return null;
         }
+    
+        // Odstraň prefix 'v' pokud existuje (např. v0.3.5 → 0.3.5)
+        $normalized = ltrim($coreVersion, 'v');
+    
+        // Získej major verzi (první číslo)
+        if (preg_match('/^(\d+)\./', $normalized, $matches)) {
+            return $matches[1]; // např. "0"
+        }
+    
+        return null;
     }
 
     public static function versions(): array
