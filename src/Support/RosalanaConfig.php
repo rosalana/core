@@ -93,50 +93,65 @@ class RosalanaConfig
             $sections = $instance->sections;
         }
     
-        [$returnStart, $returnEnd] = static::reset();
-        
-        $path = config_path('rosalana.php');
-        $lines = file($path, FILE_IGNORE_NEW_LINES);
-    
-        foreach ($sections as $key => $section) {
-            $rendered = static::render($section);
-    
-            // Vložení nové sekce před koncové ]; s 1 prázdným řádkem nad a pod
-            array_splice($lines, $returnEnd, 0, $rendered);
-            $returnEnd += count($rendered); // posunout index pro další vložení
-        }
-    
-        file_put_contents($path, implode("\n", $lines));
-        return true;
-    }
-    
-    protected static function reset(): array
-    {
         $path = config_path('rosalana.php');
     
         if (!file_exists($path)) {
             throw new \RuntimeException("Config file not found: $path");
         }
     
-        $resetContent = "<?php\n\nreturn [\n];\n";
+        $originalText = file_get_contents($path);
+        $lines = explode("\n", $originalText);
     
-        $text = file_put_contents($path, $resetContent);
-        if ($text === false) {
-            throw new \RuntimeException("Failed to reset config file: $path");
+        // First and last index in return [ ... ]
+        $returnStart = collect($lines)->search(fn($line) => str_contains($line, 'return ['));
+        $returnEnd = collect($lines)->search(fn($line) => trim($line) === '];');
+    
+        foreach ($sections as $key => $section) {
+            $rendered = static::render($section);
+    
+            // Najdi zacatek sekce v puvodnich lines
+            $regex = "/['\"]" . preg_quote($key, '/') . "['\"]\s*=>\s*\[/";
+            $startIndex = collect($lines)->search(fn($line) => preg_match($regex, $line));
+    
+            if ($startIndex === false && $returnEnd !== false) {
+                // Sekce neexistuje, pridame ji pred koncove ];
+                array_splice($lines, $returnEnd, 0, $rendered);
+            } else {
+                // Najdi konec bloku sekce
+                $endIndex = $startIndex;
+                $depth = 0;
+                for ($i = $startIndex; $i < count($lines); $i++) {
+                    if (str_contains($lines[$i], '[')) $depth++;
+                    if (str_contains($lines[$i], ']')) $depth--;
+                    if ($depth === 0 && $i !== $startIndex) {
+                        $endIndex = $i;
+                        break;
+                    }
+                }
+    
+                // Najdi zacatek komentare
+                $commentStart = $startIndex;
+                for ($i = $startIndex - 1; $i >= 0; $i--) {
+                    if (str_starts_with(trim($lines[$i]), '/*')) {
+                        $commentStart = $i;
+                        break;
+                    }
+                }
+    
+                array_splice($lines, $commentStart, $endIndex - $commentStart + 1, $rendered);
+            }
         }
-        $lines = explode("\n", $resetContent);
-        $start = collect($lines)->search(fn($line) => str_contains($line, 'return ['));
-        $end = collect($lines)->search(fn($line) => trim($line) === '];');
     
-        return [$start, $end];
+        file_put_contents($path, implode("\n", $lines));
+        return true;
     }
     
     protected static function render(RosalanaConfigSection $section): array
     {
         $lines = [];
     
-        $lines[] = ""; // prázdný řádek nad sekcí
-    
+        $lines[] = "\n"; // empty line before the section
+
         if (!empty($section->getComment()['label']) || !empty($section->getComment()['description'])) {
             foreach (static::renderComment($section->getComment()) as $line) {
                 $lines[] = $line;
@@ -148,6 +163,8 @@ class RosalanaConfig
             $lines[] = "        '{$key}' => {$value},";
         }
         $lines[] = "    ],";
+
+        $lines[] = "\n"; // empty line after the section
     
         return $lines;
     }
@@ -155,33 +172,32 @@ class RosalanaConfig
     protected static function renderComment(array $comment): array
     {
         $lines = [];
-    
+
         $label = $comment['label'] ?? null;
         $description = $comment['description'] ?? null;
     
         if (!$label && !$description) return $lines;
     
-        $lines[] = "    /*";
+        $lines[] = "    /*\n";
     
         if ($label) {
-            $lines[] = '    ' . str_repeat('|', 1) . str_repeat('-', 74);
-            $lines[] = '    | ' . $label;
-            $lines[] = '    ' . str_repeat('|', 1) . str_repeat('-', 74);
+            $lines[] = '    ' . str_repeat('|', 1) . str_repeat('-', 74) . "\n";
+            $lines[] = '    | ' . $label . "\n";
+            $lines[] = '    ' . str_repeat('|', 1) . str_repeat('-', 74) . "\n";
         }
     
         if ($description) {
-            $lines[] = "    |";
+            $lines[] = "    |\n";
             foreach (array_chunk(explode(" ", $description), 10) as $line) {
-                $lines[] = '    | ' . implode(" ", $line);
+                $lines[] = '    | ' . implode(" ", $line) . "\n";
             }
-            $lines[] = "    |";
+            $lines[] = "    |\n";
         }
     
         $lines[] = "    */";
     
         return $lines;
     }
-    
 
     protected static function extractComment(array $lines, int $lineIndex): array
     {
