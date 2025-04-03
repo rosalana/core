@@ -35,7 +35,7 @@ class RosalanaConfig
                     key: $key,
                     values: $values,
                     label: $label,
-                    description: trim($description, "\n"),
+                    description: $description,
                     line: $lineIndex + 1,
                 );
             }
@@ -233,7 +233,7 @@ class RosalanaConfig
             }
         }
 
-        return [$label, implode("\n", array_reverse($description))];
+        return [$label, preg_replace('/\s+/', ' ', implode('', array_reverse($description)))];
     }
 
     protected static function extractArrayValuesFromBlock(array $lines, int $startLine): array
