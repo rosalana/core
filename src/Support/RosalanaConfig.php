@@ -106,21 +106,6 @@ class RosalanaConfig
         $returnStart = collect($lines)->search(fn($line) => str_contains($line, 'return ['));
         $returnEnd = collect($lines)->search(fn($line) => trim($line) === '];');
 
-        // 1. Odstraň všechny prázdné řádky mezi returnStart a returnEnd
-        for ($i = $returnEnd - 1; $i > $returnStart; $i--) {
-            if (trim($lines[$i]) === '') {
-                array_splice($lines, $i, 1);
-            }
-        }
-
-        // 2. Vlož jeden prázdný řádek před ]; pokud tam není
-        if (trim($lines[$returnEnd - 1]) !== '') {
-            array_splice($lines, $returnEnd, 0, ['']);
-        }
-
-        $returnStart = collect($lines)->search(fn($line) => str_contains($line, 'return ['));
-        $returnEnd = collect($lines)->search(fn($line) => trim($line) === '];');
-
         foreach ($sections as $key => $section) {
             $rendered = explode("\n", static::render($section));
 
@@ -154,6 +139,12 @@ class RosalanaConfig
                 }
 
                 array_splice($lines, $commentStart, $endIndex - $commentStart + 1, $rendered);
+            }
+        }
+
+        for ($i = $returnEnd - 1; $i > $returnStart; $i--) {
+            if (trim($lines[$i]) === '') {
+                array_splice($lines, $i, 1);
             }
         }
 
