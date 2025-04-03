@@ -99,29 +99,8 @@ class RosalanaConfig
             throw new \RuntimeException("Config file not found: $path");
         }
 
-        $originalText = file_get_contents($path);
-        $lines = explode("\n", $originalText);
-
-        // Najdi index posledniho radku uvnitr return [ ... ]
-        $returnStart = collect($lines)->search(fn($line) => str_contains($line, 'return ['));
-        $returnEnd = collect($lines)->search(fn($line) => trim($line) === '];');
-
-        if ($returnStart === false || $returnEnd === false) {
-            throw new \RuntimeException("Invalid format of config file: missing return block");
-        }
-
-        // 1. Remove all empty lines between return [ and ];
-        for ($i = $returnEnd - 1; $i > $returnStart; $i--) {
-            if (trim($lines[$i]) === '') {
-                array_splice($lines, $i, 1);
-            }
-        }
-
-        // 2. Add empty line before the last line
-        if (trim($lines[$returnEnd - 1]) !== '') {
-            array_splice($lines, $returnEnd, 0, ['']);
-        }
-
+        [$lines, $returnStart, $returnEnd] = static::normalize();
+        
         dump($lines);
 
         foreach ($sections as $key => $section) {
@@ -208,6 +187,47 @@ class RosalanaConfig
 
         return $output;
     }
+
+    protected static function normalize(): array
+    {
+        $path = config_path('rosalana.php');
+
+        if (!file_exists($path)) {
+            throw new \RuntimeException("Config file not found: $path");
+        }
+
+        $lines = file($path, FILE_IGNORE_NEW_LINES);
+
+        // Najdi řádek s return
+        $returnLineIndex = collect($lines)->search(fn($line) => str_contains($line, 'return'));
+
+        if ($returnLineIndex === false) {
+            throw new \RuntimeException("No return statement found in config file.");
+        }
+
+        $returnLine = trim($lines[$returnLineIndex]);
+
+        // Pokud je to return []; => rozděl
+        if (str_starts_with($returnLine, 'return') && str_contains($returnLine, '[') && str_contains($returnLine, ']')) {
+            $lines[$returnLineIndex] = 'return [';
+            array_splice($lines, $returnLineIndex + 1, 0, ['];']);
+        }
+
+        // Najdi nové pozice
+        $returnStart = collect($lines)->search(fn($line) => trim($line) === 'return [');
+        $returnEnd = collect($lines)->search(fn($line) => trim($line) === '];');
+
+        // Odstraň všechno mezi return [ a ];
+        for ($i = $returnEnd - 1; $i > $returnStart; $i--) {
+            unset($lines[$i]);
+        }
+
+        // Převzorkuj indexy
+        $lines = array_values($lines);
+
+        return [$lines, $returnStart, $returnEnd];
+    }
+
 
     protected static function extractComment(array $lines, int $lineIndex): array
     {
