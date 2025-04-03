@@ -16,7 +16,6 @@ use function Laravel\Prompts\spin;
 class PublishCommand extends Command
 {
     use Colors;
-    use InternalCommands;
     /**
      * The name and signature of the console command.
      *
@@ -88,12 +87,7 @@ class PublishCommand extends Command
                 $publishOptions[$searchOptions]['run']();
             }
 
-            // update the installed version in the config
-            // $this->updateConfig('installed', [
-            //     $package->name => $package->installedVersion
-            // ]);
-
-            RosalanaConfig::get('installed')->set($package->name, "null")->save();
+            RosalanaConfig::get('installed')->set($package->name, $package->installedVersion)->save();
         }, "Publishing $searchOptions for $package->name");
 
 

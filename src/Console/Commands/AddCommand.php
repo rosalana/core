@@ -4,7 +4,6 @@ namespace Rosalana\Core\Console\Commands;
 
 use Illuminate\Console\Command;
 use Laravel\Prompts\Concerns\Colors;
-use Rosalana\Core\Console\InternalCommands;
 use Rosalana\Core\Services\Package;
 use Rosalana\Core\Support\RosalanaConfig;
 
@@ -14,7 +13,6 @@ use function Laravel\Prompts\text;
 
 class AddCommand extends Command
 {
-    use InternalCommands;
     use Colors;
     /**
      * The name and signature of the console command.
@@ -79,11 +77,7 @@ class AddCommand extends Command
         }, $processLabel);
 
 
-        RosalanaConfig::get('installed')->set($package->name, null)->save();
-
-        // $this->updateConfig('installed', [
-        //     $package->name => null
-        // ]);
+        RosalanaConfig::get('installed')->set($package->name, "null")->save();
 
         $this->components->success("{$package->name} has been installed");
     }
