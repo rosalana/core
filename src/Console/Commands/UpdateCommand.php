@@ -16,14 +16,14 @@ class UpdateCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'rosalana:add';
+    protected $signature = 'rosalana:update';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Add Rosalana package to your application';
+    protected $description = 'Update Rosalana package to the latest version';
 
     /**
      * Execute the console command.
