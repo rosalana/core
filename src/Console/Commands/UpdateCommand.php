@@ -73,7 +73,12 @@ class UpdateCommand extends Command
             function () use ($versionToUpdate) {
                 // update core
                 $core = Package::find('rosalana/core');
-                $core->update($versionToUpdate);
+                $result = $core->update($versionToUpdate);
+                if ($result->failed()) {
+                    $this->line("\n");
+                    echo $this->red($result->errorOutput());
+                    exit(1);
+                }
 
                 // update other packages
                 $packages = Package::installed()->filter(function ($package) {
@@ -81,7 +86,12 @@ class UpdateCommand extends Command
                 });
 
                 foreach ($packages as $package) {
-                    $package->update($versionToUpdate);
+                    $result = $package->update($versionToUpdate);
+                    if ($result->failed()) {
+                        $this->line("\n");
+                        echo $this->red($result->errorOutput());
+                        exit(1);
+                    }
                 }
             },
             "Updating Rosalana ecosystem to version {$this->dim($versionToUpdate)}..."
