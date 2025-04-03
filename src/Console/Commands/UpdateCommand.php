@@ -53,11 +53,11 @@ class UpdateCommand extends Command
 
         $options = collect($availableVersions)
             ->map(function ($version) {
-                return $version === 'dev-master' ? 'Latest development version (dev-master)' : "Version {$version}.x.x";
+                return $version === 'dev-master' ? $this->red("Version dev (do not use in production)") : "Version {$version}.x.x";
             })
             ->toArray();
         
-        $options = array_merge(['current' => "Keep current version ({$this->dim($current)})"], $options);
+        $options = array_merge(['current' => $this->cyan("Keep current version ({$this->dim($current)})")], $options);
 
         dump($options);
 
