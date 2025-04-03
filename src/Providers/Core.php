@@ -27,52 +27,15 @@ class Core implements Package
                         '--tag' => "rosalana-config"
                     ]);
 
-                    dump(RosalanaConfig::read());
-
-                    RosalanaConfig::new('test')
-                        ->add('url', "env('ROSALANA_BASECAMP_URL', 'http://localhost:8000')", 'Basecamp URL')
+                    RosalanaConfig::new('basecamp')
+                        ->add('url', "env('ROSALANA_BASECAMP_URL', 'http://localhost:8000')")
                         ->add('secret', "env('ROSALANA_APP_SECRET', 'secret')")
-                        ->comment('Here you can define the settings...', 'Rosalana Test Settings')
-                        ->save();
+                        ->comment('Here you can define the settings for the Rosalana Auth. This settings are used for authorizate your app to the Rosalana Basecamp to use Basecamp services.', 'Rosalana Basecamp Auth Settings');
 
+                    RosalanaConfig::new('installed')
+                        ->comment('All installed Rosalana packages. This array is used to determine if the package has been installed or not and with the correct version. DO NOT MODIFY THIS ARRAY MANUALLY!', 'Rosalana Core Installed');
 
-                    // RosalanaConfig::get('basecamp.url')->set('http://localhost:8000');
-
-                    // tedy sekci můžu získat pomocí get (pokud neexistuje vytvoří se)
-                    // potom můžu na každou sekci zavolat set, add, remove, comment, save
-
-                    // Upraveje se to sekce po sekci a můžu získat hodnoty přímo z nějaké sekce. např. basecamp.url a nastavit set
-
-                    // možná by se hodilo udělat resolve funkci zvášt od vytváření
-
-                    // Takže vytváření by mohlo vypadat takto:
-                    // RosalanaConfig::new('basecamp')
-                    // ->add('url', env('ROSALANA_BASECAMP_URL', 'http://localhost:8000'), 'Basecamp URL')
-                    // ->add('secret', env('ROSALANA_APP_SECRET', 'secret'))
-                    // ->comment('Here you can define the settings for the Rosalana Auth. This settings are used for authorizate your app to the Rosalana Basecamp to use Basecamp services.', 'Rosalana Basecamp Auth Settings')
-                    // ->save();
-
-                    // No a pak by tedy get nevytvářel nový a failnul by nebo by vrátil null a nic by se nestalo nebo nevím
-
-
-
-
-
-
-
-
-
-                    // RosalanaConfig::modify()
-                    //     ->section('basecamp')
-                    //     ->add('url', env('ROSALANA_BASECAMP_URL', 'http://localhost:8000'), 'Basecamp URL')
-
-                    // RosalanaConfig::make()
-                    //     ->addSection('basecamp', [
-                    //         'url' => env('ROSALANA_BASECAMP_URL', 'http://localhost:8000'),
-                    //         'secret' => env('ROSALANA_APP_SECRET', 'secret'),
-                    //     ], 'Here you can define the settings for the Rosalana Auth. This settings are used for authorizate your app to the Rosalana Basecamp to use Basecamp services.', 'Rosalana Basecamp Auth Settings')
-                    //     ->addSection('installed', [], 'All installed Rosalana packages. This array is used to determine if the package has been installed or not and with the correct version. DO NOT MODIFY THIS ARRAY MANUALLY!', 'Rosalana Core Installed')
-                    //     ->save();
+                    RosalanaConfig::save();
                 }
             ],
             'env' => [
