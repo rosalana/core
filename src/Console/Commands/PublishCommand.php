@@ -57,7 +57,7 @@ class PublishCommand extends Command
 
 
         $selectedPackage = select(
-            label: 'What package would you like to install?',
+            label: 'What package would you like to publish?',
             options: $options,
             default: null,
         );

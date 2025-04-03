@@ -6,13 +6,7 @@ interface Package
 {
     /**
      * Self determine if the package is published.
-     * #idea maybe should return array of bool for each option
-     * ```
-     * [
-     *   'config' => true,
-     *  'env' => false,
-     * ]
-     * ```
+     * Dont have to be all published to be considered published.
      */
     public function resolvePublished(): bool;
 
