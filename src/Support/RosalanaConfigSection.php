@@ -7,13 +7,15 @@ class RosalanaConfigSection
     protected $values = [];
     protected $description = null;
     protected $label = null;
+    protected $line = null;
 
-    public function __construct(string $key, array $values = [], ?string $label = null, ?string $description = null)
+    public function __construct(string $key, array $values = [], ?int $line = null, ?string $label = null, ?string $description = null)
     {
         $this->key = $key;
         $this->values = $values;
         $this->label = $label;
         $this->description = $description;
+        $this->line = $line;
     }
 
     public function add(string $key, mixed $value): static
@@ -79,6 +81,7 @@ class RosalanaConfigSection
                 'label' => $this->label,
                 'description' => $this->description,
             ],
+            'line' => $this->line,
         ];
     }
 }

@@ -78,7 +78,8 @@ class RosalanaConfig
                 key: $key,
                 values: $sectionValues,
                 label: $label,
-                description: implode("\n", $description)
+                description: implode("\n", $description),
+                line: $lineIndex,
             );
         }
 
@@ -99,7 +100,8 @@ class RosalanaConfig
             key: $key,
             values: [],
             label: null,
-            description: null
+            description: null,
+            line: null,
         );
 
         $instance->sections[$key] = $section;
