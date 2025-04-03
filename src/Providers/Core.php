@@ -29,6 +29,42 @@ class Core implements Package
 
                     dump(RosalanaConfig::read());
 
+                    // RosalanaConfig::get('basecamp')
+                    //     ->add('url', env('ROSALANA_BASECAMP_URL', 'http://localhost:8000'), 'Basecamp URL')
+                    //     ->add('secret', env('ROSALANA_APP_SECRET', 'secret'))
+                    //     ->comment('Here you can define the settings for the Rosalana Auth. This settings are used for authorizate your app to the Rosalana Basecamp to use Basecamp services.', 'Rosalana Basecamp Auth Settings')
+                    //     ->save();
+                    
+                    // RosalanaConfig::get('basecamp.url')->set('http://localhost:8000');
+
+                    // tedy sekci můžu získat pomocí get (pokud neexistuje vytvoří se)
+                    // potom můžu na každou sekci zavolat set, add, remove, comment, save
+
+                    // Upraveje se to sekce po sekci a můžu získat hodnoty přímo z nějaké sekce. např. basecamp.url a nastavit set
+
+                    // možná by se hodilo udělat resolve funkci zvášt od vytváření
+
+                    // Takže vytváření by mohlo vypadat takto:
+                    // RosalanaConfig::new('basecamp')
+                    // ->add('url', env('ROSALANA_BASECAMP_URL', 'http://localhost:8000'), 'Basecamp URL')
+                    // ->add('secret', env('ROSALANA_APP_SECRET', 'secret'))
+                    // ->comment('Here you can define the settings for the Rosalana Auth. This settings are used for authorizate your app to the Rosalana Basecamp to use Basecamp services.', 'Rosalana Basecamp Auth Settings')
+                    // ->save();
+
+                    // No a pak by tedy get nevytvářel nový a failnul by nebo by vrátil null a nic by se nestalo nebo nevím
+
+
+
+
+
+
+
+
+
+                    // RosalanaConfig::modify()
+                    //     ->section('basecamp')
+                    //     ->add('url', env('ROSALANA_BASECAMP_URL', 'http://localhost:8000'), 'Basecamp URL')
+
                     // RosalanaConfig::make()
                     //     ->addSection('basecamp', [
                     //         'url' => env('ROSALANA_BASECAMP_URL', 'http://localhost:8000'),

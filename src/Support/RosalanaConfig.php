@@ -5,33 +5,68 @@ namespace Rosalana\Core\Support;
 class RosalanaConfig
 {
 
-    protected array $sections = [];
+    protected static array $sections = [];
 
     public static function read(?string $path = null): static
     {
         $path ??= config_path('rosalana.php');
 
+
         if (!file_exists($path)) {
             throw new \RuntimeException("Config file not found: $path");
         }
 
-        // Safe include config file
-        $data = include $path;
+        $values = include $path;
 
-        if (!is_array($data)) {
+        if (!is_array($values)) {
             throw new \RuntimeException("Invalid config file structure: $path");
         }
 
+        $text = file_get_contents($path);
+        $lines = explode("\n", $text);
+
         $instance = new static();
-        $instance->sections = $data;
+
+        foreach ($values as $key => $sectionValues) {
+            $regex = "/['\"]" . preg_quote($key, '/') . "['\"]\s*=>\s*\[/";
+            $lineIndex = collect($lines)->search(fn($line) => preg_match($regex, $line));
+
+            $label = null;
+            $description = [];
+
+            if ($lineIndex !== false) {
+                for ($i = $lineIndex - 1; $i >= 0; $i--) {
+                    $line = trim($lines[$i]);
+
+                    if (str_starts_with($line, '*/')) break; // bezpečnostní stop
+
+                    if (str_starts_with($line, '|')) {
+                        $content = trim(substr($line, 1));
+
+                        if (!$label && !str_starts_with($content, '-')) {
+                            $label = $content;
+                        } else {
+                            $description[] = $content;
+                        }
+                    }
+
+                    if (str_starts_with($line, '/*')) break;
+                }
+
+                $description = array_reverse($description);
+            }
+
+            $instance->sections[$key] = new RosalanaConfigSection(
+                key: $key,
+                values: $sectionValues,
+                label: $label,
+                description: implode("\n", $description)
+            );
+        }
 
         return $instance;
     }
 
-    public static function make()
-    {
-        return new static();
-    }
 
     /**
      * Add a new section to the config.
@@ -42,15 +77,15 @@ class RosalanaConfig
      * @param string|null $label Optional comment label for the section.
      * @return $this
      */
-    public function addSection(string $key, array $values, ?string $description = null, ?string $label = null)
+    public static function new(string $key, array $values, ?string $description = null, ?string $label = null)
     {
-        $this->sections[$key] = [
+        self::$sections[$key] = [
             'values' => $values,
             'description' => $description,
             'label' => $label,
         ];
 
-        return $this;
+        return new static();
     }
 
     public function all(): array
@@ -72,7 +107,7 @@ class RosalanaConfig
         return $this;
     }
 
-    public function save() 
+    public function save()
     {
         $output = $this->render();
         $path = config_path('rosalana.php');
@@ -92,42 +127,42 @@ class RosalanaConfig
     protected function render(): string
     {
         $output = "<?php\n\nreturn [\n";
-    
+
         foreach ($this->sections as $key => $section) {
             $comment = $this->renderComment($section);
             if ($comment) {
                 // odsazení komentářů
                 $output .= "\n" . preg_replace('/^/m', '    ', $comment) . "\n";
             }
-    
+
             $valueExport = var_export($section['values'], true);
             // zarovnej export na nový řádek s indentací
             $valueExport = preg_replace('/^/m', '        ', $valueExport);
-    
+
             $output .= "    '{$key}' => {$valueExport},\n";
         }
-    
+
         $output .= "];\n";
-    
+
         return $output;
     }
-    
+
 
     protected function renderComment(array $section): string
     {
         $label = $section['label'] ?? null;
         $comment = $section['description'] ?? null;
-    
+
         if (!$label && !$comment) return '';
-    
+
         $output = "/*\n";
-    
+
         if ($label) {
             $output .= str_repeat('|', 1) . str_repeat('-', 74) . "\n";
             $output .= '| ' . $label . "\n";
             $output .= str_repeat('|', 1) . str_repeat('-', 74) . "\n";
         }
-    
+
         if ($comment) {
             $output .= "|\n";
             foreach (array_chunk(explode(" ", $comment), 10) as $line) {
@@ -135,10 +170,9 @@ class RosalanaConfig
             }
             $output .= "|\n";
         }
-    
+
         $output .= "*/";
-    
+
         return $output;
     }
-    
 }
