@@ -115,11 +115,6 @@ class RosalanaConfig
     
             if ($startIndex === false && $returnEnd !== false) {
                 // Sekce neexistuje, pridame ji pred koncove ];
-                // odstran prazdne radky pred tim
-                while ($returnEnd > 0 && trim($lines[$returnEnd - 1]) === '') {
-                    unset($lines[$returnEnd - 1]);
-                    $returnEnd--;
-                }
                 array_splice($lines, $returnEnd, 0, $rendered);
             } else {
                 // Najdi konec bloku sekce
@@ -143,22 +138,10 @@ class RosalanaConfig
                     }
                 }
     
-                // Odstran prazdne radky pod i nad sekci
-                while ($commentStart > 0 && trim($lines[$commentStart - 1]) === '') {
-                    unset($lines[$commentStart - 1]);
-                    $commentStart--;
-                }
-                while ($endIndex + 1 < count($lines) && trim($lines[$endIndex + 1]) === '') {
-                    unset($lines[$endIndex + 1]);
-                    $endIndex++;
-                }
-    
                 array_splice($lines, $commentStart, $endIndex - $commentStart + 1, $rendered);
             }
         }
     
-        // Reset indexů a znovu spoj
-        $lines = array_values(array_filter($lines, fn($line) => $line !== null));
         file_put_contents($path, implode("\n", $lines));
         return true;
     }
@@ -175,7 +158,7 @@ class RosalanaConfig
         foreach ($section->getValues() as $key => $value) {
             $lines[] = "        '{$key}' => {$value},";
         }
-        $lines[] = "    ],";
+        $lines[] = "    ],\n";
     
         return implode("\n", $lines);
     }
