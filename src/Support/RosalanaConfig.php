@@ -38,17 +38,27 @@ class RosalanaConfig
 
             if ($lineIndex !== false) {
 
+                $hasCommentBlock = false;
+
                 for ($i = $lineIndex - 1; $i >= 0; $i--) {
                     $line = trim($lines[$i]);
 
-                    if (!str_starts_with(trim($lines[$lineIndex - 1]), '*/')) break; // neexistuje komentář
-                    if (str_starts_with($line, '/*')) break; // konec komentáře
+                    if (str_starts_with($line, '*/')) {
+                        $hasCommentBlock = true;
+                        continue;
+                    }
+
+                    if (!$hasCommentBlock) {
+                        break; // vůbec žádný komentář není nad tímto blokem
+                    }
+
+                    if (str_starts_with($line, '/*')) break;
 
                     if (str_starts_with($line, '|')) {
                         $content = trim(substr($line, 1));
 
                         if (empty($content)) {
-                            continue; // prázdný řádek
+                            continue;
                         }
 
                         if (str_starts_with($content, '-')) {
@@ -56,14 +66,13 @@ class RosalanaConfig
                             continue;
                         }
 
-                        if ($readingLabel) {
+                        if ($readingLabel && !$label) {
                             $label = $content;
                         } else {
                             $description[] = $content;
                         }
                     }
                 }
-
                 $description = array_reverse($description);
             }
 
