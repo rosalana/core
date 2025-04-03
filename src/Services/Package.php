@@ -51,7 +51,11 @@ class Package
 
         preg_match('/versions\s*:\s*(.*)/', $output, $matches);
 
+        return $matches;
+
         if (!isset($matches[1])) return [];
+
+
 
         $versions = collect(explode(',', $matches[1]))
             ->map(fn($v) => trim($v))
