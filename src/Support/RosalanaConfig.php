@@ -34,7 +34,7 @@ class RosalanaConfig
             $label = null;
             $description = [];
 
-            $readingHeader = false;
+            $readingLabel = false;
 
             if ($lineIndex !== false) {
 
@@ -51,21 +51,17 @@ class RosalanaConfig
                             continue; // prázdný řádek
                         }
 
-                        dump($content);
+                        if (str_starts_with($content, '-')) {
+                            $readingLabel = true;
+                            continue;
+                        }
+
+                        if ($readingLabel) {
+                            $label = $content;
+                        } else {
+                            $description[] = $content;
+                        }
                     }
-
-
-
-
-
-                        // if (!$label && !str_starts_with($content, '-')) {
-                        //     $label = $content;
-                        // } else {
-                        //     $description[] = $content;
-                        // }
-
-                        // if (str_starts_with($line, '/*')) break;
-                    // }
                 }
 
                 $description = array_reverse($description);
