@@ -7,6 +7,7 @@ use Laravel\Prompts\Concerns\Colors;
 use Rosalana\Core\Console\InternalCommands;
 use Rosalana\Core\PackageStatus;
 use Rosalana\Core\Services\Package;
+use Rosalana\Core\Support\RosalanaConfig;
 
 use function Laravel\Prompts\search;
 use function Laravel\Prompts\select;
@@ -91,6 +92,8 @@ class PublishCommand extends Command
             // $this->updateConfig('installed', [
             //     $package->name => $package->installedVersion
             // ]);
+
+            RosalanaConfig::get('installed')->set($package->name, null)->save();
         }, "Publishing $searchOptions for $package->name");
 
 
