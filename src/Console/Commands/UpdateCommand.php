@@ -90,10 +90,9 @@ class UpdateCommand extends Command
                     }
                 }
             },
-            "Updating Rosalana ecosystem to version {$this->dim($versionToUpdate ?: $current)}..."
+            "Updating Rosalana ecosystem to version {$this->dim($versionToUpdate ?? $current)}..."
         );
 
-        $this->line("\n");
-        $this->components->success('Rosalana ecosystem updated successfully to version ' . $this->dim($versionToUpdate ?: $current));
+        $this->components->success('Rosalana ecosystem updated successfully to version ' . $this->dim($versionToUpdate ?? $current));
     }
 }
