@@ -40,15 +40,30 @@ class Package
 
     public static function versions(): array
     {
-        $versions = [];
+        $process = Process::fromShellCommandline('composer show rosalana/core --all');
+        $process->run();
 
-        Process::run(['composer', 'show', 'rosalana/core'], function ($process) use (&$versions) {
-            $output = $process->output();
-            preg_match_all('/^versions : (.+)$/m', $output, $matches);
-            if (isset($matches[1])) {
-                $versions = explode(', ', $matches[1][0]);
-            }
-        });
+        if (!$process->isSuccessful()) {
+            return [];
+        }
+
+        $output = $process->getOutput();
+
+        preg_match('/versions\s*:\s*(.*)/', $output, $matches);
+
+        if (!isset($matches[1])) return [];
+
+        $versions = collect(explode(',', $matches[1]))
+            ->map(fn($v) => trim($v))
+            ->filter(fn($v) => preg_match('/^\d+\.\d+\.\d+$/', $v) || $v === 'dev-master')
+            ->map(function ($version) {
+                return $version === 'dev-master' ? 'dev-master' : explode('.', $version)[0];
+            })
+            ->unique()
+            ->values()
+            ->toArray();
+
+        sort($versions); // seřaď podle major verze
 
         return $versions;
     }
