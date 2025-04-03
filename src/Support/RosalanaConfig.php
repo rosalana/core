@@ -41,20 +41,17 @@ class RosalanaConfig
                 for ($i = $lineIndex - 1; $i >= 0; $i--) {
                     $line = trim($lines[$i]);
 
-                    
-
                     if (!str_starts_with(trim($lines[$lineIndex - 1]), '*/')) break; // neexistuje komentář
                     if (str_starts_with($line, '/*')) break; // konec komentáře
 
-                    if ($line = '|') {
-                        continue; // prázdný řádek
-                    }
-
-
                     if (str_starts_with($line, '|')) {
                         $content = trim(substr($line, 1));
-                        dump($content);
 
+                        if (empty($content)) {
+                            continue; // prázdný řádek
+                        }
+
+                        dump($content);
                     }
 
 
