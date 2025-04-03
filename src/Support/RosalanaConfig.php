@@ -11,15 +11,8 @@ class RosalanaConfig
     {
         $path ??= config_path('rosalana.php');
 
-
         if (!file_exists($path)) {
             throw new \RuntimeException("Config file not found: $path");
-        }
-
-        $values = include $path;
-
-        if (!is_array($values)) {
-            throw new \RuntimeException("Invalid config file structure: $path");
         }
 
         $text = file_get_contents($path);
@@ -27,66 +20,113 @@ class RosalanaConfig
 
         $instance = new static();
 
-        foreach ($values as $key => $sectionValues) {
-            $regex = "/['\"]" . preg_quote($key, '/') . "['\"]\s*=>\s*\[/";
-            $lineIndex = collect($lines)->search(fn($line) => preg_match($regex, $line));
+        foreach ($lines as $index => $line) {
+            if (preg_match("/['\"](?<key>.+?)['\"]\s*=>\s*\[/", $line, $match)) {
+                $key = $match['key'];
+                $lineIndex = $index;
 
-            $label = null;
-            $description = [];
+                // 🔍 Extrahuj komentář
+                [$label, $description] = static::extractComment($lines, $lineIndex);
 
-            $readingLabel = false;
+                // 🧠 Získej hodnoty sekce jako raw stringy
+                $values = static::extractArrayValuesFromBlock($lines, $lineIndex);
 
-            dump($lineIndex);
-
-            if ($lineIndex !== false) {
-                $hasCommentBlock = false;
-                for ($i = $lineIndex - 1; $i >= 0; $i--) {
-                    $line = trim($lines[$i]);
-
-                    if (str_starts_with($line, '*/')) {
-                        $hasCommentBlock = true;
-                        continue;
-                    }
-
-                    if (!$hasCommentBlock) {
-                        break; // no comment on this block
-                    }
-
-                    if (str_starts_with($line, '/*')) break;
-
-                    if (str_starts_with($line, '|')) {
-                        $content = trim(substr($line, 1));
-
-                        if (empty($content)) {
-                            continue;
-                        }
-
-                        if (str_starts_with($content, '-')) {
-                            $readingLabel = true;
-                            continue;
-                        }
-
-                        if ($readingLabel && !$label) {
-                            $label = $content;
-                        } else {
-                            $description[] = $content;
-                        }
-                    }
-                }
-                $description = array_reverse($description);
+                $instance->sections[$key] = new RosalanaConfigSection(
+                    key: $key,
+                    values: $values,
+                    label: $label,
+                    description: $description,
+                    line: $lineIndex + 1,
+                );
             }
-
-            $instance->sections[$key] = new RosalanaConfigSection(
-                key: $key,
-                values: $sectionValues,
-                label: $label,
-                description: implode("\n", $description),
-                line: $lineIndex,
-            );
         }
 
         return $instance;
     }
+
+    protected static function extractComment(array $lines, int $lineIndex): array
+    {
+        $label = null;
+        $description = [];
+        $hasCommentBlock = false;
+        $readingLabel = false;
+
+        for ($i = $lineIndex - 1; $i >= 0; $i--) {
+            $line = trim($lines[$i]);
+
+            if (str_starts_with($line, '*/')) {
+                $hasCommentBlock = true;
+                continue;
+            }
+
+            if (!$hasCommentBlock) break;
+
+            if (str_starts_with($line, '/*')) break;
+
+            if (str_starts_with($line, '|')) {
+                $content = trim(substr($line, 1));
+                if (empty($content)) continue;
+
+                if (str_starts_with($content, '-')) {
+                    $readingLabel = true;
+                    continue;
+                }
+
+                if ($readingLabel && !$label) {
+                    $label = $content;
+                } else {
+                    $description[] = $content;
+                }
+            }
+        }
+
+        return [$label, implode("\n", array_reverse($description))];
+    }
+
+    protected static function extractArrayValuesFromBlock(array $lines, int $startLine): array
+    {
+        $values = [];
+        $depth = 0;
+        $start = null;
+
+        for ($i = $startLine; $i < count($lines); $i++) {
+            $line = $lines[$i];
+
+            if (str_contains($line, '[')) {
+                if ($depth === 0) {
+                    $start = $i + 1;
+                }
+                $depth++;
+            }
+
+            if (str_contains($line, ']')) {
+                $depth--;
+                if ($depth === 0) {
+                    break;
+                }
+            }
+        }
+
+        if (!isset($start)) {
+            return [];
+        }
+
+        // Teď máme řádky mezi [...], zkusíme vyparsovat jednotlivé páry
+        for ($i = $start; $i < $i + 50; $i++) {
+            if (!isset($lines[$i])) break;
+            $line = trim($lines[$i]);
+
+            if ($line === '],') break;
+            if (!str_contains($line, '=>')) continue;
+
+            if (preg_match("/['\"](?<key>.+?)['\"]\s*=>\s*(?<value>.*?),?\s*$/", $line, $match)) {
+                $values[$match['key']] = rtrim($match['value'], ',');
+            }
+        }
+
+        return $values;
+    }
+
 
     public static function new(string $key): RosalanaConfigSection
     {
@@ -112,17 +152,16 @@ class RosalanaConfig
 
     public static function save(RosalanaConfigSection $section)
     {
-        // $output = $this->render();
-        // $path = config_path('rosalana.php');
+        $path = config_path('rosalana.php');
 
-        // if (file_exists($path)) {
-        //     $currentContent = file_get_contents($path);
-        //     if ($currentContent !== $output) {
-        //         file_put_contents($path, $output);
-        //     }
-        // } else {
-        //     file_put_contents($path, $output);
-        // }
+        if (!file_exists($path)) {
+            throw new \RuntimeException("Config file not found: $path");
+        }
+
+        $text = file_get_contents($path);
+
+        $lines = explode("\n", $text);
+        $lineIndex = $section->getLine();
 
         dump($section->toArray());
         return $section;

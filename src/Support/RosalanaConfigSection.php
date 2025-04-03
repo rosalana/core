@@ -58,6 +58,11 @@ class RosalanaConfigSection
         return $this->values;
     }
 
+    public function getLine(): ?int
+    {
+        return $this->line;
+    }
+
     public function getKey(): string
     {
         return $this->key;
