@@ -35,7 +35,7 @@ class RosalanaConfig
             $description = [];
 
             if ($lineIndex !== false) {
-                dump('called');
+                dump($lineIndex);
                 for ($i = $lineIndex - 1; $i >= 0; $i--) {
                     $line = trim($lines[$i]);
 
