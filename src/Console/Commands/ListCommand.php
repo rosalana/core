@@ -47,7 +47,7 @@ class ListCommand extends Command
                     \Rosalana\Core\Services\Package::getDescription($package->name),
                 ];
             })->toArray()
-        ,'borderless');
+        ,'compact');
     }
 
     protected function renderStatus(string $status): string
