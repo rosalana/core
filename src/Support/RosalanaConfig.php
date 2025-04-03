@@ -46,7 +46,7 @@ class RosalanaConfig
                     if (!str_starts_with(trim($lines[$lineIndex - 1]), '*/')) break; // neexistuje komentář
                     if (str_starts_with($line, '/*')) break; // konec komentáře
 
-                    if ($line = '|' || $line) {
+                    if ($line = '|') {
                         continue; // prázdný řádek
                     }
 
