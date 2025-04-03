@@ -115,6 +115,8 @@ class RosalanaConfig
                 array_splice($lines, $i, 1);
             }
         }
+
+        dump($lines);
     
         foreach ($sections as $key => $section) {
             $rendered = explode("\n", static::render($section));
