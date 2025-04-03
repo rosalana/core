@@ -156,7 +156,6 @@ class RosalanaConfig
     {
         $lines = [];
 
-        $lines[] = "";
         if (!empty($section->getComment()['label']) || !empty($section->getComment()['description'])) {
             $lines[] = static::renderComment($section->getComment());
         }
