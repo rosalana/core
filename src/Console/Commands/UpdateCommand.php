@@ -73,18 +73,11 @@ class UpdateCommand extends Command
             })
             ->toArray();
 
-        // $options = array_merge(['current' => $this->cyan("Keep current version ({$this->dim($current)})")], $options);
-
-        dump($options);
-        dump($current);
-
         $major = select(
             label: 'Which ecosystem version would you like to update to?',
             options: $options,
             default: $current,
         );
-
-        // $versionToUpdate = $major === 'current' ? null : "$major";
 
         spin(
             function () use ($major) {
