@@ -54,9 +54,9 @@ class ListCommand extends Command
     {
         return match ($status) {
             'up to date'     => '✅ Published (latest)',
-            'old version'    => '⏳ Published (outdated)',
+            'old version'    => '🕗 Published (outdated)',
             'not published'  => '🔴 Not published',
-            'not installed'  => '⛔ Not installed',
+            'not installed'  => '❌ Not installed',
             default          => '❓ Unknown',
         };
     }
