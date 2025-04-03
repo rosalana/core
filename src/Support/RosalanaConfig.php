@@ -35,7 +35,7 @@ class RosalanaConfig
                     key: $key,
                     values: $values,
                     label: $label,
-                    description: $description,
+                    description: trim($description, "\n"),
                     line: $lineIndex + 1,
                 );
             }
