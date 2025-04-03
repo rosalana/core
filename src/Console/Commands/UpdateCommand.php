@@ -53,7 +53,7 @@ class UpdateCommand extends Command
 
         $options = collect($availableVersions)
             ->mapWithKeys(function ($version) {
-                return [$version => $version === 'dev-master' ? $this->red("Version dev (do not use in production)") : "Version {$version}.x.x"];
+                return [$version === 'dev-master' ? 'dev-master' : "^$version" => $version === 'dev-master' ? $this->red("Version dev (do not use in production)") : "Version {$version}.x.x"];
             })
             ->toArray();
 
