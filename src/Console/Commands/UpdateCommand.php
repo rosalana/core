@@ -40,6 +40,8 @@ class UpdateCommand extends Command
 
         $current = Package::version();
 
+        dump("Current version: {$this->dim($current)}");
+
         $availableVersions = [];
 
         spin(function () use (&$availableVersions) {
@@ -67,34 +69,31 @@ class UpdateCommand extends Command
             default: 'current',
         );
 
-        $versionToUpdate = $major === 'current' ? $current : "$major";
+        $versionToUpdate = $major === 'current' ? null : "$major";
 
-        // spin(
-        //     function () use ($versionToUpdate) {
-        //         // update core
-        //         $core = Package::find('rosalana/core');
-        //         $result = $core->update($versionToUpdate);
-        //         if ($result->failed()) {
-        //             $this->line("\n");
-        //             echo $this->red($result->errorOutput());
-        //             exit(1);
-        //         }
-
-        //         // update other packages
-        //         $packages = Package::installed()->filter(function ($package) {
-        //             return $package->name !== 'rosalana/core';
-        //         });
-
-        //         foreach ($packages as $package) {
-        //             $result = $package->update($versionToUpdate);
-        //             if ($result->failed()) {
-        //                 $this->line("\n");
-        //                 echo $this->red($result->errorOutput());
-        //                 exit(1);
-        //             }
-        //         }
-        //     },
-        //     "Updating Rosalana ecosystem to version {$this->dim($versionToUpdate)}..."
-        // );
+        spin(
+            function () use ($versionToUpdate) {
+                if ($versionToUpdate) {
+                    foreach (Package::installed() as $package) {
+                        $result = $package->install($versionToUpdate);
+                        if ($result->failed()) {
+                            $this->line("\n");
+                            echo $this->red($result->errorOutput());
+                            exit(1);
+                        }
+                    }
+                } else {
+                    foreach (Package::installed() as $package) {
+                        $result = $package->update($versionToUpdate);
+                        if ($result->failed()) {
+                            $this->line("\n");
+                            echo $this->red($result->errorOutput());
+                            exit(1);
+                        }
+                    }
+                }
+            },
+            "Updating Rosalana ecosystem to version {$this->dim($versionToUpdate)}..."
+        );
     }
 }
