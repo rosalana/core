@@ -7,9 +7,14 @@ class RosalanaConfig
 
     protected array $sections = [];
 
-    public static function read(?string $path = null): static
+    /**
+     * Read the configuration file and parse it into sections.
+     * @param string|null $path
+     * @return static
+     */
+    public static function read(): static
     {
-        $path ??= config_path('rosalana.php');
+        $path = config_path('rosalana.php');
 
         if (!file_exists($path)) {
             throw new \RuntimeException("Config file not found: $path");
@@ -48,7 +53,6 @@ class RosalanaConfig
      * Create a new section in the configuration.
      * @param string $key
      * @return RosalanaConfigSection
-     * @throws \RuntimeException
      */
     public static function new(string $key): RosalanaConfigSection
     {
@@ -72,6 +76,11 @@ class RosalanaConfig
         return $section;
     }
 
+    /**
+     * Get a section from the configuration.
+     * @param string $key
+     * @return RosalanaConfigSection|null
+     */
     public static function get(string $key): ?RosalanaConfigSection
     {
         $instance = static::read();
@@ -83,6 +92,10 @@ class RosalanaConfig
         return null;
     }
 
+    /**
+     * Save a section to the configuration.
+     * @param RosalanaConfigSection|null $section
+     */
     public static function save(?RosalanaConfigSection $section = null): bool
     {
         $sections = [];

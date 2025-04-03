@@ -19,6 +19,12 @@ class RosalanaConfigSection
         $this->line = $line;
     }
 
+    /**
+     * Add content to the section.
+     * @param string $key
+     * @param mixed $value
+     * @return static
+     */
     public function add(string $key, mixed $value): static
     {
         if (!$this->has($key)) {
@@ -28,17 +34,34 @@ class RosalanaConfigSection
         return $this;
     }
 
+    /**
+     * Hard set value to the section content.
+     * @param string $key
+     * @param mixed $value
+     * @return static
+     */
     public function set(string $key, mixed $value): static
     {
         $this->values[$key] = $value;
         return $this;
     }
 
+    /**
+     * Find out if the section has a key.
+     * @param string $key
+     * @return bool
+     */
     public function has(string $key): bool
     {
         return array_key_exists($key, $this->values);
     }
 
+    /**
+     * Add comment to the section.
+     * @param string $description
+     * @param string|null $label
+     * @return static
+     */
     public function comment(string $description, ?string $label = null): static
     {
         $this->description = $description;
@@ -46,9 +69,13 @@ class RosalanaConfigSection
         return $this;
     }
 
+    /**
+     * Save the section to the configuration.
+     * @return bool
+     */
     public function save()
     {
-        RosalanaConfig::save($this);
+        return RosalanaConfig::save($this);
     }
 
     public function getValues(): array
@@ -74,7 +101,9 @@ class RosalanaConfigSection
         ];
     }
 
-    // Napojení na config writer
+    /**
+     * Convert the section to an array.
+     */
     public function toArray(): array
     {
         return [
