@@ -51,23 +51,24 @@ class Package
 
         preg_match('/versions\s*:\s*(.*)/', $output, $matches);
 
-        return $matches;
-
         if (!isset($matches[1])) return [];
 
-
-
         $versions = collect(explode(',', $matches[1]))
-            ->map(fn($v) => trim($v))
-            ->filter(fn($v) => preg_match('/^\d+\.\d+\.\d+$/', $v) || $v === 'dev-master')
-            ->map(function ($version) {
-                return $version === 'dev-master' ? 'dev-master' : explode('.', $version)[0];
-            })
-            ->unique()
-            ->values()
+        // odstranění * z verze
+            ->map(fn($v) => trim($v, '*'))
             ->toArray();
 
-        sort($versions); // seřaď podle major verze
+        // $versions = collect(explode(',', $matches[1]))
+        //     ->map(fn($v) => trim($v))
+        //     ->filter(fn($v) => preg_match('/^\d+\.\d+\.\d+$/', $v) || $v === 'dev-master')
+        //     ->map(function ($version) {
+        //         return $version === 'dev-master' ? 'dev-master' : explode('.', $version)[0];
+        //     })
+        //     ->unique()
+        //     ->values()
+        //     ->toArray();
+
+        // sort($versions); // seřaď podle major verze
 
         return $versions;
     }
