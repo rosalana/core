@@ -34,23 +34,37 @@ class RosalanaConfig
             $label = null;
             $description = [];
 
+            $readingHeader = false;
+
             if ($lineIndex !== false) {
                 for ($i = $lineIndex - 1; $i >= 0; $i--) {
                     $line = trim($lines[$i]);
 
-                    // if (str_starts_with($line, '/*')) break; // bezpečnostní stop
+                    dump($line);
+
+                    if (!str_starts_with($line, '*/')) break; // neexistuje komentář
+
+                    if ($line = '|' || $line) {
+                        continue; // prázdný řádek
+                    }
+
+                    if (str_starts_with($line, '/*')) break; // konec komentáře
 
                     if (str_starts_with($line, '|')) {
                         $content = trim(substr($line, 1));
 
-                        if (!$label && !str_starts_with($content, '-')) {
-                            $label = $content;
-                        } else {
-                            $description[] = $content;
-                        }
-                    }
 
-                    if (str_starts_with($line, '/*')) break;
+
+
+
+                        // if (!$label && !str_starts_with($content, '-')) {
+                        //     $label = $content;
+                        // } else {
+                        //     $description[] = $content;
+                        // }
+
+                        if (str_starts_with($line, '/*')) break;
+                    }
                 }
 
                 $description = array_reverse($description);
