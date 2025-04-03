@@ -137,11 +137,21 @@ class RosalanaConfig
                         break;
                     }
                 }
+
+                while ($commentStart > 0 && trim($lines[$commentStart - 1]) === '') {
+                    unset($lines[$commentStart - 1]);
+                    $commentStart--;
+                }
+                while ($endIndex + 1 < count($lines) && trim($lines[$endIndex + 1]) === '') {
+                    unset($lines[$endIndex + 1]);
+                    $endIndex++;
+                }    
     
                 array_splice($lines, $commentStart, $endIndex - $commentStart + 1, $rendered);
             }
         }
     
+        $lines = array_values(array_filter($lines, fn($line) => $line !== null));
         file_put_contents($path, implode("\n", $lines));
         return true;
     }
