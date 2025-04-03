@@ -44,14 +44,15 @@ class RosalanaConfig
 
                     if (!str_starts_with($line, '*/')) break; // neexistuje komentář
 
-                    if ($line = '|' || $line) {
-                        continue; // prázdný řádek
-                    }
+                    // if ($line = '|' || $line) {
+                    //     continue; // prázdný řádek
+                    // }
 
                     if (str_starts_with($line, '/*')) break; // konec komentáře
 
                     if (str_starts_with($line, '|')) {
                         $content = trim(substr($line, 1));
+                        dump($content);
 
 
 
