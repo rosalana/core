@@ -3,6 +3,7 @@
 namespace Rosalana\Core\Services;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Process;
 use Rosalana\Core\Package as AbstractPackage;
 
 class Package
@@ -18,6 +19,38 @@ class Package
     public static function getDescription(string $package): string
     {
         return self::$packages[$package];
+    }
+
+    /**
+     * Get the version of the ecosystem.
+     * @return string|null
+     */
+    public static function version(): ?string
+    {
+        $coreVersion = static::find('rosalana/core')->installedVersion;
+
+        if ($coreVersion === 'dev-master') {
+            return 'dev-master';
+        } elseif (preg_match('/^(\d+)\./', $coreVersion, $matches)) {
+            return $matches[1];
+        } else {
+            return null;
+        }
+    }
+
+    public static function versions(): array
+    {
+        $versions = [];
+
+        Process::run(['composer', 'show', 'rosalana/core'], function ($process) use (&$versions) {
+            $output = $process->output();
+            preg_match_all('/^versions : (.+)$/m', $output, $matches);
+            if (isset($matches[1])) {
+                $versions = explode(', ', $matches[1][0]);
+            }
+        });
+
+        return $versions;
     }
 
     /**

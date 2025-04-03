@@ -58,15 +58,7 @@ class AddCommand extends Command
             default: null,
         );
 
-        $coreVersion = Package::find('rosalana/core')->installedVersion;
-
-        $version = null;
-
-        if ($coreVersion === 'dev-master') {
-            $version = 'dev-master';
-        } elseif (preg_match('/^(\d+)\./', $coreVersion, $matches)) {
-            $version = "^{$matches[1]}";
-        }
+        $version = Package::version();
 
         $package = $notInstalled->first(function ($p) use ($selectedPackage) {
             return $p->name === $selectedPackage;

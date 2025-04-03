@@ -34,6 +34,15 @@ class RosalanaConfigSection
         return $this;
     }
 
+    public function remove(string $key): static
+    {
+        if ($this->has($key)) {
+            unset($this->values[$key]);
+        }
+
+        return $this;
+    }
+
     /**
      * Hard set value to the section content.
      * @param string $key
