@@ -21,7 +21,7 @@ class ListCommand extends Command
      *
      * @var string
      */
-    protected $description = 'List available Rosalana packages';
+    protected $description = 'List all available Rosalana packages and their status';
 
     /**
      * Execute the console command.
@@ -30,19 +30,32 @@ class ListCommand extends Command
      */
     public function handle()
     {
-        $this->components->info('Available packages');
+        $this->newLine();
+        $this->components->info('📦  Rosalana Packages');
+        $this->newLine();
 
-        $this->table(
-            ['Package', 'Description', 'Installed', 'Published'],
-            Package::all()->map(function ($package) {
-                return [
-                    $package->name,
-                    Package::getDescription($package->name),
-                    $package->installedVersion ?? 'Not installed',
-                    $package->publishedVersion ?? 'Not published',
-                ];
-            })
-        );
+        $packages = Package::all();
 
+        foreach ($packages as $package) {
+            $check = $package->installed ? '[✓]' : '[ ]';
+            $name = str_pad($package->name,  24); // package name padding
+            $version = str_pad($package->installedVersion ?? '—', 10);
+            $status = $this->renderStatus($package->status->value);
+
+            $this->line("{$check} {$name} {$version} {$status}");
+            $this->line("     <fg=gray>" . Package::getDescription($package->name) . "</>");
+            $this->newLine();
+        }
+    }
+
+    protected function renderStatus(string $status): string
+    {
+        return match ($status) {
+            'up to date'     => '✅ Published (latest)',
+            'old version'    => '⏳ Published (outdated)',
+            'not published'  => '🔴 Not published',
+            'not installed'  => '⛔ Not installed',
+            default          => '❓ Unknown',
+        };
     }
 }

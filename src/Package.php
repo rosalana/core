@@ -4,7 +4,6 @@ namespace Rosalana\Core;
 
 use Composer\InstalledVersions;
 use Illuminate\Contracts\Process\ProcessResult;
-use Illuminate\Process\Exceptions\ProcessFailedException;
 use Illuminate\Support\Facades\Process;
 use Rosalana\Core\Contracts\Package as PackageContract;
 
