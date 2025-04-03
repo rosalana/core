@@ -29,12 +29,14 @@ class Core implements Package
 
                     dump(RosalanaConfig::read());
 
-                    // RosalanaConfig::get('basecamp')
-                    //     ->add('url', env('ROSALANA_BASECAMP_URL', 'http://localhost:8000'), 'Basecamp URL')
-                    //     ->add('secret', env('ROSALANA_APP_SECRET', 'secret'))
-                    //     ->comment('Here you can define the settings for the Rosalana Auth. This settings are used for authorizate your app to the Rosalana Basecamp to use Basecamp services.', 'Rosalana Basecamp Auth Settings')
-                    //     ->save();
-                    
+                    RosalanaConfig::new('basecamp')
+                        ->add('url', "env('ROSALANA_BASECAMP_URL', 'http://localhost:8000')", 'Basecamp URL')
+                        ->add('secret', "env('ROSALANA_APP_SECRET', 'secret')")
+                        ->add('test', "env('ROSALANA_APP_TEST', 'test')")
+                        ->comment('Here you can define the settings...', 'Rosalana Basecamp Auth Settings')
+                        ->save();
+
+
                     // RosalanaConfig::get('basecamp.url')->set('http://localhost:8000');
 
                     // tedy sekci můžu získat pomocí get (pokud neexistuje vytvoří se)

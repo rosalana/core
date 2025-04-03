@@ -8,8 +8,6 @@ class RosalanaConfigSection
     protected $description = null;
     protected $label = null;
 
-    protected $touched = false;
-
     public function __construct(string $key, array $values = [], ?string $label = null, ?string $description = null)
     {
         $this->key = $key;
@@ -22,7 +20,6 @@ class RosalanaConfigSection
     {
         if (!array_key_exists($key, $this->values)) {
             $this->values[$key] = $value;
-            $this->touched = true;
         }
 
         return $this;
@@ -31,7 +28,6 @@ class RosalanaConfigSection
     public function set(string $key, mixed $value): static
     {
         $this->values[$key] = $value;
-        $this->touched = true;
         return $this;
     }
 
@@ -39,7 +35,6 @@ class RosalanaConfigSection
     {
         if (isset($this->values[$key])) {
             unset($this->values[$key]);
-            $this->touched = true;
         }
         return $this;
     }
@@ -49,6 +44,11 @@ class RosalanaConfigSection
         $this->description = $description;
         $this->label = $label ?? $this->label;
         return $this;
+    }
+
+    public function save()
+    {
+        RosalanaConfig::save($this);
     }
 
     public function getValues(): array
@@ -67,11 +67,6 @@ class RosalanaConfigSection
             'label' => $this->label,
             'description' => $this->description,
         ];
-    }
-
-    public function wasTouched(): bool
-    {
-        return $this->touched;
     }
 
     // Napojení na config writer

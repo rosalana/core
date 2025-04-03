@@ -37,9 +37,7 @@ class RosalanaConfig
             $readingLabel = false;
 
             if ($lineIndex !== false) {
-
                 $hasCommentBlock = false;
-
                 for ($i = $lineIndex - 1; $i >= 0; $i--) {
                     $line = trim($lines[$i]);
 
@@ -49,7 +47,7 @@ class RosalanaConfig
                     }
 
                     if (!$hasCommentBlock) {
-                        break; // vůbec žádný komentář není nad tímto blokem
+                        break; // no comment on this block
                     }
 
                     if (str_starts_with($line, '/*')) break;
@@ -87,61 +85,43 @@ class RosalanaConfig
         return $instance;
     }
 
-
-    /**
-     * Add a new section to the config.
-     * 
-     * @param string $key Root-level key for the section.
-     * @param array $values Array of values for the section.
-     * @param string|null $description Optional comment for the section.
-     * @param string|null $label Optional comment label for the section.
-     * @return $this
-     */
-    public static function new(string $key, array $values, ?string $description = null, ?string $label = null)
+    public static function new(string $key): RosalanaConfigSection
     {
-        self::$sections[$key] = [
-            'values' => $values,
-            'description' => $description,
-            'label' => $label,
-        ];
+        $instance = static::read();
 
-        return new static();
-    }
-
-    public function all(): array
-    {
-        return $this->sections;
-    }
-
-    public function getComment(string $key): array
-    {
-        return $this->sections[$key]['description'] ?? [];
-    }
-
-    public function merge(RosalanaConfig $other): static
-    {
-        foreach ($other->all() as $key => $section) {
-            $this->sections[$key] = $section;
+        // if exists return it (not implemented yet)
+        if (isset($instance->sections[$key])) {
+            return $instance->sections[$key];
         }
 
-        return $this;
+        // otherwise create new one
+        $section = new RosalanaConfigSection(
+            key: $key,
+            values: [],
+            label: null,
+            description: null
+        );
+
+        $instance->sections[$key] = $section;
+        return $section;
     }
 
-    public function save()
+    public static function save(RosalanaConfigSection $section)
     {
-        $output = $this->render();
-        $path = config_path('rosalana.php');
+        // $output = $this->render();
+        // $path = config_path('rosalana.php');
 
-        if (file_exists($path)) {
-            $currentContent = file_get_contents($path);
-            if ($currentContent !== $output) {
-                file_put_contents($path, $output);
-            }
-        } else {
-            file_put_contents($path, $output);
-        }
+        // if (file_exists($path)) {
+        //     $currentContent = file_get_contents($path);
+        //     if ($currentContent !== $output) {
+        //         file_put_contents($path, $output);
+        //     }
+        // } else {
+        //     file_put_contents($path, $output);
+        // }
 
-        return $this;
+        dump($section->toArray());
+        return $section;
     }
 
     protected function render(): string
