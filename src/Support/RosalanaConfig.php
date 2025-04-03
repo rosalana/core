@@ -25,10 +25,10 @@ class RosalanaConfig
                 $key = $match['key'];
                 $lineIndex = $index;
 
-                // 🔍 Extrahuj komentář
+                // extract comment
                 [$label, $description] = static::extractComment($lines, $lineIndex);
 
-                // 🧠 Získej hodnoty sekce jako raw stringy
+                // extract values from block
                 $values = static::extractArrayValuesFromBlock($lines, $lineIndex);
 
                 $instance->sections[$key] = new RosalanaConfigSection(
@@ -42,6 +42,150 @@ class RosalanaConfig
         }
 
         return $instance;
+    }
+
+    /**
+     * Create a new section in the configuration.
+     * @param string $key
+     * @return RosalanaConfigSection
+     * @throws \RuntimeException
+     */
+    public static function new(string $key): RosalanaConfigSection
+    {
+        $instance = static::read();
+
+        // if exists return it (not implemented yet)
+        if (isset($instance->sections[$key])) {
+            return $instance->sections[$key];
+        }
+
+        // otherwise create new one
+        $section = new RosalanaConfigSection(
+            key: $key,
+            values: [],
+            label: null,
+            description: null,
+            line: null,
+        );
+
+        $instance->sections[$key] = $section;
+        return $section;
+    }
+
+    public static function get(string $key): ?RosalanaConfigSection
+    {
+        $instance = static::read();
+
+        if (isset($instance->sections[$key])) {
+            return $instance->sections[$key];
+        }
+
+        return null;
+    }
+
+    public static function save(?RosalanaConfigSection $section = null): bool
+    {
+        $sections = [];
+        if ($section) {
+            $sections = [$section->getKey() => $section];
+        } else {
+            $instance = static::read();
+            $sections = $instance->sections;
+        }
+
+        $path = config_path('rosalana.php');
+
+        if (!file_exists($path)) {
+            throw new \RuntimeException("Config file not found: $path");
+        }
+
+        $originalText = file_get_contents($path);
+        $lines = explode("\n", $originalText);
+
+        foreach ($sections as $key => $section) {
+            $rendered = explode("\n", static::render($section));
+
+            // Najdi zacatek sekce v puvodnich lines
+            $regex = "/['\"]" . preg_quote($key, '/') . "['\"]\s*=>\s*\[/";
+            $startIndex = collect($lines)->search(fn($line) => preg_match($regex, $line));
+
+            if ($startIndex === false) {
+                // Sekce neexistuje, pridame ji na konec
+                $lines[] = "";
+                $lines = array_merge($lines, $rendered);
+            } else {
+                // Najdi konec bloku sekce
+                $endIndex = $startIndex;
+                $depth = 0;
+                for ($i = $startIndex; $i < count($lines); $i++) {
+                    if (str_contains($lines[$i], '[')) $depth++;
+                    if (str_contains($lines[$i], ']')) $depth--;
+                    if ($depth === 0 && $i !== $startIndex) {
+                        $endIndex = $i;
+                        break;
+                    }
+                }
+
+                // Najdi zacatek komentare
+                $commentStart = $startIndex;
+                for ($i = $startIndex - 1; $i >= 0; $i--) {
+                    if (str_starts_with(trim($lines[$i]), '/*')) {
+                        $commentStart = $i;
+                        break;
+                    }
+                }
+
+                array_splice($lines, $commentStart, $endIndex - $commentStart + 1, $rendered);
+            }
+        }
+
+        file_put_contents($path, implode("\n", $lines));
+        return true;
+    }
+
+    protected static function render(RosalanaConfigSection $section): string
+    {
+        $lines = [];
+
+        if (!empty($section->getComment()['label']) || !empty($section->getComment()['description'])) {
+            $lines[] = static::renderComment($section->getComment());
+        }
+
+        $lines[] = "    '{$section->getKey()}' => [";
+        foreach ($section->getValues() as $key => $value) {
+            $lines[] = "        '{$key}' => {$value},";
+        }
+        $lines[] = "    ],\n";
+
+        return implode("\n", $lines);
+    }
+
+    protected static function renderComment(array $comment): string
+    {
+        $label = $comment['label'] ?? null;
+        $description = $comment['description'] ?? null;
+
+        if (!$label && !$description) return '';
+
+        $output = "/*\n";
+
+        if ($label) {
+            $output .= str_repeat('|', 1) . str_repeat('-', 74) . "\n";
+            $output .= '| ' . $label . "\n";
+            $output .= str_repeat('|', 1) . str_repeat('-', 74) . "\n";
+        }
+
+        if ($description) {
+            $output .= "|\n";
+            foreach (array_chunk(explode(" ", $description), 10) as $line) {
+                $output .= '| ' . implode(" ", $line) . "\n";
+            }
+            $output .= "|\n";
+        }
+
+        $output .= "*/";
+
+        return $output;
     }
 
     protected static function extractComment(array $lines, int $lineIndex): array
@@ -111,7 +255,7 @@ class RosalanaConfig
             return [];
         }
 
-        // Teď máme řádky mezi [...], zkusíme vyparsovat jednotlivé páry
+        // extract values from the block
         for ($i = $start; $i < $i + 50; $i++) {
             if (!isset($lines[$i])) break;
             $line = trim($lines[$i]);
@@ -125,97 +269,5 @@ class RosalanaConfig
         }
 
         return $values;
-    }
-
-
-    public static function new(string $key): RosalanaConfigSection
-    {
-        $instance = static::read();
-
-        // if exists return it (not implemented yet)
-        if (isset($instance->sections[$key])) {
-            return $instance->sections[$key];
-        }
-
-        // otherwise create new one
-        $section = new RosalanaConfigSection(
-            key: $key,
-            values: [],
-            label: null,
-            description: null,
-            line: null,
-        );
-
-        $instance->sections[$key] = $section;
-        return $section;
-    }
-
-    public static function save(RosalanaConfigSection $section)
-    {
-        $path = config_path('rosalana.php');
-
-        if (!file_exists($path)) {
-            throw new \RuntimeException("Config file not found: $path");
-        }
-
-        $text = file_get_contents($path);
-
-        $lines = explode("\n", $text);
-        $lineIndex = $section->getLine();
-
-        dump($section->toArray());
-        return $section;
-    }
-
-    protected function render(): string
-    {
-        $output = "<?php\n\nreturn [\n";
-
-        foreach ($this->sections as $key => $section) {
-            $comment = $this->renderComment($section);
-            if ($comment) {
-                // odsazení komentářů
-                $output .= "\n" . preg_replace('/^/m', '    ', $comment) . "\n";
-            }
-
-            $valueExport = var_export($section['values'], true);
-            // zarovnej export na nový řádek s indentací
-            $valueExport = preg_replace('/^/m', '        ', $valueExport);
-
-            $output .= "    '{$key}' => {$valueExport},\n";
-        }
-
-        $output .= "];\n";
-
-        return $output;
-    }
-
-
-    protected function renderComment(array $section): string
-    {
-        $label = $section['label'] ?? null;
-        $comment = $section['description'] ?? null;
-
-        if (!$label && !$comment) return '';
-
-        $output = "/*\n";
-
-        if ($label) {
-            $output .= str_repeat('|', 1) . str_repeat('-', 74) . "\n";
-            $output .= '| ' . $label . "\n";
-            $output .= str_repeat('|', 1) . str_repeat('-', 74) . "\n";
-        }
-
-        if ($comment) {
-            $output .= "|\n";
-            foreach (array_chunk(explode(" ", $comment), 10) as $line) {
-                $output .= '| ' . implode(" ", $line) . "\n";
-            }
-            $output .= "|\n";
-        }
-
-        $output .= "*/";
-
-        return $output;
     }
 }

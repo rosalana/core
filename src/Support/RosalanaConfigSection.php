@@ -1,4 +1,5 @@
 <?php
+
 namespace Rosalana\Core\Support;
 
 class RosalanaConfigSection
@@ -20,7 +21,7 @@ class RosalanaConfigSection
 
     public function add(string $key, mixed $value): static
     {
-        if (!array_key_exists($key, $this->values)) {
+        if (!$this->has($key)) {
             $this->values[$key] = $value;
         }
 
@@ -33,12 +34,9 @@ class RosalanaConfigSection
         return $this;
     }
 
-    public function remove(string $key): static
+    public function has(string $key): bool
     {
-        if (isset($this->values[$key])) {
-            unset($this->values[$key]);
-        }
-        return $this;
+        return array_key_exists($key, $this->values);
     }
 
     public function comment(string $description, ?string $label = null): static

@@ -29,11 +29,11 @@ class Core implements Package
 
                     dump(RosalanaConfig::read());
 
-                    // RosalanaConfig::new('test')
-                    //     ->add('url', "env('ROSALANA_BASECAMP_URL', 'http://localhost:8000')", 'Basecamp URL')
-                    //     ->add('secret', "env('ROSALANA_APP_SECRET', 'secret')")
-                    //     ->comment('Here you can define the settings...', 'Rosalana Test Settings')
-                    //     ->save();
+                    RosalanaConfig::new('test')
+                        ->add('url', "env('ROSALANA_BASECAMP_URL', 'http://localhost:8000')", 'Basecamp URL')
+                        ->add('secret', "env('ROSALANA_APP_SECRET', 'secret')")
+                        ->comment('Here you can define the settings...', 'Rosalana Test Settings')
+                        ->save();
 
 
                     // RosalanaConfig::get('basecamp.url')->set('http://localhost:8000');
