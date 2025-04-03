@@ -55,7 +55,7 @@ class Package
 
         $versions = collect(explode(',', $matches[1]))
         // odstranění * z verze
-            ->map(fn($v) => trim($v, '*'))
+            ->map(fn($v) => trim($v, '* '))
             ->toArray();
 
         // $versions = collect(explode(',', $matches[1]))
