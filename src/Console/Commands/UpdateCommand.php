@@ -59,6 +59,8 @@ class UpdateCommand extends Command
 
         $options = array_merge(['current' => $this->cyan("Keep current version ({$this->dim($current)})")], $options);
 
+        dd($options);
+
         $major = select(
             label: 'Which ecosystem version would you like to update to?',
             options: $options,
