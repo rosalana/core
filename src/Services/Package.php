@@ -56,6 +56,7 @@ class Package
         $versions = collect(explode(',', $matches[1]))
         // odstranění * z verze
             ->map(fn($v) => trim($v, '* '))
+            ->filter(fn($v) => preg_match('/^\d+\.\d+\.\d+$/', $v) || $v === 'dev-master')
             ->toArray();
 
         // $versions = collect(explode(',', $matches[1]))
