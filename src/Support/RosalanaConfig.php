@@ -102,7 +102,7 @@ class RosalanaConfig
         $originalText = file_get_contents($path);
         $lines = explode("\n", $originalText);
     
-        // First and last index in return [ ... ]
+        // Najdi index posledniho radku uvnitr return [ ... ]
         $returnStart = collect($lines)->search(fn($line) => str_contains($line, 'return ['));
         $returnEnd = collect($lines)->search(fn($line) => trim($line) === '];');
     
@@ -153,9 +153,7 @@ class RosalanaConfig
         $lines[] = "\n"; // empty line before the section
 
         if (!empty($section->getComment()['label']) || !empty($section->getComment()['description'])) {
-            foreach (static::renderComment($section->getComment()) as $line) {
-                $lines[] = $line;
-            }
+            $lines[] = static::renderComment($section->getComment());
         }
     
         $lines[] = "    '{$section->getKey()}' => [";
@@ -163,40 +161,38 @@ class RosalanaConfig
             $lines[] = "        '{$key}' => {$value},";
         }
         $lines[] = "    ],";
-
+        
         $lines[] = "\n"; // empty line after the section
     
         return $lines;
     }
     
-    protected static function renderComment(array $comment): array
+    protected static function renderComment(array $comment): string
     {
-        $lines = [];
-
         $label = $comment['label'] ?? null;
         $description = $comment['description'] ?? null;
     
-        if (!$label && !$description) return $lines;
+        if (!$label && !$description) return '';
     
-        $lines[] = "    /*\n";
+        $output = "    /*\n";
     
         if ($label) {
-            $lines[] = '    ' . str_repeat('|', 1) . str_repeat('-', 74) . "\n";
-            $lines[] = '    | ' . $label . "\n";
-            $lines[] = '    ' . str_repeat('|', 1) . str_repeat('-', 74) . "\n";
+            $output .= '    ' . str_repeat('|', 1) . str_repeat('-', 74) . "\n";
+            $output .= '    | ' . $label . "\n";
+            $output .= '    ' . str_repeat('|', 1) . str_repeat('-', 74) . "\n";
         }
     
         if ($description) {
-            $lines[] = "    |\n";
+            $output .= "    |\n";
             foreach (array_chunk(explode(" ", $description), 10) as $line) {
-                $lines[] = '    | ' . implode(" ", $line) . "\n";
+                $output .= '    | ' . implode(" ", $line) . "\n";
             }
-            $lines[] = "    |\n";
+            $output .= "    |\n";
         }
     
-        $lines[] = "    */";
+        $output .= "    */";
     
-        return $lines;
+        return $output;
     }
 
     protected static function extractComment(array $lines, int $lineIndex): array
