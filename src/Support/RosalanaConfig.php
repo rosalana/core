@@ -142,7 +142,7 @@ class RosalanaConfig
             }
         }
     
-        file_put_contents($path, implode("\n", $lines));
+        file_put_contents($path, $lines);
         return true;
     }
     
