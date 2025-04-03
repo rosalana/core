@@ -46,15 +46,24 @@ class UpdateCommand extends Command
             $availableVersions = Package::versions();
         }, 'Fetching available versions...');
 
+        if (empty($availableVersions)) {
+            $this->components->error('No available versions found');
+            return 1;
+        }
 
-        dd($availableVersions);
+        $options = collect($availableVersions)
+            ->map(function ($version) {
+                return $version === 'dev-master' ? 'Latest development version (dev-master)' : "Version {$version}.x.x";
+            })
+            ->toArray();
+        
+        $options = array_merge(['current' => "Keep current version ({$this->dim($current)})"], $options);
+
+        dump($options);
 
         $major = select(
             label: 'Which ecosystem version would you like to update to?',
-            options: [
-                'current' => "Keep current version ({$this->dim($current)})",
-                'dev-master' => 'Latest development version (dev-master)',
-            ],
+            options: $options,
             default: 'current',
         );
     }
