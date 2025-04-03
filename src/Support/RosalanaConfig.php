@@ -92,29 +92,42 @@ class RosalanaConfig
             $instance = static::read();
             $sections = $instance->sections;
         }
-    
+
         $path = config_path('rosalana.php');
-    
+
         if (!file_exists($path)) {
             throw new \RuntimeException("Config file not found: $path");
         }
-    
+
         $originalText = file_get_contents($path);
         $lines = explode("\n", $originalText);
-    
+
         // Najdi index posledniho radku uvnitr return [ ... ]
         $returnStart = collect($lines)->search(fn($line) => str_contains($line, 'return ['));
         $returnEnd = collect($lines)->search(fn($line) => trim($line) === '];');
-        
-        dump($lines);
-    
+
+        // 1. Odstraň všechny prázdné řádky mezi returnStart a returnEnd
+        for ($i = $returnEnd - 1; $i > $returnStart; $i--) {
+            if (trim($lines[$i]) === '') {
+                array_splice($lines, $i, 1);
+            }
+        }
+
+        // 2. Vlož jeden prázdný řádek před ]; pokud tam není
+        if (trim($lines[$returnEnd - 1]) !== '') {
+            array_splice($lines, $returnEnd, 0, ['']);
+        }
+
+        $returnStart = collect($lines)->search(fn($line) => str_contains($line, 'return ['));
+        $returnEnd = collect($lines)->search(fn($line) => trim($line) === '];');
+
         foreach ($sections as $key => $section) {
             $rendered = explode("\n", static::render($section));
-    
+
             // Najdi zacatek sekce v puvodnich lines
             $regex = "/['\"]" . preg_quote($key, '/') . "['\"]\s*=>\s*\[/";
             $startIndex = collect($lines)->search(fn($line) => preg_match($regex, $line));
-    
+
             if ($startIndex === false && $returnEnd !== false) {
                 // Sekce neexistuje, pridame ji pred koncove ];
                 array_splice($lines, $returnEnd, 0, $rendered);
@@ -130,7 +143,7 @@ class RosalanaConfig
                         break;
                     }
                 }
-    
+
                 // Najdi zacatek komentare
                 $commentStart = $startIndex;
                 for ($i = $startIndex - 1; $i >= 0; $i--) {
@@ -139,47 +152,47 @@ class RosalanaConfig
                         break;
                     }
                 }
-    
+
                 array_splice($lines, $commentStart, $endIndex - $commentStart + 1, $rendered);
             }
         }
-    
+
         file_put_contents($path, implode("\n", $lines));
         return true;
     }
-    
+
     protected static function render(RosalanaConfigSection $section): string
     {
         $lines = [];
-    
+
         if (!empty($section->getComment()['label']) || !empty($section->getComment()['description'])) {
             $lines[] = static::renderComment($section->getComment());
         }
-    
+
         $lines[] = "    '{$section->getKey()}' => [";
         foreach ($section->getValues() as $key => $value) {
             $lines[] = "        '{$key}' => {$value},";
         }
         $lines[] = "    ],\n";
-    
+
         return implode("\n", $lines);
     }
-    
+
     protected static function renderComment(array $comment): string
     {
         $label = $comment['label'] ?? null;
         $description = $comment['description'] ?? null;
-    
+
         if (!$label && !$description) return '';
-    
+
         $output = "    /*\n";
-    
+
         if ($label) {
             $output .= '    ' . str_repeat('|', 1) . str_repeat('-', 74) . "\n";
             $output .= '    | ' . $label . "\n";
             $output .= '    ' . str_repeat('|', 1) . str_repeat('-', 74) . "\n";
         }
-    
+
         if ($description) {
             $output .= "    |\n";
             foreach (array_chunk(explode(" ", $description), 10) as $line) {
@@ -187,9 +200,9 @@ class RosalanaConfig
             }
             $output .= "    |\n";
         }
-    
+
         $output .= "    */";
-    
+
         return $output;
     }
 
