@@ -88,9 +88,9 @@ class UpdateCommand extends Command
                         exit(1);
                     }
             },
-            "Updating Rosalana ecosystem to version " . ($versionToUpdate ?? $current) . "..."
+            "Updating Rosalana ecosystem to version " . ($major) . "..."
         );
 
-        $this->components->success('Rosalana ecosystem updated successfully to version ' . ($versionToUpdate ?? $current));
+        $this->components->success('Rosalana ecosystem updated successfully to version ' . ($major));
     }
 }

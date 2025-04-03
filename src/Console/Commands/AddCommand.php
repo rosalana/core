@@ -60,7 +60,11 @@ class AddCommand extends Command
 
         $version = Package::version();
 
-        dump($version);
+        if ($version === "dev-master") {
+            $this->info('Current version: ' . $this->red("Version dev (do not use in production)"));
+        } else {
+            $this->info('Current version: ' . $this->dim('v' . trim($version, '^') . '.x.x'));
+        }
 
         $package = $notInstalled->first(function ($p) use ($selectedPackage) {
             return $p->name === $selectedPackage;
