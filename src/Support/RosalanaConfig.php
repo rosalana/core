@@ -93,103 +93,95 @@ class RosalanaConfig
             $sections = $instance->sections;
         }
     
+        [$returnStart, $returnEnd] = static::reset();
+        
         $path = config_path('rosalana.php');
-    
-        if (!file_exists($path)) {
-            throw new \RuntimeException("Config file not found: $path");
-        }
-    
-        $originalText = file_get_contents($path);
-        $lines = explode("\n", $originalText);
-    
-        // Najdi index posledniho radku uvnitr return [ ... ]
-        $returnStart = collect($lines)->search(fn($line) => str_contains($line, 'return ['));
-        $returnEnd = collect($lines)->search(fn($line) => trim($line) === '];');
+        $lines = file($path, FILE_IGNORE_NEW_LINES);
     
         foreach ($sections as $key => $section) {
-            $rendered = explode("\n", static::render($section));
+            $rendered = static::render($section);
     
-            // Najdi zacatek sekce v puvodnich lines
-            $regex = "/['\"]" . preg_quote($key, '/') . "['\"]\s*=>\s*\[/";
-            $startIndex = collect($lines)->search(fn($line) => preg_match($regex, $line));
-    
-            if ($startIndex === false && $returnEnd !== false) {
-                // Sekce neexistuje, pridame ji pred koncove ];
-                array_splice($lines, $returnEnd, 0, $rendered);
-            } else {
-                // Najdi konec bloku sekce
-                $endIndex = $startIndex;
-                $depth = 0;
-                for ($i = $startIndex; $i < count($lines); $i++) {
-                    if (str_contains($lines[$i], '[')) $depth++;
-                    if (str_contains($lines[$i], ']')) $depth--;
-                    if ($depth === 0 && $i !== $startIndex) {
-                        $endIndex = $i;
-                        break;
-                    }
-                }
-    
-                // Najdi zacatek komentare
-                $commentStart = $startIndex;
-                for ($i = $startIndex - 1; $i >= 0; $i--) {
-                    if (str_starts_with(trim($lines[$i]), '/*')) {
-                        $commentStart = $i;
-                        break;
-                    }
-                }
-    
-                array_splice($lines, $commentStart, $endIndex - $commentStart + 1, $rendered);
-            }
+            // Vložení nové sekce před koncové ]; s 1 prázdným řádkem nad a pod
+            array_splice($lines, $returnEnd, 0, $rendered);
+            $returnEnd += count($rendered); // posunout index pro další vložení
         }
     
         file_put_contents($path, implode("\n", $lines));
         return true;
     }
     
-    protected static function render(RosalanaConfigSection $section): string
+    protected static function reset(): array
+    {
+        $path = config_path('rosalana.php');
+    
+        if (!file_exists($path)) {
+            throw new \RuntimeException("Config file not found: $path");
+        }
+    
+        $resetContent = "<?php\n\nreturn [\n];\n";
+    
+        $text = file_put_contents($path, $resetContent);
+        if ($text === false) {
+            throw new \RuntimeException("Failed to reset config file: $path");
+        }
+        $lines = explode("\n", $resetContent);
+        $start = collect($lines)->search(fn($line) => str_contains($line, 'return ['));
+        $end = collect($lines)->search(fn($line) => trim($line) === '];');
+    
+        return [$start, $end];
+    }
+    
+    protected static function render(RosalanaConfigSection $section): array
     {
         $lines = [];
     
+        $lines[] = ""; // prázdný řádek nad sekcí
+    
         if (!empty($section->getComment()['label']) || !empty($section->getComment()['description'])) {
-            $lines[] = static::renderComment($section->getComment());
+            foreach (static::renderComment($section->getComment()) as $line) {
+                $lines[] = $line;
+            }
         }
     
         $lines[] = "    '{$section->getKey()}' => [";
         foreach ($section->getValues() as $key => $value) {
             $lines[] = "        '{$key}' => {$value},";
         }
-        $lines[] = "    ],\n";
+        $lines[] = "    ],";
     
-        return implode("\n", $lines);
+        return $lines;
     }
     
-    protected static function renderComment(array $comment): string
+    protected static function renderComment(array $comment): array
     {
+        $lines = [];
+    
         $label = $comment['label'] ?? null;
         $description = $comment['description'] ?? null;
     
-        if (!$label && !$description) return '';
+        if (!$label && !$description) return $lines;
     
-        $output = "    /*\n";
+        $lines[] = "    /*";
     
         if ($label) {
-            $output .= '    ' . str_repeat('|', 1) . str_repeat('-', 74) . "\n";
-            $output .= '    | ' . $label . "\n";
-            $output .= '    ' . str_repeat('|', 1) . str_repeat('-', 74) . "\n";
+            $lines[] = '    ' . str_repeat('|', 1) . str_repeat('-', 74);
+            $lines[] = '    | ' . $label;
+            $lines[] = '    ' . str_repeat('|', 1) . str_repeat('-', 74);
         }
     
         if ($description) {
-            $output .= "    |\n";
+            $lines[] = "    |";
             foreach (array_chunk(explode(" ", $description), 10) as $line) {
-                $output .= '    | ' . implode(" ", $line) . "\n";
+                $lines[] = '    | ' . implode(" ", $line);
             }
-            $output .= "    |\n";
+            $lines[] = "    |";
         }
     
-        $output .= "    */";
+        $lines[] = "    */";
     
-        return $output;
+        return $lines;
     }
+    
 
     protected static function extractComment(array $lines, int $lineIndex): array
     {
