@@ -29,20 +29,13 @@ class RosalanaConfig
 
         foreach ($values as $key => $sectionValues) {
             $regex = "/['\"]" . preg_quote($key, '/') . "['\"]\s*=>\s*\[/";
-            $lineIndex = false;
-
-            foreach ($lines as $index => $line) {
-                if (preg_match($regex, $line)) {
-                    $lineIndex = $index;
-                    break;
-                }
-            }
+            $lineIndex = collect($lines)->search(fn($line) => preg_match($regex, $line));
 
             $label = null;
             $description = [];
 
             if ($lineIndex !== false) {
-                dump($lineIndex);
+                $lineIndex = (int)$lineIndex + 1;
                 for ($i = $lineIndex - 1; $i >= 0; $i--) {
                     $line = trim($lines[$i]);
 
