@@ -46,10 +46,9 @@ class Package implements PackageContract
     /**
      * Update the package to the latest version.
      */
-    public function update(?string $version): ProcessResult
+    public function update(): ProcessResult
     {
-        $versionString = $version ? ':' . $version : '';
-        return Process::run(['composer', 'update', "$this->name" . $versionString]);
+        return Process::run(['composer', 'update', "$this->name"]);
     }
 
     /**
@@ -74,7 +73,7 @@ class Package implements PackageContract
     protected function resolveInstalledVersion(): ?string
     {
         try {
-            return InstalledVersions::getVersion($this->name);
+            return InstalledVersions::getPrettyVersion($this->name);
         } catch (\Throwable $e) {
             return null;
         }

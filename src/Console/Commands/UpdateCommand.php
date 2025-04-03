@@ -69,32 +69,32 @@ class UpdateCommand extends Command
 
         $versionToUpdate = $major === 'current' ? $current : "$major";
 
-        spin(
-            function () use ($versionToUpdate) {
-                // update core
-                $core = Package::find('rosalana/core');
-                $result = $core->update($versionToUpdate);
-                if ($result->failed()) {
-                    $this->line("\n");
-                    echo $this->red($result->errorOutput());
-                    exit(1);
-                }
+        // spin(
+        //     function () use ($versionToUpdate) {
+        //         // update core
+        //         $core = Package::find('rosalana/core');
+        //         $result = $core->update($versionToUpdate);
+        //         if ($result->failed()) {
+        //             $this->line("\n");
+        //             echo $this->red($result->errorOutput());
+        //             exit(1);
+        //         }
 
-                // update other packages
-                $packages = Package::installed()->filter(function ($package) {
-                    return $package->name !== 'rosalana/core';
-                });
+        //         // update other packages
+        //         $packages = Package::installed()->filter(function ($package) {
+        //             return $package->name !== 'rosalana/core';
+        //         });
 
-                foreach ($packages as $package) {
-                    $result = $package->update($versionToUpdate);
-                    if ($result->failed()) {
-                        $this->line("\n");
-                        echo $this->red($result->errorOutput());
-                        exit(1);
-                    }
-                }
-            },
-            "Updating Rosalana ecosystem to version {$this->dim($versionToUpdate)}..."
-        );
+        //         foreach ($packages as $package) {
+        //             $result = $package->update($versionToUpdate);
+        //             if ($result->failed()) {
+        //                 $this->line("\n");
+        //                 echo $this->red($result->errorOutput());
+        //                 exit(1);
+        //             }
+        //         }
+        //     },
+        //     "Updating Rosalana ecosystem to version {$this->dim($versionToUpdate)}..."
+        // );
     }
 }
