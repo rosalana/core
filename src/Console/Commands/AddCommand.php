@@ -35,10 +35,16 @@ class AddCommand extends Command
      */
     public function handle()
     {
+
         $notInstalled = Package::notInstalled();
 
         if (env('APP_ENV') === 'production') {
             $this->components->error('You cannot install packages in production');
+            return 1;
+        }
+
+        if ($notInstalled->isEmpty()) {
+            $this->components->success('All packages are already installed');
             return 1;
         }
 
@@ -52,12 +58,14 @@ class AddCommand extends Command
             default: null,
         );
 
-        $version = text(
-            label: 'Would you like to install a specific version?',
-        );
+        $coreVersion = Package::find('rosalana/core')->installedVersion;
 
-        if ($version === '') {
-            $version = null;
+        $version = null;
+
+        if ($coreVersion === 'dev-master') {
+            $version = 'dev-master';
+        } elseif (preg_match('/^(\d+)\./', $coreVersion, $matches)) {
+            $version = "^{$matches[1]}";
         }
 
         $package = $notInstalled->first(function ($p) use ($selectedPackage) {
