@@ -7,6 +7,7 @@ use Laravel\Prompts\Concerns\Colors;
 use Rosalana\Core\Services\Package;
 
 use function Laravel\Prompts\select;
+use function Laravel\Prompts\spin;
 
 class UpdateCommand extends Command
 {
@@ -39,7 +40,12 @@ class UpdateCommand extends Command
 
         $current = Package::version();
 
-        $availableVersions = Package::versions();
+        $availableVersions = [];
+
+        spin(function () use (&$availableVersions) {
+            $availableVersions = Package::versions();
+        }, 'Fetching available versions...');
+
 
         dd($availableVersions);
 
