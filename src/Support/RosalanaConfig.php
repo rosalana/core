@@ -37,19 +37,20 @@ class RosalanaConfig
             $readingHeader = false;
 
             if ($lineIndex !== false) {
+
                 for ($i = $lineIndex - 1; $i >= 0; $i--) {
                     $line = trim($lines[$i]);
 
                     
 
-                    if (!str_starts_with($line, '*/')) break; // neexistuje komentář
+                    if (!str_starts_with(trim($lines[$lineIndex - 1]), '*/')) break; // neexistuje komentář
 
                     // if ($line = '|' || $line) {
                     //     continue; // prázdný řádek
                     // }
 
-                    dump($line);
                     if (str_starts_with($line, '/*')) break; // konec komentáře
+                    dump($line);
 
 
                     // if (str_starts_with($line, '|')) {
