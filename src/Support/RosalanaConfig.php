@@ -5,7 +5,7 @@ namespace Rosalana\Core\Support;
 class RosalanaConfig
 {
 
-    protected static array $sections = [];
+    protected array $sections = [];
 
     public static function read(?string $path = null): static
     {
