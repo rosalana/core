@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Laravel\Prompts\Concerns\Colors;
 use Rosalana\Core\Console\InternalCommands;
 use Rosalana\Core\Services\Package;
+use Rosalana\Core\Support\RosalanaConfig;
 
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
@@ -78,9 +79,11 @@ class AddCommand extends Command
         }, $processLabel);
 
 
-        $this->updateConfig('installed', [
-            $package->name => null
-        ]);
+        RosalanaConfig::get('installed')->set($package->name, null)->save();
+
+        // $this->updateConfig('installed', [
+        //     $package->name => null
+        // ]);
 
         $this->components->success("{$package->name} has been installed");
     }

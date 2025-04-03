@@ -88,9 +88,9 @@ class PublishCommand extends Command
             }
 
             // update the installed version in the config
-            $this->updateConfig('installed', [
-                $package->name => $package->installedVersion
-            ]);
+            // $this->updateConfig('installed', [
+            //     $package->name => $package->installedVersion
+            // ]);
         }, "Publishing $searchOptions for $package->name");
 
 
