@@ -56,17 +56,12 @@ class Package
         $versions = collect(explode(',', $matches[1]))
             ->map(fn($v) => trim($v, '* '))
             ->filter(fn($v) => preg_match('/^\d+\.\d+\.\d+$|^v\d+\.\d+\.\d+$/', $v) || $v === 'dev-master')
+            ->map(function ($version) {
+                return $version === 'dev-master' ? 'dev-master' : explode('.', $version)[0];
+            })
+            ->unique()
+            ->values()
             ->toArray();
-
-        // $versions = collect(explode(',', $matches[1]))
-        //     ->map(fn($v) => trim($v))
-        //     ->filter(fn($v) => preg_match('/^\d+\.\d+\.\d+$/', $v) || $v === 'dev-master')
-        //     ->map(function ($version) {
-        //         return $version === 'dev-master' ? 'dev-master' : explode('.', $version)[0];
-        //     })
-        //     ->unique()
-        //     ->values()
-        //     ->toArray();
 
         // sort($versions); // seřaď podle major verze
 
