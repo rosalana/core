@@ -3,7 +3,7 @@
 namespace Rosalana\Core\Services;
 
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Process;
+use Symfony\Component\Process\Process;
 use Rosalana\Core\Package as AbstractPackage;
 
 class Package
