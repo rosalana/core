@@ -105,6 +105,16 @@ class RosalanaConfig
         // Najdi index posledniho radku uvnitr return [ ... ]
         $returnStart = collect($lines)->search(fn($line) => str_contains($line, 'return ['));
         $returnEnd = collect($lines)->search(fn($line) => trim($line) === '];');
+
+        if ($returnStart === false || $returnEnd === false) {
+            throw new \RuntimeException("Invalid format of config file: missing return block");
+        }
+    
+        for ($i = $returnEnd - 1; $i > $returnStart; $i--) {
+            if (trim($lines[$i]) === '') {
+                array_splice($lines, $i, 1);
+            }
+        }
     
         foreach ($sections as $key => $section) {
             $rendered = explode("\n", static::render($section));
