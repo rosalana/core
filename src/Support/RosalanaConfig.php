@@ -233,7 +233,7 @@ class RosalanaConfig
             }
         }
 
-        return [$label, preg_replace('/\s+/', ' ', implode('', array_reverse($description)))];
+        return [$label, preg_replace('/\s+/', ' ', implode(' ', array_reverse($description)))];
     }
 
     protected static function extractArrayValuesFromBlock(array $lines, int $startLine): array
