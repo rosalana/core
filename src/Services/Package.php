@@ -32,6 +32,8 @@ class Package
         if ($coreVersion === 'dev-master') {
             return 'dev-master';
         }
+
+        dump('Core version: '. $coreVersion);
     
         // Odstraň prefix 'v' pokud existuje (např. v0.3.5 → 0.3.5)
         $normalized = ltrim($coreVersion, 'v');
