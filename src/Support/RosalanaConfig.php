@@ -35,11 +35,10 @@ class RosalanaConfig
             $description = [];
 
             if ($lineIndex !== false) {
-                $lineIndex = (int)$lineIndex + 1;
                 for ($i = $lineIndex - 1; $i >= 0; $i--) {
                     $line = trim($lines[$i]);
 
-                    if (str_starts_with($line, '*/')) break; // bezpečnostní stop
+                    // if (str_starts_with($line, '/*')) break; // bezpečnostní stop
 
                     if (str_starts_with($line, '|')) {
                         $content = trim(substr($line, 1));
