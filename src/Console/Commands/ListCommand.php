@@ -36,16 +36,18 @@ class ListCommand extends Command
 
         $packages = Package::all();
 
-        foreach ($packages as $package) {
-            $check = $package->installed ? '[✓]' : '[ ]';
-            $name = str_pad($package->name,  24); // package name padding
-            $version = str_pad($package->installedVersion ?? '—', 10);
-            $status = $this->renderStatus($package->status->value);
-
-            $this->line("{$check} {$name} {$version} {$status}");
-            $this->line("     <fg=gray>" . Package::getDescription($package->name) . "</>");
-            $this->newLine();
-        }
+        $this->table(
+            ['Status', 'Package', 'Version', 'State', 'Description'],
+            $packages->map(function ($package) {
+                return [
+                    $package->installed ? '[✓]' : '[ ]',
+                    $package->name,
+                    $package->installedVersion ?? '—',
+                    $this->renderStatus($package->status->value),
+                    \Rosalana\Core\Services\Package::getDescription($package->name),
+                ];
+            })->toArray()
+        );
     }
 
     protected function renderStatus(string $status): string
