@@ -7,6 +7,27 @@ class RosalanaConfig
 
     protected array $sections = [];
 
+    public static function read(?string $path = null): static
+    {
+        $path ??= config_path('rosalana.php');
+
+        if (!file_exists($path)) {
+            throw new \RuntimeException("Config file not found: $path");
+        }
+
+        // Safe include config file
+        $data = include $path;
+
+        if (!is_array($data)) {
+            throw new \RuntimeException("Invalid config file structure: $path");
+        }
+
+        $instance = new static();
+        $instance->sections = $data;
+
+        return $instance;
+    }
+
     public static function make()
     {
         return new static();
