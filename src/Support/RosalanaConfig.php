@@ -36,6 +36,8 @@ class RosalanaConfig
 
             $readingLabel = false;
 
+            dump($lineIndex);
+
             if ($lineIndex !== false) {
                 $hasCommentBlock = false;
                 for ($i = $lineIndex - 1; $i >= 0; $i--) {
