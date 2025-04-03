@@ -38,7 +38,7 @@ class Package
     
         // Získej major verzi (první číslo)
         if (preg_match('/^(\d+)\./', $normalized, $matches)) {
-            return $matches[1]; // např. "0"
+            return '^'.$matches[1];
         }
     
         return null;

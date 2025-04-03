@@ -60,6 +60,8 @@ class AddCommand extends Command
 
         $version = Package::version();
 
+        dump($version);
+
         $package = $notInstalled->first(function ($p) use ($selectedPackage) {
             return $p->name === $selectedPackage;
         });
