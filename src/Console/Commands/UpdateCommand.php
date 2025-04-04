@@ -41,11 +41,11 @@ class UpdateCommand extends Command
 
         $current = Package::version();
         $this->newLine();
-        $this->line('🚀 Update Rosalana ecosystem');
+        $this->line($this->bold('🚀 Update Rosalana ecosystem'));
         if ($current === "dev-master") {
-            $this->line('📍 Current version: ' . $this->red("Version dev (do not use in production)"));
+            $this->line($this->dim('  Current version: ' . $this->red("Version dev (do not use in production)")));
         } else {
-            $this->line('📍 Current version: ' . $this->dim('v' . trim($current, '^') . '.x.x'));
+            $this->line($this->dim('  Current version: ' . $this->dim('v' . trim($current, '^') . '.x.x')));
         }
         $this->newLine();
 
