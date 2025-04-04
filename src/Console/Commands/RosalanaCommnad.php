@@ -35,11 +35,11 @@ class RosalanaCommnad extends Command
         $version = Package::version();
 
         $this->newLine();
-        $this->info(' _____                    _                         ____ _     ___ ');
-        $this->info('|     \ _ _   ____  __ _ | |  __ _ __ _   __ _     / ___| |   |_ _|');
-        $this->info('|  |  |  _  \/  __// _  || | / _  |  _ \ / _  |   | |   | |    | | ');
-        $this->info('|    <  ( ) |\__ \| ( | || || ( | | | | | ( | |   | |___| |___ | | ');
-        $this->info('|__|\_|\___//____/ \__,_||_| \__,_|_| |_|\__,_|    \____|_____|___|');
+        $this->info(' _____                    _                         ___ _    ___ ');
+        $this->info('|     \ _ _   ____  __ _ | |  __ _ __ _   __ _     / __| |  |_ _|');
+        $this->info('|  |  |  _  \/  __// _  || | / _  |  _ \ / _  |   | |  | |   | | ');
+        $this->info('|    <  ( ) |\__ \| ( | || || ( | | | | | ( | |   | |__| |__ | | ');
+        $this->info('|__|\_|\___//____/ \__,_||_| \__,_|_| |_|\__,_|    \___|____|___|');
         $this->newLine();
 
         $this->line("Version: {$this->cyan($version === 'dev-master' ? 'dev-master' : 'v' . trim($version, '^') . '.x.x')}");
