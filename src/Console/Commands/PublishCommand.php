@@ -46,7 +46,7 @@ class PublishCommand extends Command
         }
 
         $this->newLine();
-        $this->line('📂 Publish files');
+        $this->line($this->bold('📂 Publish files'));
         $this->newLine();
 
         $options = $installed->mapWithKeys(function ($package) {

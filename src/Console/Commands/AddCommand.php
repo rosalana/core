@@ -49,7 +49,7 @@ class AddCommand extends Command
         }
 
         $this->newLine();
-        $this->line('🌍 Install package');
+        $this->line($this->bold('🌍 Install package'));
         $this->newLine();
 
         $options = $notInstalled->mapWithKeys(function ($package) {

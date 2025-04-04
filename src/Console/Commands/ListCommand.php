@@ -31,7 +31,7 @@ class ListCommand extends Command
     public function handle()
     {
         $this->newLine();
-        $this->info('📦  Rosalana Packages');
+        $this->line($this->bold('📦  Rosalana Packages'));
         $this->newLine();
 
         $packages = Package::all();
