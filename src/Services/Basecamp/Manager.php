@@ -4,6 +4,7 @@ namespace Rosalana\Core\Services\Basecamp;
 
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Rosalana\Core\Facades\Pipeline;
 
 class Manager
 {
@@ -24,6 +25,11 @@ class Manager
         'Accept' => 'application/json',
         'Content-Type' => 'application/json',
     ];
+
+    /**
+     * Pipeline to be used for the request.
+     */
+    protected ?string $pipeline = null;
 
     /**
      * Services that the client can use.
@@ -48,42 +54,71 @@ class Manager
     }
 
     /**
+     * Set the pipeline to be used for the request.
+     */
+    public function withPipeline(string $pipeline): self
+    {
+        $this->pipeline = $pipeline;
+        return $this;
+    }
+
+    /**
      * General method for making GET requests.
      */
-    public function get(string $endpoint)
+    public function get(string $endpoint, ?string $pipeline = null)
     {
+        if ($pipeline) {
+            $this->pipeline = $pipeline;
+        }
+
         return $this->request('get', $endpoint);
     }
 
     /**
      * General method for making POST requests.
      */
-    public function post(string $endpoint, array $data = [])
+    public function post(string $endpoint, array $data = [], ?string $pipeline = null)
     {
+        if ($pipeline) {
+            $this->pipeline = $pipeline;
+        }
+
         return $this->request('post', $endpoint, $data);
     }
 
     /**
      * General method for making PUT requests.
      */
-    public function put(string $endpoint, array $data = [])
+    public function put(string $endpoint, array $data = [], ?string $pipeline = null)
     {
+        if ($pipeline) {
+            $this->pipeline = $pipeline;
+        }
+
         return $this->request('put', $endpoint, $data);
     }
 
     /**
      * General method for making PATCH requests.
      */
-    public function patch(string $endpoint, array $data = [])
+    public function patch(string $endpoint, array $data = [], ?string $pipeline = null)
     {
+        if ($pipeline) {
+            $this->pipeline = $pipeline;
+        }
+
         return $this->request('patch', $endpoint, $data);
     }
 
     /**
      * General method for making DELETE requests.
      */
-    public function delete(string $endpoint)
+    public function delete(string $endpoint, ?string $pipeline = null)
     {
+        if ($pipeline) {
+            $this->pipeline = $pipeline;
+        }
+
         return $this->request('delete', $endpoint);
     }
 
@@ -92,9 +127,16 @@ class Manager
      */
     protected function request(string $method, string $endpoint, array $data = []): Response
     {
-        return Http::withHeaders($this->headers)
+        $response = Http::withHeaders($this->headers)
             ->$method($this->url . $endpoint, $data)
             ->throw();
+
+        if ($this->pipeline) {
+            Pipeline::resolve($this->pipeline)->run($response);
+            $this->pipeline = null;
+        }
+
+        return $response;
     }
 
     /**

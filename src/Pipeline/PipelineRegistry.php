@@ -24,11 +24,26 @@ class PipelineRegistry
     }
 
     /**
+     * Determine if a pipeline exists.
+     */
+    public static function exists(string $alias): bool
+    {
+        return isset(static::$pipelines[$alias]);
+    }
+
+    /**
      * Extend a pipeline safely
      */
     public static function extend(string $alias, callable $pipe): void
     {
         static::resolve($alias)->extend($pipe);
+    }
+
+    public static function extendIfExists(string $alias, callable $pipe): void
+    {
+        if (static::exists($alias)) {
+            static::extend($alias, $pipe);
+        }
     }
 
     /**
