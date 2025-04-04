@@ -25,7 +25,7 @@ class UpdateCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Update Rosalana package to the latest version';
+    protected $description = 'Update Rosalana ecosystem to the latest or selected version';
 
     /**
      * Execute the console command.
