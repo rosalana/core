@@ -92,7 +92,7 @@ class Package implements PackageContract
      */
     protected function resolvePublishedVersion(): ?string
     {
-        return config('rosalana.installed.' . $this->name);
+        return config('rosalana.published.' . $this->name);
     }
 
     /**
