@@ -28,13 +28,19 @@ class Core implements Package
                     ]);
 
                     RosalanaConfig::new('published')
-                        ->comment('All published Rosalana packages. This array is used to determine if the package has been installed/published or not and with the correct version. DO NOT MODIFY THIS ARRAY MANUALLY!', 'Rosalana Published Packages')
+                        ->comment(
+                            'List of all published Rosalana packages. This array is used to determine which packages have been installed and which version is currently active. This section is managed automatically. DO NOT EDIT THIS MANUALLY.',
+                            'Published Packages'
+                        )
                         ->save();
-                        
+
                     RosalanaConfig::new('basecamp')
                         ->add('url', "env('ROSALANA_BASECAMP_URL', 'http://localhost:8000')")
                         ->add('secret', "env('ROSALANA_APP_SECRET', 'secret')")
-                        ->comment('Here you can define the settings for the Rosalana Auth. This settings are used for authorizate your app to the Rosalana Basecamp to use Basecamp services.', 'Rosalana Basecamp Auth Settings')
+                        ->comment(
+                            'Defines how your application connects to the central Rosalana Basecamp server, which manages shared data and communication across the ecosystem.',
+                            'Basecamp Connection'
+                        )
                         ->save();
                 }
             ],

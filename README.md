@@ -4,20 +4,146 @@ Rosalana Core is the shared foundation for all applications in the Rosalana ecos
 
 > For more advanced features that are specific to certain functionalities, Rosalana provides additional packages.
 
->`rosalana/*` packages are meant to be used in Laravel applications with [Inertia](https://inertiajs.com/)
+> `rosalana/*` packages are meant to be used in Laravel applications with [Inertia](https://inertiajs.com/)
 
 ## Table of Contents
 
-- [Features](#features)
-    - [Basecamp Connection](#basecamp-connection)
 - [Installation](#installation)
-- [Configuration](#configuration) -TODO (RosalanaConfig::class)
-- [CLI](#cli) - TODO
+- [Configuration](#configuration)
+- [Features](#features)
+  - [CLI](#cli)
+  - [Config Builder](#config-builder)
+  - [Package Manager](#package-manager)
+  - [Basecamp Connection](#basecamp-connection)
+- [Ecosystem Versioning](#ecosystem-versioning)
 - [May Show in the Future](#may-show-in-the-future)
 - [License](#license)
 
+## Installation
+
+You can install `rosalana/core` via Composer by running the following command:
+
+```bash
+composer require rosalana/core
+```
+
+After installing the package, you should publish its assets using the following command:
+
+```bash
+php artisan rosalana:publish
+```
+
+You can specify which files to publish. Publishing **the configuration files is required** to set up the package properly. Other files are optional and can be published as needed. However, it is recommended to publish all files to take full advantage of the package features.
+
+## Configuration
+
+After publishing the package, you will find a `rosalana.php` configuration file in the `config` directory of your Laravel application. You can customize these options according to your needs.
+
+This file will grow over time as you add more Rosalana packages to your application. Each package contributes its own configuration section. The `rosalana.php` file serves as the central configuration hub for all Rosalana packages.
+
+`rosalana/core` package provides configuration options for:
+
+- **basecamp**: Customize the connection to the central server which your application will connect to. More details [below](#basecamp-connection).
+- **published**: Tracks the packages that are currently installed and published in your application. This section is automatically updated when you publish a package. **Do not edit this section manually.**
 
 ## Features
+
+### CLI
+
+The Rosalana CLI is a developer tool that helps you manage and maintain packages within the Rosalana ecosystem. It allows you to install, update, remove, and configure packages through simple Artisan commands.
+
+It’s designed to work with all current and future packages in the Rosalana ecosystem. Each package extends the CLI with its own logic and assets, enabling a smooth and unified development experience.
+
+The CLI ensures that all Rosalana packages stay compatible with each other and with the core system. It follows the [ecosystem versioning standard](#ecosystem-versioning), so version management is handled automatically.
+
+#### Available Commands
+
+- `rosalana` – Show the current Rosalana ecosystem version in your project and list all available CLI commands.
+
+- `rosalana:list` – Display all available and installed Rosalana packages based on the current ecosystem version.
+
+- `rosalana:publish` – Publish package assets (such as config files, stubs, migrations). Use after installing a package or to update published files.
+
+- `rosalana:add` – Add a new Rosalana package. CLI will automatically install the correct version based on the current ecosystem version.
+
+- `rosalana:remove` – Remove a Rosalana package from your project and optionally clean up its configuration.
+
+- `rosalana:update` – Update all installed packages to the latest available version for the current ecosystem. Or switch to a different ecosystem version entirely.
+
+> Commands are blocked in production to prevent accidental modifications.
+
+### Config Builder
+
+Rosalana Core comes with a built-in **Config Builder** that allows you to programmatically manage the contents of the `rosalana.php` config file — **without overwriting existing user-defined values.**
+
+This means you can safely publish or update configuration sections multiple times, and the builder will only insert missing keys without removing any of your changes.
+
+The Config Builder also supports **PHP-style comments** (including title + description) that are rendered directly into the file. These help explain the purpose of each section clearly and keep config file human-readable even as it grows.
+
+Every package in the Rosalana ecosystem uses the Config Builder to register its own configuration block. All sections are grouped inside a single rosalana.php file for easy navigation.
+
+```php
+use Rosalana\Core\Support\RosalanaConfig;
+
+// Add or update a config section
+RosalanaConfig::new('basecamp')
+    ->add('secret',"env('ROSALANA_APP_SECRET', 'secret')")
+    ->comment(
+        'Connection settings for Basecamp (central server).',
+        'Basecamp Connection'
+    )
+    ->save();
+
+// Update a published version tag
+RosalanaConfig::get('published')
+    ->set('rosalana/xx', '1.0.0')
+    ->save();
+```
+
+### Package Manager
+The Rosalana ecosystem includes a **built-in package management system** that allows each package to describe itself, define what it publishes, and integrate with the CLI.
+
+To make a package compatible with the Rosalana CLI (for use in commands like `rosalana:add`, `rosalana:update`, or `rosalana:publish`), it must register itself through a provider class that implements the `Rosalana\Core\Contracts\Package` interface.
+
+#### Registering a Package
+Each package must include a class in its `Providers` namespace with the same name as the package directory (e.g., `Core.php` for the `rosalana/core` package):
+
+```php
+namespace Rosalana\Core\Providers;
+
+use Rosalana\Core\Contracts\Package;
+
+class Core implements Package
+{
+    public function resolvePublished(): bool
+    {
+        // Self determining if the package is published
+    }
+
+    public function publish(): array
+    {
+        // Define what publish and how 
+        // (CLI will handle publish all automatically)
+        return [
+            'stuff' => [
+                'label' => 'Publish some stuff',
+                'run' => function () {
+                    // Process publishing...
+                }
+            ],
+        ];
+    }
+}
+```
+This is enough to make your package discoverable and manageable by the Rosalana CLI.
+
+> **Tip:** You can define multiple publishing actions (e.g., `config`, `stubs`, `env`, `migrations`) in the `publish()` method to give the user flexibility.
+
+#### Suporting the CLI
+Rosalana keeps a hardcoded list of known packages (per ecosystem version) to **prevent incompatibility** and make installation reliable. Stored in `Rosalana\Core\Services\Package.php`.
+
+> **Note:** If you don't see package in the CLI, it means that the package is not compatible with the current ecosystem version. Try `rosalana:update` to the same version or a newer one.
+
 
 ### Basecamp Connection
 
@@ -62,44 +188,25 @@ After that, you can use the service in your application through the Basecamp fac
 Basecamp::users()->getUser(1);
 ```
 
-## Installation
+## Ecosystem Versioning
 
-You can install `rosalana/core` via Composer by running the following command:
+Rosalana follows a unified versioning system. When you install or update packages, they are automatically matched to the correct version based on your current Rosalana ecosystem version.
 
-```bash
-composer require rosalana/core
+```
+X.Y.Z
+│ │ └── Minor fix / patch in the package.
+│ └──── Major change in the package but still compatible.
+└────── Version of the Rosalana ecosystem
 ```
 
-After installing the package, you can publish its assets using the following command:
-
-```bash
-php artisan rosalana:core:install
-```
-
-> **Warning:** This is a one-time operation, don't run it multiple times.
-
-> **Note:** API of commands may change in the future versions.
-
-## Configuration
-
-Inside `rosalana/core`, you’ll find a default configuration file in `config/rosalana.php`. That let you adjust settings.
-
-Connection to the Basecamp server expects the following configuration:
-
-```php
-return [
-    'basecamp' => [
-        'url' => env('ROSALANA_BASECAMP_URL'),
-        'secret' => env('ROSALANA_CLIENT_SECRET'),
-    ],
-];
-```
+The [CLI](#cli) ensures package compatibility and prevents installing mismatched versions.
 
 ## May Show in the Future
-- **Basecamp key Decoder:** Decoding the Basecamp access token right in the rosalana/core package.
-- **Install/Update Command:** A banch of commands to init rosalana packages and update them. Managing the configuration changes and other stuff. Other packages just register themselves in the install command.
 
-    Commands can handle missmatch of the `rosalana.php` configuration file. They can also handle the scaffolding of the packages.
+- **Basecamp key Decoder:** Decoding the Basecamp access token right in the rosalana/core package.
+- **Pipeline:** A pipeline system that starts after Basecamp response to allow multiple packages to process the same request.
+- **Event system:** A system to allow packages create and listen to events across the ecosystem.
+
 
 ## License
 
