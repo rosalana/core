@@ -14,6 +14,7 @@ Rosalana Core is the shared foundation for all applications in the Rosalana ecos
   - [CLI](#cli)
   - [Config Builder](#config-builder)
   - [Package Manager](#package-manager)
+  - [Pipelines](#pipelines)
   - [Basecamp Connection](#basecamp-connection)
 - [Ecosystem Versioning](#ecosystem-versioning)
 - [May Show in the Future](#may-show-in-the-future)
@@ -101,11 +102,13 @@ ConfigBuilder::get('published')
 ```
 
 ### Package Manager
+
 The Rosalana ecosystem includes a **built-in package management system** that allows each package to describe itself, define what it publishes, and integrate with the CLI.
 
 To make a package compatible with the Rosalana CLI (for use in commands like `rosalana:add`, `rosalana:update`, or `rosalana:publish`), it must register itself through a provider class that implements the `Rosalana\Core\Contracts\Package` interface.
 
 #### Registering a Package
+
 Each package must include a class in its `Providers` namespace with the same name as the package directory (e.g., `Core.php` for the `rosalana/core` package):
 
 ```php
@@ -122,7 +125,7 @@ class Core implements Package
 
     public function publish(): array
     {
-        // Define what publish and how 
+        // Define what publish and how
         // (CLI will handle publish all automatically)
         return [
             'stuff' => [
@@ -135,36 +138,89 @@ class Core implements Package
     }
 }
 ```
+
 This is enough to make your package discoverable and manageable by the Rosalana CLI.
 
 > **Tip:** You can define multiple publishing actions (e.g., `config`, `stubs`, `env`, `migrations`) in the `publish()` method to give the user flexibility.
 
 #### Suporting the CLI
+
 Rosalana keeps a hardcoded list of known packages (per ecosystem version) to **prevent incompatibility** and make installation reliable. Stored in `Rosalana\Core\Services\Package.php`.
 
 > **Note:** If you don't see package in the CLI, it means that the package is not compatible with the current ecosystem version. Try `rosalana:update` to the same version or a newer one.
 
+### Pipelines
+
+The Rosalana Core includes a simple **pipeline system** that wraps around the Laravel pipeline. This allows packages to define and extend actions that should happen after certain events - like making a request to the Basecamp server.
+
+Instead of handling logic inline, packages can define named pipelines and allow other packages to contribute additional logic to them **— without creating tight dependencies.**
+
+> This makes cross-package coordination easy and flexible. Without the need to repeat the same actions in multiple packages.
+
+Each pipeline is identified by a string alias. A package can register a pipeline and define what should happen when the pipeline is executed.
+
+```php
+use Rosalana\Core\Facades\Pipeline;
+
+Pipeline::resolve('user.login')->extend(MyLoginHandler::class);
+```
+
+Other packages can extend the same pipeline without knowing if the original package is present or not.
+
+```php
+use Rosalana\Core\Facades\Pipeline;
+
+Pipeline::extendIfExists('user.login', fn ($response) => /* do something */);
+```
+
+Pipelines are executed automatically in some cases, like when a request is made to the Basecamp server. You can also trigger them manually.
+
+```php
+use Rosalana\Core\Facades\Pipeline;
+
+Pipeline::resolve('user.login')->run($request);
+```
 
 ### Basecamp Connection
 
 > Connect to the central **Rosalana: Basecamp** server
 
-Every package above `rosalana/core` can connect to the central Basecamp server to fetch user data, settings, and more. This connection is managed by the `Rosalana\Core\Services\Basecamp\Manager` class.
+Every package built on `rosalana/core` can communicate with the central Basecamp server using a unified HTTP client provided by the `Rosalana\Core\Services\Basecamp\Manager::class`.
 
-Connectivity is established via the `rosalana.basecamp` service, which you can access through the `Basecamp` facade.
+You can make requests to Basecamp in two different ways, depending on your use case
 
-It's possible to create custom services that extend the `Basecamp Facade`. This way, you can define specific methods to interact with the Basecamp server.
+#### Direct Requests
 
-For example, you can create a service that fetches data about a users from the Basecamp server. You can define the service like this:
+The `Basecamp` facade gives you access to generic HTTP methods like `get()`, `post()`, `put()`, etc. You can use these methods to make requests to the Basecamp server directly.
+
+```php
+$response = Basecamp::get('/users/1');
+
+$response = Basecamp::withAuth($token)
+    ->withPipeline('user.login')
+    ->post('/login', $credentials);
+```
+
+This approach is great for quick or dynamic requests without needing a dedicated service class.
+
+#### Custom Services (Predefined API Actions)
+
+For more structured and reusable logic, you can **define your own service** class and register it under a name. This adds a named accessor to the `Basecamp` facade, allowing you to call your service methods directly.
 
 ```php
 use Rosalana\Core\Services\Basecamp\Service;
 
 class UsersService extends Service
 {
-    public function getUser($id)
+    public function get(int $id)
     {
         return $this->manager->get("users/{$id}");
+    }
+
+    public function login(array $credentials)
+    {
+        return $this->manager->withPipeline('user.login')
+            ->post('login', $credentials);
     }
 }
 ```
@@ -185,8 +241,13 @@ public function register()
 After that, you can use the service in your application through the Basecamp facade.
 
 ```php
-Basecamp::users()->getUser(1);
+Basecamp::users()->get(1);
+Basecamp::users()->login(['email' => 'a@a.com', 'password' => '...']);
 ```
+
+You can chain `withAuth()` and `withPipeline()` methods on any request to handle authentication or trigger post-response pipelines.
+
+All services registered this way automatically receive access to the underlying `Basecamp\Manager`, which manages headers, base URL, and request logic.
 
 ## Ecosystem Versioning
 
@@ -206,8 +267,13 @@ The [CLI](#cli) ensures package compatibility and prevents installing mismatched
 - **Basecamp key Decoder:** Decoding the Basecamp access token right in the rosalana/core package.
 - **Pipeline:** A pipeline system that starts after Basecamp response to allow multiple packages to process the same request.
 - **Event system:** A system to allow packages create and listen to events across the ecosystem.
+- **rosalana:generate:** A command to generate a file stups for projects. Combination of `rosalana:publish` and `artisan make:...` commands. Should be used to generate/publish files from package to project.
+- **Plugin infrastructure**
+- **Shared message-bus interfaces**
+- **Realtime WebSocket integration**
+- **Hook & Observer system**
 
-
+Stay tuned — we're actively shaping the foundation of the Rosalana ecosystem.
 ## License
 
 Rosalana Core is open-source under the [MIT license](/LICENCE), allowing you to freely use, modify, and distribute it with minimal restrictions.
