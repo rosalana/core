@@ -20,6 +20,11 @@ class RosalanaCoreServiceProvider extends ServiceProvider
             return new Manager();
         });
 
+        $this->app->singleton('rosalana.pipeline.registry', function () {
+            return new \Rosalana\Core\Pipeline\PipelineRegistry();
+        });
+        
+
         $this->app->resolving('rosalana.basecamp', function (Manager $manager) {
             $manager->registerService('apps', new AppsService());
         });
