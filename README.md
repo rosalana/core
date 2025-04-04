@@ -11,7 +11,8 @@ Rosalana Core is the shared foundation for all applications in the Rosalana ecos
 - [Features](#features)
     - [Basecamp Connection](#basecamp-connection)
 - [Installation](#installation)
-- [Configuration](#configuration)
+- [Configuration](#configuration) -TODO (RosalanaConfig::class)
+- [CLI](#cli) - TODO
 - [May Show in the Future](#may-show-in-the-future)
 - [License](#license)
 
