@@ -38,6 +38,9 @@ class RosalanaCoreServiceProvider extends ServiceProvider
                 \Rosalana\Core\Console\Commands\AddCommand::class,
             ]);
             $this->commands([
+                \Rosalana\Core\Console\Commands\RemoveCommand::class,
+            ]);
+            $this->commands([
                 \Rosalana\Core\Console\Commands\ListCommand::class,
             ]);
             $this->commands([
