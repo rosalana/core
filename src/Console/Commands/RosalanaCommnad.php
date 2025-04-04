@@ -34,15 +34,17 @@ class RosalanaCommnad extends Command
     {
         $version = Package::version();
 
-        $this->line("\n");
-        // // $this->
+        $this->newLine();
+        $this->line('   _____                     __                           ____ _     ___ ');
+        $this->line('  |      \ _ _   ____  __ _ |  |  __ _ ___ _    __ _     / ___| |   |_ _|');
+        $this->line('  |  |)  |  _  \/  __// _  ||  | / _  |  _  \  / _  |   | |   | |    | | ');
+        $this->line('  |     <  ( ) |\__ \| ( | ||  || ( | | | |  || ( | |   | |___| |___ | | ');
+        $this->line('  |__|\__|\___//____/ \__,_||__| \__,_|_| |__| \__,_|    \____|_____|___|');
+        $this->newLine();
 
-
-
-
-        $this->line("Rosalana CLI {$this->cyan($version === 'dev-master' ? 'dev-master' : 'v' . trim($version, '^') . '.x.x')}");
-
-        $this->line("\n");
+        $this->line("Version: {$this->cyan($version === 'dev-master' ? 'dev-master' : 'v' . trim($version, '^') . '.x.x')}");
+        $this->newLine();
+        $this->newLine();
 
         $commands = collect(Artisan::all())
             ->filter(fn($cmd, $name) => str_starts_with($name, 'rosalana:'))
