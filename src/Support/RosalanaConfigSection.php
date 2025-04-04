@@ -94,7 +94,7 @@ class RosalanaConfigSection
 
     public function filled(string $key): bool
     {
-        return $this->has($key) && ($this->values[$key] !== null || $this->values[$key] !== 'null');
+        return $this->has($key) && !is_null($this->values[$key]);
     }
 
     public function getLine(): ?int

@@ -37,7 +37,10 @@ class RemoveCommand extends Command
     {
         $installed = Package::installed();
 
-        dd(RosalanaConfig::read());
+        dump(RosalanaConfig::get('published')->filled('rosalana/core'));
+        dump(RosalanaConfig::get('published')->filled('rosalana/accounts'));
+
+        dd();
 
         if (env('APP_ENV') === 'production') {
             $this->components->error('You cannot remove packages in production');
