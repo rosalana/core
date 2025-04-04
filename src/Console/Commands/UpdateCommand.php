@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Laravel\Prompts\Concerns\Colors;
 use Rosalana\Core\Services\Package;
 
+use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
@@ -82,7 +83,27 @@ class UpdateCommand extends Command
         spin(
             function () use ($major) {
                 $result = Package::checkCompatibility($major);
-                dd($result);
+                if ($result->isNotEmpty()) {
+                    $this->components->error("The following packages are not compatible with the {$major} version:");
+                    foreach ($result as $package) {
+                        $this->line($this->red($package->name));
+                    }
+                    $this->line("\n");
+                    $shouldRemove = confirm(
+                        label: 'Do you want to cancel the update?',
+                        default: true,
+                        hint: 'If you continue, the packages will be removed and the ecosystem will be updated to the selected version.'
+                    );
+
+                    if ($shouldRemove) {
+                        $this->components->error('Update cancelled');
+                        exit(1);
+                    } else {
+                        $this->components->info('Update continued');
+                        exit(0);
+                    }
+
+                }
             }
         , "Checking packages compatibility for version " . ($major) . "...");
 
