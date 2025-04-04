@@ -45,6 +45,10 @@ class PublishCommand extends Command
             return 1;
         }
 
+        $this->newLine();
+        $this->line('📂 Publish files');
+        $this->newLine();
+
         $options = $installed->mapWithKeys(function ($package) {
             $label = '';
             match ($package->status) {

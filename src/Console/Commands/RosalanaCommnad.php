@@ -33,6 +33,13 @@ class RosalanaCommnad extends Command
     public function handle()
     {
         $version = Package::version();
+
+        $this->line("\n");
+        // // $this->
+
+
+
+
         $this->line("Rosalana CLI {$this->cyan($version === 'dev-master' ? 'dev-master' : 'v' . trim($version, '^') . '.x.x')}");
 
         $this->line("\n");

@@ -48,6 +48,10 @@ class AddCommand extends Command
             return 0;
         }
 
+        $this->newLine();
+        $this->line('🌍 Install package');
+        $this->newLine();
+
         $options = $notInstalled->mapWithKeys(function ($package) {
             return [$package->name => "$package->name ({$this->dim(Package::getDescription($package->name))})"];
         })->toArray();
