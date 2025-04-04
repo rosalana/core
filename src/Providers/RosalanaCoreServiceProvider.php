@@ -43,6 +43,9 @@ class RosalanaCoreServiceProvider extends ServiceProvider
             $this->commands([
                 \Rosalana\Core\Console\Commands\UpdateCommand::class,
             ]);
+            $this->commands([
+                \Rosalana\Core\Console\Commands\RosalanaCommnad::class,
+            ]);
         }
 
         // Publikování configu, pokud chceš, aby si ho uživatel mohl zkopírovat
