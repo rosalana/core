@@ -97,7 +97,7 @@ class UpdateCommand extends Command
                     return [
                         $package->name,
                         $package->installedVersion ?? '—',
-                        $major === 'dev-master' ? 'dev-master' : "$major.x.x",
+                        $major === 'dev-master' ? $this->red('dev-master') : $this->red("$major.x.x"),
                     ];
                 })->toArray()
             ,'compact');
