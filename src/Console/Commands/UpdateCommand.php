@@ -81,6 +81,14 @@ class UpdateCommand extends Command
 
         spin(
             function () use ($major) {
+                $result = Package::checkCompatibility($major);
+                dd($result);
+            }
+        , "Checking packages compatibility for version " . ($major) . "...");
+
+
+        spin(
+            function () use ($major) {
                     $result = Package::switchVersion($major);
                     if ($result->failed()) {
                         $this->line("\n");

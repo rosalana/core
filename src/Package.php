@@ -6,6 +6,7 @@ use Composer\InstalledVersions;
 use Illuminate\Contracts\Process\ProcessResult;
 use Illuminate\Support\Facades\Process;
 use Rosalana\Core\Contracts\Package as PackageContract;
+use Rosalana\Core\Services\Package as ServicesPackage;
 
 class Package implements PackageContract
 {
@@ -65,6 +66,15 @@ class Package implements PackageContract
     public function resolvePublished(): bool
     {
         return $this->package?->resolvePublished() && !is_null($this->resolvePublishedVersion());
+    }
+
+    /**
+     * Determine if the package has a specific version.
+     */
+    public function hasVersion(string $version): bool
+    {
+        $versions = ServicesPackage::versions($this->name);
+        return in_array(trim($version, '^'), $versions);
     }
 
     /**

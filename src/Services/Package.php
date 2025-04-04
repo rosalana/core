@@ -46,9 +46,10 @@ class Package
         return null;
     }
 
-    public static function versions(): array
+    public static function versions(?string $packageName = null): array
     {
-        $process = Process::fromShellCommandline('composer show rosalana/core --all');
+        $packageName ??= 'rosalana/core';
+        $process = Process::fromShellCommandline("composer show $packageName --all");
         $process->run();
 
         if (!$process->isSuccessful()) {
@@ -76,11 +77,28 @@ class Package
         return $versions;
     }
 
+    /**
+     * Multi-update all packages to the given version to keep them in sync.
+     */
     public static function switchVersion(string $version): ProcessResult
     {
         $packages = Package::installed()->map(fn($p) => "$p->name:$version")->all();
 
         return ProcessFacade::run(['composer', 'require', ...$packages, '--with-all-dependencies']);
+    }
+
+    /**
+     * Check if installed packages are compatible with the given version.
+     * If not, return the list of incompatible packages.
+     * 
+     * @param string $version
+     * @return Collection
+     */
+    public static function checkCompatibility(string $version): Collection
+    {
+        $packages = Package::installed()->filter(fn($p) => !$p->hasVersion($version));
+
+        return $packages;
     }
 
     /**
