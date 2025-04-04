@@ -33,7 +33,9 @@ class RosalanaCommnad extends Command
     public function handle()
     {
         $version = Package::version();
-        $this->info("Rosalana CLI {$this->cyan($version === 'dev-master' ? 'dev-master' : 'v' . trim($version, '^') . '.x.x')}");
+        $this->line("Rosalana CLI {$this->cyan($version === 'dev-master' ? 'dev-master' : 'v' . trim($version, '^') . '.x.x')}");
+
+        $this->line("\n");
 
         $commands = collect(Artisan::all())
             ->filter(fn($cmd, $name) => str_starts_with($name, 'rosalana:'))
