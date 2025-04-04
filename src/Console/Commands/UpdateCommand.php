@@ -43,9 +43,9 @@ class UpdateCommand extends Command
         $this->newLine();
         $this->line($this->bold('🚀 Update Rosalana ecosystem'));
         if ($current === "dev-master") {
-            $this->line($this->dim('    Current version: ') . $this->red("Version dev (do not use in production)"));
+            $this->line($this->gray('   Current version: ') . $this->red("Version dev (do not use in production)"));
         } else {
-            $this->line($this->dim('    Current version: ') . $this->dim('v' . trim($current, '^') . '.x.x'));
+            $this->line($this->gray('   Current version: ') . $this->cyan('v' . trim($current, '^') . '.x.x'));
         }
         $this->newLine();
 
