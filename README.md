@@ -83,10 +83,10 @@ The Config Builder also supports **PHP-style comments** (including title + descr
 Every package in the Rosalana ecosystem uses the Config Builder to register its own configuration block. All sections are grouped inside a single rosalana.php file for easy navigation.
 
 ```php
-use Rosalana\Core\Support\RosalanaConfig;
+use Rosalana\Core\Support\ConfigBuilder;
 
 // Add or update a config section
-RosalanaConfig::new('basecamp')
+ConfigBuilder::new('basecamp')
     ->add('secret',"env('ROSALANA_APP_SECRET', 'secret')")
     ->comment(
         'Connection settings for Basecamp (central server).',
@@ -95,7 +95,7 @@ RosalanaConfig::new('basecamp')
     ->save();
 
 // Update a published version tag
-RosalanaConfig::get('published')
+ConfigBuilder::get('published')
     ->set('rosalana/xx', '1.0.0')
     ->save();
 ```

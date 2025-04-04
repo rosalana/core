@@ -2,7 +2,7 @@
 
 namespace Rosalana\Core\Support;
 
-class RosalanaConfigSection
+class ConfigSection
 {
     protected $key;
     protected $values = [];
@@ -84,7 +84,7 @@ class RosalanaConfigSection
      */
     public function save()
     {
-        return RosalanaConfig::save($this);
+        return ConfigBuilder::save($this);
     }
 
     public function getValues(): array

@@ -2,7 +2,7 @@
 
 namespace Rosalana\Core\Support;
 
-class RosalanaConfig
+class ConfigBuilder
 {
 
     protected array $sections = [];
@@ -36,7 +36,7 @@ class RosalanaConfig
                 // extract values from block
                 $values = static::extractArrayValuesFromBlock($lines, $lineIndex);
 
-                $instance->sections[$key] = new RosalanaConfigSection(
+                $instance->sections[$key] = new ConfigSection(
                     key: $key,
                     values: $values,
                     label: $label,
@@ -52,9 +52,9 @@ class RosalanaConfig
     /**
      * Create a new section in the configuration.
      * @param string $key
-     * @return RosalanaConfigSection
+     * @return ConfigSection
      */
-    public static function new(string $key): RosalanaConfigSection
+    public static function new(string $key): ConfigSection
     {
         $instance = static::read();
 
@@ -64,7 +64,7 @@ class RosalanaConfig
         }
 
         // otherwise create new one
-        $section = new RosalanaConfigSection(
+        $section = new ConfigSection(
             key: $key,
             values: [],
             label: null,
@@ -79,9 +79,9 @@ class RosalanaConfig
     /**
      * Get a section from the configuration.
      * @param string $key
-     * @return RosalanaConfigSection|null
+     * @return ConfigSection|null
      */
-    public static function get(string $key): ?RosalanaConfigSection
+    public static function get(string $key): ?ConfigSection
     {
         $instance = static::read();
 
@@ -94,9 +94,9 @@ class RosalanaConfig
 
     /**
      * Save a section to the configuration.
-     * @param RosalanaConfigSection|null $section
+     * @param ConfigSection|null $section
      */
-    public static function save(?RosalanaConfigSection $section = null): bool
+    public static function save(?ConfigSection $section = null): bool
     {
         $sections = [];
         if ($section) {
@@ -165,7 +165,7 @@ class RosalanaConfig
         return true;
     }
 
-    protected static function render(RosalanaConfigSection $section): string
+    protected static function render(ConfigSection $section): string
     {
         $lines = [];
 
