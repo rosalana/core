@@ -107,7 +107,7 @@ class UpdateCommand extends Command
         $shouldRemove = confirm(
             label: 'Do you want to cancel the update?',
             default: true,
-            hint: 'If you continue, the packages will be removed and the ecosystem will be updated to the selected version.'
+            hint: $this->red('If you continue, the packages will be removed and the ecosystem will be updated to the selected version.')
         );
 
         if ($shouldRemove) {
