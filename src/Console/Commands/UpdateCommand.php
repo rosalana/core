@@ -60,16 +60,15 @@ class UpdateCommand extends Command
         $options = collect($availableVersions)
             ->mapWithKeys(function ($version) use ($current) {
                 return [
-                    $version === 'dev-master' ? 'dev-master' : "^$version" => 
-                        (
-                            $version === 'dev-master' 
-                                ? $this->red("Version dev (do not use in production)") 
-                                : "Version {$version}.x.x"
-                        ) . (
-                            $version === $current || "^$version" === $current 
-                                ? $this->cyan(" (current)") 
-                                : ''
-                        )
+                    $version === 'dev-master' ? 'dev-master' : "^$version" => (
+                        $version === 'dev-master'
+                        ? $this->red("Version dev (do not use in production)")
+                        : "Version {$version}.x.x"
+                    ) . (
+                        $version === $current || "^$version" === $current
+                        ? $this->cyan(" (current)")
+                        : ''
+                    )
                 ];
             })
             ->toArray();
@@ -85,8 +84,9 @@ class UpdateCommand extends Command
         spin(
             function () use ($major, &$incompatible) {
                 $incompatible = Package::checkCompatibility($major);
-            }
-        , "Checking packages compatibility for version " . ($major) . "...");
+            },
+            "Checking packages compatibility for version " . ($major) . "..."
+        );
 
 
         if ($incompatible->isNotEmpty()) {
@@ -99,34 +99,48 @@ class UpdateCommand extends Command
                         $package->installedVersion ?? '—',
                         $major === 'dev-master' ? $this->red('dev-master') : $this->red("$major.x.x"),
                     ];
-                })->toArray()
-            ,'compact');
-        }
+                })->toArray(),
+                'compact'
+            );
 
-        $this->line("\n");
-        $shouldRemove = confirm(
-            label: 'Do you want to cancel the update?',
-            default: true,
-            hint: $this->red('If you continue, the packages will be removed and the ecosystem will be updated to the selected version.')
-        );
 
-        if ($shouldRemove) {
-            $this->components->error('Update cancelled');
-            exit(1);
-        } else {
-            $this->components->info('Update continued');
-            exit(0);
+            $this->line("\n");
+            $shouldRemove = confirm(
+                label: 'Do you want to cancel the update?',
+                default: true,
+                hint: $this->red('If you continue, the packages will be removed and the ecosystem will be updated to the selected version.')
+            );
+
+            if ($shouldRemove) {
+                $this->components->error('Update cancelled');
+                exit(1);
+            } else {
+                $this->components->info('Update continued');
+                // remove incompatible packages
+                spin(
+                    function () use ($incompatible) {
+                        $incompatible->each(function ($package) {
+                            $result = $package->uninstall();
+                            if ($result->failed()) {
+                                $this->line("\n");
+                                echo $this->red($result->errorOutput());
+                                exit(1);
+                            }
+                        });
+                    }
+                );
+            }
         }
 
 
         spin(
             function () use ($major) {
-                    $result = Package::switchVersion($major);
-                    if ($result->failed()) {
-                        $this->line("\n");
-                        echo $this->red($result->errorOutput());
-                        exit(1);
-                    }
+                $result = Package::switchVersion($major);
+                if ($result->failed()) {
+                    $this->line("\n");
+                    echo $this->red($result->errorOutput());
+                    exit(1);
+                }
             },
             "Updating Rosalana ecosystem to version " . ($major) . "..."
         );

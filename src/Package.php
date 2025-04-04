@@ -53,6 +53,14 @@ class Package implements PackageContract
     }
 
     /**
+     * Remove the package.
+     */
+    public function uninstall(): ProcessResult
+    {
+        return Process::run(['composer', 'remove', "$this->name"]);
+    }
+
+    /**
      * Publish the package.
      */
     public function publish(): array
