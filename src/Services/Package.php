@@ -96,7 +96,7 @@ class Package
      */
     public static function checkCompatibility(string $version): Collection
     {
-        $packages = Package::installed()->filter(fn($p) => !$p->hasVersion($version));
+        $packages = Package::installed()->filter(fn($p) => !$p->hasVersion('^1'));
 
         return $packages;
     }
