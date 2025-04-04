@@ -80,32 +80,43 @@ class UpdateCommand extends Command
             default: $current,
         );
 
+        $incompatible = collect();
+
         spin(
-            function () use ($major) {
-                $result = Package::checkCompatibility($major);
-                if ($result->isNotEmpty()) {
-                    $this->components->error("The following packages are not compatible with the {$major} version:");
-                    foreach ($result as $package) {
-                        $this->line($this->red($package->name));
-                    }
-                    $this->line("\n");
-                    $shouldRemove = confirm(
-                        label: 'Do you want to cancel the update?',
-                        default: true,
-                        hint: 'If you continue, the packages will be removed and the ecosystem will be updated to the selected version.'
-                    );
-
-                    if ($shouldRemove) {
-                        $this->components->error('Update cancelled');
-                        exit(1);
-                    } else {
-                        $this->components->info('Update continued');
-                        exit(0);
-                    }
-
-                }
+            function () use ($major, &$incompatible) {
+                $incompatible = Package::checkCompatibility($major);
             }
         , "Checking packages compatibility for version " . ($major) . "...");
+
+
+        if ($incompatible->isNotEmpty()) {
+            $this->components->error("The following packages are not compatible with the {$major} version:");
+            $this->table(
+                ['Package', 'Installed Version', 'Required Version'],
+                $incompatible->map(function ($package) use ($major) {
+                    return [
+                        $package->name,
+                        $package->installedVersion ?? '—',
+                        $major === 'dev-master' ? 'dev-master' : "$major.x.x",
+                    ];
+                })->toArray()
+            ,'compact');
+        }
+
+        $this->line("\n");
+        $shouldRemove = confirm(
+            label: 'Do you want to cancel the update?',
+            default: true,
+            hint: 'If you continue, the packages will be removed and the ecosystem will be updated to the selected version.'
+        );
+
+        if ($shouldRemove) {
+            $this->components->error('Update cancelled');
+            exit(1);
+        } else {
+            $this->components->info('Update continued');
+            exit(0);
+        }
 
 
         spin(
