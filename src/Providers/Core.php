@@ -27,8 +27,8 @@ class Core implements Package
                         '--tag' => "rosalana-config"
                     ]);
 
-                    RosalanaConfig::new('installed')
-                        ->comment('All installed Rosalana packages. This array is used to determine if the package has been installed or not and with the correct version. DO NOT MODIFY THIS ARRAY MANUALLY!', 'Rosalana Core Installed')
+                    RosalanaConfig::new('published')
+                        ->comment('All published Rosalana packages. This array is used to determine if the package has been installed/published or not and with the correct version. DO NOT MODIFY THIS ARRAY MANUALLY!', 'Rosalana Published Packages')
                         ->save();
                         
                     RosalanaConfig::new('basecamp')

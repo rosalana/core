@@ -83,7 +83,7 @@ class AddCommand extends Command
         }, $processLabel);
 
 
-        RosalanaConfig::get('installed')->set($package->name, "null")->save();
+        RosalanaConfig::get('published')->set($package->name, "null")->save();
 
         $this->components->success("{$package->name} has been installed");
     }

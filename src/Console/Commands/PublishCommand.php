@@ -87,7 +87,7 @@ class PublishCommand extends Command
                 $publishOptions[$searchOptions]['run']();
             }
 
-            RosalanaConfig::get('installed')
+            RosalanaConfig::get('published')
                 ->set($package->name, var_export($package->installedVersion, true))
                 ->save();
                 
