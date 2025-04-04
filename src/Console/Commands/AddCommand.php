@@ -45,7 +45,7 @@ class AddCommand extends Command
 
         if ($notInstalled->isEmpty()) {
             $this->components->success('All packages are already installed');
-            return 1;
+            return 0;
         }
 
         $options = $notInstalled->mapWithKeys(function ($package) {
