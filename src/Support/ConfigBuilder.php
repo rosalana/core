@@ -92,6 +92,13 @@ class ConfigBuilder
         return null;
     }
 
+    public static function exists(string $key): bool
+    {
+        $instance = static::read();
+
+        return isset($instance->sections[$key]);
+    }
+
     /**
      * Save a section to the configuration.
      * @param ConfigSection|null $section
