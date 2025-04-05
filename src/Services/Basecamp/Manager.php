@@ -4,6 +4,7 @@ namespace Rosalana\Core\Services\Basecamp;
 
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Rosalana\Core\Exceptions\BasecampErrorType;
 use Rosalana\Core\Facades\Pipeline;
 
 class Manager
@@ -17,6 +18,11 @@ class Manager
      * Secret app key of the client.
      */
     protected string $secret;
+
+    /**
+     * Version of the API to be used.
+     */
+    protected string $version;
 
     /**
      * Headers for the HTTP requests.
@@ -40,6 +46,7 @@ class Manager
     {
         $this->url = config('rosalana.basecamp.url');
         $this->secret = config('rosalana.basecamp.secret');
+        $this->version = "/api/" . config('rosalana.basecamp.version') . "/";
 
         $this->headers['X-App-Secret'] = $this->secret;
     }
@@ -128,8 +135,13 @@ class Manager
     protected function request(string $method, string $endpoint, array $data = []): Response
     {
         $response = Http::withHeaders($this->headers)
-            ->$method($this->url . $endpoint, $data)
-            ->throw();
+            ->$method($this->url . $this->version . $endpoint, $data);
+
+        if ($response->json('status') !== 'ok') {
+            $type = BasecampErrorType::tryFrom($response->json('type') ?? 'UNKNOWN') ?? BasecampErrorType::UNKNOWN;
+            
+            $type->throw($response->json());
+        }
 
         if ($this->pipeline) {
             Pipeline::resolve($this->pipeline)->run($response);

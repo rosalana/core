@@ -37,6 +37,7 @@ class Core implements Package
                     ConfigBuilder::new('basecamp')
                         ->add('url', "env('ROSALANA_BASECAMP_URL', 'http://localhost:8000')")
                         ->add('secret', "env('ROSALANA_APP_SECRET', 'secret')")
+                        ->add('version', "'v1'")
                         ->comment(
                             'Defines how your application connects to the central Rosalana Basecamp server, which manages shared data and communication across the ecosystem.',
                             'Basecamp Connection'
