@@ -25,7 +25,7 @@ class ConfigSection
      * @param mixed $value
      * @return static
      */
-    public function add(string $key, mixed $value): static
+    public function add(string $key, string $value): static
     {
         if (!$this->has($key)) {
             $this->values[$key] = $value;
@@ -49,7 +49,7 @@ class ConfigSection
      * @param mixed $value
      * @return static
      */
-    public function set(string $key, mixed $value): static
+    public function set(string $key, string $value): static
     {
         $this->values[$key] = $value;
         return $this;
