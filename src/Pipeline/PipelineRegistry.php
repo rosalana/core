@@ -13,6 +13,7 @@ class PipelineRegistry
 
     /**
      * Get or create a pipeline by alias.
+     * @param string $alias
      */
     public static function resolve(string $alias): Pipeline
     {
@@ -25,6 +26,7 @@ class PipelineRegistry
 
     /**
      * Determine if a pipeline exists.
+     * @param string $alias
      */
     public static function exists(string $alias): bool
     {
@@ -33,12 +35,19 @@ class PipelineRegistry
 
     /**
      * Extend a pipeline safely
+     * @param string $alias
+     * @param callable|string $pipe (arg. ?$payload, ?$next)
      */
-    public static function extend(string $alias, callable $pipe): void
+    public static function extend(string $alias, callable|string $pipe): void
     {
         static::resolve($alias)->extend($pipe);
     }
 
+    /**
+     * Extend a pipeline if it exists.
+     * @param string $alias
+     * @param callable|string $pipe (arg. ?$payload, ?$next)
+     */
     public static function extendIfExists(string $alias, callable $pipe): void
     {
         if (static::exists($alias)) {
@@ -48,6 +57,7 @@ class PipelineRegistry
 
     /**
      * Reset a pipeline (for testing or rebuilding).
+     * @param string $alias
      */
     public static function forget(string $alias): void
     {
