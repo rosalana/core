@@ -165,12 +165,15 @@ use Rosalana\Core\Facades\Pipeline;
 Pipeline::resolve('user.login')->extend(MyLoginHandler::class);
 ```
 
-Other packages can extend the same pipeline without knowing if the original package is present or not.
+Other packages can extend the same pipeline without knowing if the original package is present or not.  
+**Don't forget to return `$next($response)` to continue the pipeline execution.**  
+If you omit the `return`, the pipeline will stop and the final result will be `null`.
+
 
 ```php
 use Rosalana\Core\Facades\Pipeline;
 
-Pipeline::extendIfExists('user.login', fn ($response) => /* do something */);
+Pipeline::extendIfExists('user.login', fn ($response, $next) => /* do something */);
 ```
 
 Pipelines are executed automatically in some cases, like when a request is made to the Basecamp server. You can also trigger them manually.
@@ -180,6 +183,8 @@ use Rosalana\Core\Facades\Pipeline;
 
 Pipeline::resolve('user.login')->run($request);
 ```
+
+> **Note:** The pipeline system can omit Laravel's built-in pipeline in the future.
 
 ### Basecamp Connection
 

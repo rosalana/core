@@ -16,25 +16,8 @@ class Pipeline
      * @param callable|string $pipe (arg. ?$payload, ?$next)
      * Argument $pipe can return void only when no arguments are passed.
      */
-    public function extend(callable|string $pipe): static
+    public function extend(callable $pipe): static
     {
-        if (is_callable($pipe)) {
-            $reflection = new \ReflectionFunction($pipe);
-            $paramCount = $reflection->getNumberOfParameters();
-    
-            if ($paramCount === 1) {
-                $pipe = fn($payload, $next) => $next($pipe($payload));
-            }
-    
-            if ($paramCount < 1) {
-                $original = $pipe;
-                $pipe = function ($payload, $next) use ($original) {
-                    $original();
-                    return $next($payload);
-                };
-            }
-        }
-
         $this->pipes[] = $pipe;
         return $this;
     }
