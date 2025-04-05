@@ -32,6 +32,20 @@ class PipelineTest extends TestCase
         $this->assertEquals('HELLO', $result);
     }
 
+    public function test_pipline_chain_with_one_arguments_no_return()
+    {
+        $result = Pipeline::resolve('two')
+            ->extend(function ($value, $next) {
+                $value . ' world';
+                return $next($value);
+            })
+            ->extend(fn($value) => strtoupper($value))
+            ->run('hello');
+
+        $this->assertIsString($result, 'Expected the result to be a string.');
+        $this->assertEquals('HELLO', $result);
+    }
+
     public function test_pipline_chain_with_one_arguments()
     {
         $result = Pipeline::resolve('one')
@@ -52,7 +66,6 @@ class PipelineTest extends TestCase
         $result = Pipeline::resolve('none')
             ->extend(function () use (&$called) {
                 $called = true;
-                return ' world';
             })
             ->extend(fn($value) => strtoupper($value))
             ->run('hello');

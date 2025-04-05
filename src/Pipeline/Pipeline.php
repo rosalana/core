@@ -14,6 +14,7 @@ class Pipeline
 
     /**
      * @param callable|string $pipe (arg. ?$payload, ?$next)
+     * Argument $pipe can return void only when no arguments are passed.
      */
     public function extend(callable|string $pipe): static
     {
@@ -27,7 +28,10 @@ class Pipeline
     
             if ($paramCount < 1) {
                 $original = $pipe;
-                $pipe = fn($payload, $next) => $next($payload); $original();
+                $pipe = function ($payload, $next) use ($original) {
+                    $original();
+                    return $next($payload);
+                };
             }
         }
 
