@@ -84,7 +84,7 @@ class ConfigSection
      */
     public function save()
     {
-        return ConfigBuilder::save($this);
+        return Config::save($this);
     }
 
     public function getValues(): array

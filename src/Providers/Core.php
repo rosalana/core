@@ -5,7 +5,7 @@ namespace Rosalana\Core\Providers;
 use Illuminate\Support\Facades\Artisan;
 use Rosalana\Core\Console\InternalCommands;
 use Rosalana\Core\Contracts\Package;
-use Rosalana\Core\Support\ConfigBuilder;
+use Rosalana\Core\Support\Config;
 
 class Core implements Package
 {
@@ -27,14 +27,14 @@ class Core implements Package
                         '--tag' => "rosalana-config"
                     ]);
 
-                    ConfigBuilder::new('published')
+                    Config::new('published')
                         ->comment(
                             'List of all published Rosalana packages. This array is used to determine which packages have been installed and which version is currently active. This section is managed automatically. DO NOT EDIT THIS MANUALLY.',
                             'Published Packages'
                         )
                         ->save();
 
-                    ConfigBuilder::new('basecamp')
+                    Config::new('basecamp')
                         ->add('url', "env('ROSALANA_BASECAMP_URL', 'http://localhost:8000')")
                         ->add('secret', "env('ROSALANA_APP_SECRET', 'secret')")
                         ->add('version', "'v1'")

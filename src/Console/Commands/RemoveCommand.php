@@ -5,7 +5,7 @@ namespace Rosalana\Core\Console\Commands;
 use Illuminate\Console\Command;
 use Laravel\Prompts\Concerns\Colors;
 use Rosalana\Core\Services\Package;
-use Rosalana\Core\Support\ConfigBuilder;
+use Rosalana\Core\Support\Config;
 
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
@@ -81,8 +81,8 @@ class RemoveCommand extends Command
         }, "Removing {$package->name}...");
 
 
-        if (!ConfigBuilder::get('published')->filled($package->name)) {
-            ConfigBuilder::get('published')->remove($package->name)->save();
+        if (!Config::get('published')->filled($package->name)) {
+            Config::get('published')->remove($package->name)->save();
         }
 
         $this->components->success("Package {$package->name} removed successfully");

@@ -2,7 +2,7 @@
 
 namespace Rosalana\Core\Support;
 
-class ConfigBuilder
+class Config
 {
 
     protected array $sections = [];
