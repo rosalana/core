@@ -35,9 +35,3 @@ class BasecampException extends Exception
     }
 }
 
-class BasecampValidationException extends BasecampException {}
-class BasecampUnauthorizedException extends BasecampException {}
-class BasecampForbiddenException extends BasecampException {}
-class BasecampNotFoundException extends BasecampException {}
-class BasecampServerErrorException extends BasecampException {}
-class BasecampBadRequestException extends BasecampException {}
