@@ -27,6 +27,7 @@ enum BasecampErrorType: string
 
             self::GENERIC_ERROR => \Rosalana\Core\Exceptions\BasecampException::class,
             self::UNKNOWN => \Rosalana\Core\Exceptions\BasecampException::class,
+            default => \Rosalana\Core\Exceptions\BasecampException::class,
         };
     }
 
