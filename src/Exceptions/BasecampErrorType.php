@@ -27,12 +27,11 @@ enum BasecampErrorType: string
 
             self::GENERIC_ERROR => \Rosalana\Core\Exceptions\BasecampException::class,
             self::UNKNOWN => \Rosalana\Core\Exceptions\BasecampException::class,
-            default => \Rosalana\Core\Exceptions\BasecampException::class,
         };
     }
 
     public function throw(array $response): BasecampException
     {
-        throw new ($this->exception)($response);
+        throw new ($this->exception())($response);
     }
 }
