@@ -48,7 +48,6 @@ class Core implements Package
             'env' => [
                 'label' => 'Set default environment variables',
                 'run' => function () {
-                    $this->setEnvValue('JWT_SECRET');
                     $this->setEnvValue('ROSALANA_BASECAMP_URL', 'http://localhost:8000');
                     $this->setEnvValue('ROSALANA_APP_SECRET');
                 }
