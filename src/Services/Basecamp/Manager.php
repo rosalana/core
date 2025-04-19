@@ -141,14 +141,6 @@ class Manager
             throw new \Rosalana\Core\Exceptions\BasecampUnavailableException();
         }
 
-        // logger()->info('Basecamp request', [
-        //     'method' => $method,
-        //     'headers' => $this->headers,
-        //     'url' => $this->url . $this->version . $endpoint,
-        //     'data' => $data,
-        //     'response' => $response->json(),
-        // ]);
-
         if ($response->json('status') !== 'ok') {
             $type = BasecampErrorType::tryFrom($response->json('type') ?? 'UNKNOWN') ?? BasecampErrorType::UNKNOWN;
 
