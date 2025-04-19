@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @method static \Rosalana\Core\Services\Basecamp\AppsService apps()
  * @method static \Rosalana\Accounts\Services\Basecamp\UsersService users()
+ * @method static \Rosalana\Accounts\Services\Basecamp\AuthService auth()
  * 
  * @see \Rosalana\Core\Services\Basecamp\Manager
  */
