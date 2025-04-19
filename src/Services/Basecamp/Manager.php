@@ -134,12 +134,16 @@ class Manager
      */
     protected function request(string $method, string $endpoint, array $data = []): Response
     {
-        $response = Http::withHeaders($this->headers)
-            ->$method($this->url . $this->version . $endpoint, $data);
+        try {
+            $response = Http::withHeaders($this->headers)
+                ->$method($this->url . $this->version . $endpoint, $data);
+        } catch (\Exception $e) {
+            throw new \Rosalana\Core\Exceptions\BasecampUnavailableException();
+        }
 
         if ($response->json('status') !== 'ok') {
             $type = BasecampErrorType::tryFrom($response->json('type') ?? 'UNKNOWN') ?? BasecampErrorType::UNKNOWN;
-            
+
             $type->throw($response->json());
         }
 

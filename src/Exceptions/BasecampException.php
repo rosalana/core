@@ -8,14 +8,21 @@ class BasecampException extends Exception
 {
     protected array $response;
 
-    public function __construct(array $response)
+    public function __construct(array $response, string $message = '', int $code = 0, ?Exception $previous = null)
     {
+        if (empty($message) && !empty($response['message'])) {
+            $message = $response['message'];
+        }
+        if (empty($code) && !empty($response['code'])) {
+            $code = $response['code'];
+        }
+
         $this->response = $response;
 
         parent::__construct(
-            $response['message'] ?? 'Unknown error', 
-            $response['code'] ?? 0, 
-            null
+            $message ?? 'Unknown error',
+            $code ?? 0,
+            $previous
         );
     }
 
