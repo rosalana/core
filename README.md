@@ -304,10 +304,12 @@ The [CLI](#cli) ensures package compatibility and prevents installing mismatched
 - **Hook & Observer system**
 - **Move Pipeline into \Services\Pipeline**
 
+Stay tuned — we're actively shaping the foundation of the Rosalana ecosystem.
+
 ## Bugs
 - **Basecamp connection**: After evety request we need to reset attributes to prevent leaking data between requests. This has to be done in the `Basecamp\Manager` class.
+- **Outpost**: when sending notification.email should be process ones but has no target app. Its target to basecamp. Možná hodit jen do lokální queue a zpracovat lokálně.
 
-Stay tuned — we're actively shaping the foundation of the Rosalana ecosystem.
 ## License
 
 Rosalana Core is open-source under the [MIT license](/LICENCE), allowing you to freely use, modify, and distribute it with minimal restrictions.
