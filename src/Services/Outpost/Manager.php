@@ -70,11 +70,22 @@ class Manager
         } else {
             dispatch($packet)->onConnection($this->connection)->onQueue($this->queue . '.' . $this->target);
         }
+
+        $this->reset();
     }
 
     public function receive(string $alias, \Closure $callback): void
     {
-        OutpostRegistry::register($alias, $callback);
+        Registry::register($alias, $callback);
+    }
+
+    /**
+     * Reset instance to default values.
+     */
+    public function reset(): self
+    {
+        $this->target = null;
+        return $this;
     }
 
     /**

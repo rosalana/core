@@ -206,7 +206,23 @@ class Manager
             $this->pipeline = null;
         }
 
+        $this->reset();
+
         return $response;
+    }
+
+    /**
+     * Reset instance to default values.
+     */
+    public function reset(): self
+    {
+        $this->url = config('rosalana.basecamp.url');
+        $this->version = "/api/" . config('rosalana.basecamp.version') . "/";
+        $this->headers['X-App-Proxy'] = false;
+        $this->pipeline = null;
+        unset($this->headers['Authorization']);
+
+        return $this;
     }
 
     /**
