@@ -1,10 +1,10 @@
 <?php
 
-namespace Rosalana\Core\Exceptions;
+namespace Rosalana\Core\Exceptions\Http;
 
 use Exception;
 
-class BasecampException extends Exception
+class RosalanaHttpException extends Exception
 {
     protected array $response;
 

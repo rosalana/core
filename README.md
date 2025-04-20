@@ -201,12 +201,33 @@ The `Basecamp` facade gives you access to generic HTTP methods like `get()`, `po
 ```php
 $response = Basecamp::get('/users/1');
 
-$response = Basecamp::withAuth($token)
+$response = Basecamp::withAuth()
     ->withPipeline('user.login')
     ->post('/login', $credentials);
 ```
 
 This approach is great for quick or dynamic requests without needing a dedicated service class.
+
+#### Redirected Requests
+By default, the `Basecamp` facade will send requests to the **central Basecamp server**. If you want to redirect the request to a different application in the Rosalana ecosystem, you can use the `to()` method.
+
+```php
+$response = Basecamp::to('app-name')
+    ->withAuth()
+    ->post('/projects', $payload);
+```
+
+The Basecamp client will automatically resolve the correct URL for the application and redirect the request to that app's API instead of the Basecamp server. All relevant headers — including authorization and pipeline identifiers — are forwarded automatically.
+
+You can also combine the `to()` method with named services, though you must ensure the API structure is the same across all applications.
+
+```php
+$response = Basecamp::to('app-name')
+    ->users()
+    ->find(1);
+```
+
+> **Note:** This is useful for making cross-application requests without needing to know the exact URL of the target application.
 
 #### Custom Services (Predefined API Actions)
 
@@ -217,15 +238,19 @@ use Rosalana\Core\Services\Basecamp\Service;
 
 class UsersService extends Service
 {
-    public function get(int $id)
+    public function find(int $id)
     {
-        return $this->manager->get("users/{$id}");
+        return $this->manager
+            ->withAuth()
+            ->get("users/{$id}");
     }
 
-    public function login(array $credentials)
+    public function all()
     {
-        return $this->manager->withPipeline('user.login')
-            ->post('login', $credentials);
+        return $this->manager
+            ->withAuth()
+            ->withPipeline('user.login')
+            ->get('users');
     }
 }
 ```

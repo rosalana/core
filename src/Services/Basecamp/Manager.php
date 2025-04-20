@@ -5,6 +5,8 @@ namespace Rosalana\Core\Services\Basecamp;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Rosalana\Core\Exceptions\BasecampErrorType;
+use Rosalana\Core\Exceptions\HttpAppErrorType;
+use Rosalana\Core\Facades\Basecamp;
 use Rosalana\Core\Facades\Pipeline;
 
 class Manager
@@ -49,13 +51,54 @@ class Manager
         $this->version = "/api/" . config('rosalana.basecamp.version') . "/";
 
         $this->headers['X-App-Secret'] = $this->secret;
+        $this->headers['X-App-Proxy'] = false;
+        $this->headers['Origin'] = config('app.url');
+    }
+
+    /**
+     * Set the version of the API to be used.
+     */
+    public function version(string $version): self
+    {
+        $this->version = "/api/" . $version . "/";
+        return $this;
+    }
+
+    /**
+     * Redirect the request to a specific app.
+     * @throws \Rosalana\Core\Exceptions\AppUnreachableException
+     * @throws \Rosalana\Core\Exceptions\AppUnavailableException
+     * @throws \Rosalana\Core\Exceptions\BasecampUnavailableException
+     */
+    public function to(string $name): self
+    {
+        try {
+            $response = Basecamp::apps()->find($name);
+        } catch (\Rosalana\Core\Exceptions\Http\BasecampUnavailableException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            throw new \Rosalana\Core\Exceptions\Http\AppUnreachableException();
+        }
+
+        $this->url = $response->json('url');
+
+        if (empty($this->url)) {
+            throw new \Rosalana\Core\Exceptions\Http\AppUnreachableException();
+        }
+
+        $this->headers['X-App-Proxy'] = true;
+        return $this;
     }
 
     /**
      * Add auth token to the headers.
      */
-    public function withAuth(string $token): self
+    public function withAuth(?string $token = null): self
     {
+        if (empty($token)) {
+            $token = \Rosalana\Core\Session\TokenSession::get();
+        }
+
         $this->headers['Authorization'] = 'Bearer ' . $token;
         return $this;
     }
@@ -138,11 +181,20 @@ class Manager
             $response = Http::withHeaders($this->headers)
                 ->$method($this->url . $this->version . $endpoint, $data);
         } catch (\Exception $e) {
-            throw new \Rosalana\Core\Exceptions\BasecampUnavailableException();
+            if (!empty($this->headers['X-App-Proxy'])) {
+                throw new \Rosalana\Core\Exceptions\Http\AppUnavailableException();
+            } else {
+                throw new \Rosalana\Core\Exceptions\Http\BasecampUnavailableException();
+            }
         }
 
         if ($response->json('status') !== 'ok') {
-            $type = BasecampErrorType::tryFrom($response->json('type') ?? 'UNKNOWN') ?? BasecampErrorType::UNKNOWN;
+            
+            if (!empty($this->headers['X-App-Proxy'])) {
+                $type = HttpAppErrorType::tryFrom($response->json('type') ?? 'UNKNOWN') ?? HttpAppErrorType::UNKNOWN;
+            } else {
+                $type = BasecampErrorType::tryFrom($response->json('type') ?? 'UNKNOWN') ?? BasecampErrorType::UNKNOWN;
+            }
 
             $type->throw($response->json());
         }

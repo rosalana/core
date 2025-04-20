@@ -1,8 +1,8 @@
 <?php
 
-namespace Rosalana\Core\Exceptions;
+namespace Rosalana\Core\Exceptions\Http;
 
-class BasecampUnavailableException extends BasecampException
+class BasecampUnavailableException extends HttpException
 {
 
     public function __construct(array $response = [])
