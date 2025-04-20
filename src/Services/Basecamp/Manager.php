@@ -80,11 +80,11 @@ class Manager
             throw new \Rosalana\Core\Exceptions\Http\AppUnreachableException();
         }
 
-        $this->url = $response->json('url');
-
-        if (empty($this->url)) {
+        if (empty($response->json('url'))) {
             throw new \Rosalana\Core\Exceptions\Http\AppUnreachableException();
         }
+
+        $this->url = $response->json('url');
 
         $this->headers['X-App-Proxy'] = true;
         return $this;
@@ -189,7 +189,7 @@ class Manager
         }
 
         if ($response->json('status') !== 'ok') {
-            
+
             if (!empty($this->headers['X-App-Proxy'])) {
                 $type = HttpAppErrorType::tryFrom($response->json('type') ?? 'UNKNOWN') ?? HttpAppErrorType::UNKNOWN;
             } else {
