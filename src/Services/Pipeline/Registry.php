@@ -1,8 +1,8 @@
 <?php
 
-namespace Rosalana\Core\Pipeline;
+namespace Rosalana\Core\Services\Pipeline;
 
-class PipelineRegistry
+class Registry
 {
     /**
      * Registered pipelines by alias.

@@ -1,6 +1,6 @@
 <?php
 
-namespace Rosalana\Core\Pipeline;
+namespace Rosalana\Core\Services\Pipeline;
 
 use Illuminate\Pipeline\Pipeline as LaravelPipeline;
 

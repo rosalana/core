@@ -5,7 +5,7 @@ namespace Rosalana\Core\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static \Rosalana\Core\Pipeline\Pipeline resolve(string $alias)
+ * @method static \Rosalana\Core\Services\Pipeline\Pipeline resolve(string $alias)
  * @method static void extend(string $alias, callable $pipe)
  * @method static void extendIfExists(string $alias, callable $pipe)
  * @method static bool exists(string $alias)
@@ -13,12 +13,12 @@ use Illuminate\Support\Facades\Facade;
  * @method static void flush()
  * @method static array all()
  *
- * @see \Rosalana\Core\Pipeline\PipelineRegistry
+ * @see \Rosalana\Core\Services\Pipeline\Registry
  */
 class Pipeline extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return 'rosalana.pipeline.registry';
+        return 'rosalana.pipeline';
     }
 }

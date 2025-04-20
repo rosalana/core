@@ -294,15 +294,11 @@ The [CLI](#cli) ensures package compatibility and prevents installing mismatched
 
 ## May Show in the Future
 
-- **Basecamp key Decoder:** Decoding the Basecamp access token right in the rosalana/core package.
-- **Pipeline:** A pipeline system that starts after Basecamp response to allow multiple packages to process the same request.
 - **Event system:** A system to allow packages create and listen to events across the ecosystem.
-- **rosalana:generate:** A command to generate a file stups for projects. Combination of `rosalana:publish` and `artisan make:...` commands. Should be used to generate/publish files from package to project.
 - **Plugin infrastructure**
 - **Shared message-bus interfaces**
 - **Realtime WebSocket integration**
 - **Hook & Observer system**
-- **Move Pipeline into \Services\Pipeline**
 
 Stay tuned — we're actively shaping the foundation of the Rosalana ecosystem.
 
