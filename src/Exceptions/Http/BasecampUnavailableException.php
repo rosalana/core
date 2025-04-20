@@ -2,9 +2,8 @@
 
 namespace Rosalana\Core\Exceptions\Http;
 
-class BasecampUnavailableException extends HttpException
+class BasecampUnavailableException extends RosalanaHttpException
 {
-
     public function __construct(array $response = [])
     {
         parent::__construct($response, 'Basecamp is currently unavailable. Please try again later.', 503);

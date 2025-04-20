@@ -11,7 +11,7 @@ class AppUnavailableException extends RosalanaHttpException {
 
     public function getType(): string
     {
-        return 'APP_UNAVAILABLE';
+        return 'UNAVAILABLE';
     }
 
     public function getErrors(): array
