@@ -82,7 +82,7 @@ class Manager
 
         if (empty($response->json('url'))) {
             throw new \Rosalana\Core\Exceptions\Http\AppUnreachableException(
-                'The app is unreachable. Correct URL is unknown in the system.'
+                'The app is unreachable. The URL is unknown in the system.'
             );
         }
 
