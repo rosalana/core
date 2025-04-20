@@ -80,13 +80,13 @@ class Manager
             throw new \Rosalana\Core\Exceptions\Http\AppUnreachableException();
         }
 
-        if (empty($response->json('url'))) {
+        if (empty($response->json('data.url'))) {
             throw new \Rosalana\Core\Exceptions\Http\AppUnreachableException(
                 'The app is unreachable. The URL is unknown in the system.'
             );
         }
 
-        $this->url = $response->json('url');
+        $this->url = $response->json('data.url');
 
         $this->headers['X-App-Proxy'] = true;
         return $this;
