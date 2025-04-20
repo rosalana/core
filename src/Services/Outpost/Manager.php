@@ -38,12 +38,18 @@ class Manager
         $this->origin = config('rosalana.basecamp.name');
     }
 
+    /**
+     * Set the target for the Packet.
+     */
     public function to(string $name): self
     {
         $this->target = $name;
         return $this;
     }
 
+    /**
+     * Send a packet to the target application or all applications.
+     */
     public function send(string $alias, array $payload = []): void
     {
         $packet = new Packet(
@@ -74,6 +80,9 @@ class Manager
         $this->reset();
     }
 
+    /**
+     * Register a callback to be executed when a packet is received.
+     */
     public function receive(string $alias, \Closure $callback): void
     {
         Registry::register($alias, $callback);

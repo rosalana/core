@@ -4,7 +4,6 @@ namespace Rosalana\Core\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Rosalana\Core\Services\Basecamp\AppsService;
-use Rosalana\Core\Services\Basecamp\Manager;
 
 class RosalanaCoreServiceProvider extends ServiceProvider
 {
@@ -17,14 +16,18 @@ class RosalanaCoreServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../../config/rosalana.php', 'rosalana');
 
         $this->app->singleton('rosalana.basecamp', function () {
-            return new Manager();
+            return new \Rosalana\Core\Services\Basecamp\Manager();
+        });
+
+        $this->app->singleton('rosalana.outpost', function () {
+            return new \Rosalana\Core\Services\Outpost\Manager();
         });
 
         $this->app->singleton('rosalana.pipeline.registry', function () {
             return new \Rosalana\Core\Pipeline\PipelineRegistry();
         });
 
-        $this->app->resolving('rosalana.basecamp', function (Manager $manager) {
+        $this->app->resolving('rosalana.basecamp', function (\Rosalana\Core\Services\Basecamp\Manager $manager) {
             $manager->registerService('apps', new AppsService());
         });
     }
