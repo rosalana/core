@@ -1,0 +1,104 @@
+<?php
+
+namespace Rosalana\Core\Services\Outpost;
+
+use Rosalana\Core\Facades\Basecamp;
+
+class Manager
+{
+    /**
+     * Connection name for Rosalana Outpost.
+     */
+    protected string $connection;
+
+    /**
+     * Queue name for Rosalana Outpost.
+     */
+    protected string $queue;
+
+    /**
+     * Origin for the Packet.
+     */
+    protected string $origin;
+
+    /**
+     * Target for the Packet.
+     */
+    protected string|null $target = null;
+
+    /**
+     * Services that the client can use.
+     */
+    protected array $services = [];
+
+    public function __construct()
+    {
+        $this->connection = config('rosalana.outpost.connection');
+        $this->queue = config('rosalana.outpost.queue');
+        $this->origin = config('rosalana.basecamp.name');
+    }
+
+    public function to(string $name): self
+    {
+        $this->target = $name;
+        return $this;
+    }
+
+    public function send(string $alias, array $payload = []): void
+    {
+        $packet = new Packet(
+            alias: $alias,
+            origin: $this->origin,
+            target: $this->target,
+            payload: $payload,
+        );
+
+        if ($this->target === $this->origin) {
+            throw new \InvalidArgumentException("[Outpost] Cannot send a packet to the same app: {$this->origin}");
+        }
+
+        if (empty($this->target)) {
+            $response = Basecamp::apps()->all();
+            $apps = collect($response->json('data'))
+                ->filter(fn($app) => $app['self'] !== true);
+
+            foreach ($apps as $app) {
+                dispatch($packet)
+                    ->onConnection($this->connection)
+                    ->onQueue($this->queue . '.' . $app['name']);
+            }
+        } else {
+            dispatch($packet)->onConnection($this->connection)->onQueue($this->queue . '.' . $this->target);
+        }
+    }
+
+    public function receive(string $alias, \Closure $callback): void
+    {
+        OutpostRegistry::register($alias, $callback);
+    }
+
+    /**
+     * Register a new sub-service.
+     */
+    public function registerService(string $name, $instance): void
+    {
+        $this->services[$name] = $instance;
+    }
+
+    /**
+     * Invoke a sub-service.
+     */
+    public function __call($method, $arg)
+    {
+        if (isset($this->services[$method])) {
+            $service = $this->services[$method];
+
+            if (method_exists($service, 'setManagerContext')) {
+                $service->setManagerContext($this);
+            }
+            return $service;
+        }
+
+        throw new \BadMethodCallException("Method [{$method}] does not exist on BasecampManager.");
+    }
+}

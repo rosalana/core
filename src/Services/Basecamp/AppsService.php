@@ -10,4 +10,11 @@ class AppsService extends Service
             ->withAuth()
             ->get('apps/' . $name);
     }
+
+    public function all()
+    {
+        return $this->manager
+            ->withAuth()
+            ->get('apps');
+    }
 }

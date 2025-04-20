@@ -302,6 +302,10 @@ The [CLI](#cli) ensures package compatibility and prevents installing mismatched
 - **Shared message-bus interfaces**
 - **Realtime WebSocket integration**
 - **Hook & Observer system**
+- **Move Pipeline into \Services\Pipeline**
+
+## Bugs
+- **Basecamp connection**: After evety request we need to reset attributes to prevent leaking data between requests. This has to be done in the `Basecamp\Manager` class.
 
 Stay tuned — we're actively shaping the foundation of the Rosalana ecosystem.
 ## License
