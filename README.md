@@ -283,61 +283,77 @@ All services registered this way automatically receive access to the underlying 
 
 ### Outpost Connection
 
-> Send and receive **cross-application packets** asynchronously. Outpost helps you forward events between applications in the Rosalana ecosystem within Laravel's native event system.
+> Send and receive **cross-application packets** asynchronously — as if they were local Laravel events. Outpost allows Rosalana applications to communicate over queues without losing simplicity.
 
-The **Outpost** system allows you to **send events** to other applications (via Redis queue) and **receive events** from other applications, as if they were local events.
+The **Outpost system** lets you trigger events in other applications using Laravel queues. These packets are then converted back to Laravel events in the receiving application. That way, you can keep using standard `Event::listen(...)` and class-based listeners.
 
-Under the hood, it uses Laravel jobs + Laravel events. But thanks to the Outpost fasade, your code stays clean and readable.
+Under the hood, Outpost uses Laravel jobs for delivery and Laravel events for receiving — but your application doesn't need to know that.
 
-#### Global Packet
+#### Sending Packets
 
-You can send a packet to all applications in the Rosalana ecosystem using the `Outpost::send()` method. This method accepts a packet name and an optional payload.
+To send a packet, use the `Outpost::send()` method. You can optionally define which applications should receive the packet using `to()` or exclude some using `except()`.
 
 ```php
 use Rosalana\Core\Facades\Outpost;
 
+// Send to all apps (except yourself)
 Outpost::send('user.registered', [
-    'email' => 'johh@example.com',
-    'name' => 'John Doe',
+    'email' => 'john@example.com',
 ]);
-```
 
-#### Direct Packet
+// Send to a specific app
+Outpost::to('app')->send('user.registered', [...]);
 
-You can also send a packet to a specific application using the `Outpost::to()` method. This method accepts the application name.
+// Send to multiple apps
+Outpost::to(['app1', 'app2'])->send('user.registered', [...]);
 
-```php
-Outpost::to('blueprint')->send('user.registered', [...]);
+// Send to all except specific apps
+Outpost::except('app')->send('user.registered', [...]);
 ```
 
 #### Receiving Packets
 
-Packets are transformed into Laravel events with, so you can listen to them using the standard Laravel event system. Registering listeners should be done through `Outpost::receive()` method to handle it reliably across environments.
+To listen for incoming packets, use the `Outpost::receive()` method.
+This automatically registers a Laravel event listener with the correct queue prefix (e.g. `outpost.user.registered`) based on your configuration.
 
 ```php
 Outpost::receive('user.registered', App\Listeners\UserRegisteredListener::class);
 ```
 
-You can also register multiple listeners at once.
+You can also filter which apps you want to accept packets from using from() or exclude some using except():
 
 ```php
-Outpost::receive([
-    'user.registered' => App\Listeners\A::class,
-    'user.deleted' => [
-        App\Listeners\B::class,
-        App\Listeners\C::class,
-    ],
-]);
+// Only receive from one app
+Outpost::from('app')->receive('user.registered', ...);
 
-// or
+// Receive from multiple apps
+Outpost::from(['app1', 'app2'])->receive('user.registered', ...);
 
-Outpost::receive('user.deleted', [
-        App\Listeners\B::class,
-        App\Listeners\C::class
-    ]);
+// Receive from all apps except one
+Outpost::except('app')->receive('user.registered', ...);
 ```
 
-> Listener will receive the original `Rosalana\Core\Services\Outpost\Packet` object.
+#### Packet Payload
+
+Each listener receives an instance of the original `Rosalana\Core\Services\Outpost\Packet` object, which includes:
+
+```php
+$packet->alias; // e.g. 'user.registered'
+$packet->origin; // the app that sent the packet
+$packet->target; // the app that should receive the packet
+$packet->payload; // data sent in the packet
+```
+You can access payload like this:
+
+```php
+public function handle(Packet $packet)
+{
+    $email = $packet->payload['email'];
+    // Do something with the email...
+}
+```
+
+> **Note:** You can use closures or class-based listeners, just like in Laravel. The Outpost::receive() wrapper ensures compatibility with your queue prefix.
 
 ## Ecosystem Versioning
 
