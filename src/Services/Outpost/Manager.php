@@ -23,18 +23,17 @@ class Manager
     protected string $origin;
 
     /**
-     * Send targets for packet
-     * Send to one multiple or all
+     * Packet targets
      */
     protected array|null $targets = null;
 
     /**
-     * Receive from the target application or all applications.
+     * Packet receivers
      */
     protected array|null $receivers = null;
 
     /**
-     * Exclude targets for packet when receiving from all
+     * Excluded receivers|targets
      */
     protected array $excepts = [];
 
@@ -85,45 +84,71 @@ class Manager
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
-     * Send a packet to the target application or all applications.
+     * Send a packet to the target application or all applications specified.
+     * 
+     * @param string $alias The event name/alias for the packet
+     * @param array $payload The data to be sent with the packet
+     * @return void
      */
-    // public function send(string $alias, array $payload = []): void
-    // {
-    //     (new Sender())->send($alias, $payload);
+    public function send(string $alias, array $payload = []): void
+    {
+        $packet = new Packet(
+            alias: $alias,
+            origin: $this->origin,
+            target: null,
+            queue: $this->queue,
+            payload: $payload,
+        );
 
-    //     $this->reset();
-    // }
+        $targets = $this->targets ?? $this->resolveTargetApps();
+
+        foreach ($targets as $target) {
+            if ($target === $this->origin) continue;
+
+            $packet->target = $target;
+            dispatch(clone $packet)
+                ->onConnection($this->connection)
+                ->onQueue("{$this->queue}.{$target}");
+        }
+
+        $this->reset();
+    }
 
     /**
      * Register a listener for a specific Outpost event.
      * This automatically includes the correct prefix based on configuration.
      */
-    // public function receive(string $alias, string|\Closure $listener): void
-    // {
-    //     (new Receiver())->receive($alias, $listener);
-    // }
+    public function receive(string $alias, string|\Closure $listener): void
+    {
+        Event::listen("{$this->queue}.{$alias}", function (Packet $packet) use ($listener) {
+            if (!empty($this->receivers) && !in_array($packet->origin, $this->receivers)) {
+                return;
+            }
+
+            if (in_array($packet->origin, $this->excepts)) {
+                return;
+            }
+
+            if ($packet->origin === $this->origin) {
+                return;
+            }
+
+            is_string($listener) ? app($listener)->handle($packet) : $listener($packet);
+        });
+
+        $this->reset();
+    }
+
+    protected function resolveTargetApps(): array
+    {
+        $response = Basecamp::apps()->all();
+
+        return collect($response->json('data'))
+            ->filter(fn($app) => $app['self'] !== true && !in_array($app['name'], $this->excepts))
+            ->pluck('name')
+            ->toArray();
+    }
 
     /**
      * Reset instance to default values.
