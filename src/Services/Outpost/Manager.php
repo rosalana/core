@@ -2,6 +2,7 @@
 
 namespace Rosalana\Core\Services\Outpost;
 
+use Illuminate\Support\Facades\Event;
 use Rosalana\Core\Facades\Basecamp;
 
 class Manager
@@ -56,6 +57,7 @@ class Manager
             alias: $alias,
             origin: $this->origin,
             target: $this->target,
+            queue: $this->queue,
             payload: $payload,
         );
 
@@ -81,11 +83,32 @@ class Manager
     }
 
     /**
-     * Register a callback to be executed when a packet is received.
+     * Register a listener for a specific Outpost event.
+     * This automatically includes the correct prefix based on configuration.
      */
-    public function receive(string $alias, \Closure $callback): void
+    public function receive(string|array $alias, string|\Closure|array|null $listener = null): void
     {
-        Registry::register($alias, $callback);
+        if (is_array($alias)) {
+            foreach ($alias as $key => $value) {
+                if (is_array($value)) {
+                    foreach ($value as $subListener) {
+                        Event::listen("{$this->queue}.{$key}", $subListener);
+                    }
+                } else {
+                    Event::listen("{$this->queue}.{$key}", $value);
+                }
+            }
+            return;
+        }
+    
+        if (is_array($listener)) {
+            foreach ($listener as $subListener) {
+                Event::listen("{$this->queue}.{$alias}", $subListener);
+            }
+            return;
+        }
+    
+        Event::listen("{$this->queue}.{$alias}", $listener);
     }
 
     /**

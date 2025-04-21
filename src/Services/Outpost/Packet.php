@@ -12,18 +12,15 @@ class Packet implements ShouldQueue
     use Dispatchable, Queueable, InteractsWithQueue;
 
     public function __construct(
-        public string $alias, // e.g. 'notification.email'
+        public string $alias, // e.g. 'notification.push'
         public string $origin,
         public ?string $target,
+        public string $queue,
         public array $payload,
     ) {}
 
     public function handle()
     {
-        $callback = Registry::resolve($this->alias);
-
-        if ($callback) {
-            call_user_func($callback, $this->payload);
-        }
+        event("{$this->queue}.{$this->alias}", $this);
     }
 }
