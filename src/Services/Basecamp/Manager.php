@@ -226,6 +226,14 @@ class Manager
     }
 
     /**
+     * Check if a sub-service is registered.
+     */
+    public function hasService(string $name): bool
+    {
+        return isset($this->services[$name]);
+    }
+
+    /**
      * Register a new sub-service.
      */
     public function registerService(string $name, $instance): void

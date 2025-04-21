@@ -341,6 +341,7 @@ Each listener receives an instance of the original `Rosalana\Core\Services\Outpo
 $packet->alias; // e.g. 'user.registered'
 $packet->origin; // the app that sent the packet
 $packet->target; // the app that should receive the packet
+$packet->user(); // the basecamp user|null
 $packet->payload; // data sent in the packet
 ```
 You can access payload like this:
@@ -349,7 +350,7 @@ You can access payload like this:
 public function handle(Packet $packet)
 {
     $email = $packet->payload['email'];
-    // Do something with the email...
+    $localUser = Accounts::users()->toLocal($packet->user()); // return local user|null
 }
 ```
 

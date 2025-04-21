@@ -2,6 +2,7 @@
 
 namespace Rosalana\Core\Services\Outpost;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Rosalana\Core\Facades\Basecamp;
 
@@ -93,10 +94,13 @@ class Manager
      */
     public function send(string $alias, array $payload = []): void
     {
+        $globalId = config('rosalana.account.identifier', 'rosalana_account_id');
+        $userId = Auth::user()?->$globalId ?? null;
+
         $packet = new Packet(
             alias: $alias,
             origin: $this->origin,
-            target: null,
+            userId: $userId,
             queue: $this->queue,
             payload: $payload,
         );
@@ -159,6 +163,14 @@ class Manager
         $this->receivers = null;
         $this->excepts = [];
         return $this;
+    }
+
+    /**
+     * Check if a sub-service is registered.
+     */
+    public function hasService(string $name): bool
+    {
+        return isset($this->services[$name]);
     }
 
     /**
