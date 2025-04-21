@@ -23,9 +23,20 @@ class Manager
     protected string $origin;
 
     /**
-     * Target for the Packet.
+     * Send targets for packet
+     * Send to one multiple or all
      */
-    protected string|null $target = null;
+    protected array|null $targets = null;
+
+    /**
+     * Receive from the target application or all applications.
+     */
+    protected array|null $receivers = null;
+
+    /**
+     * Exclude targets for packet when receiving from all
+     */
+    protected array $excepts = [];
 
     /**
      * Services that the client can use.
@@ -40,83 +51,88 @@ class Manager
     }
 
     /**
-     * Set the target for the Packet.
+     * Specifies targets for the packet to be sent to.
+     * @param string|array|null $apps The app name(s) that should receive the packet
+     * @return self
      */
-    public function to(string $name): self
+    public function to(string|array|null $apps): self
     {
-        $this->target = $name;
+        $this->targets = is_null($apps) ? null : (array) $apps;
+        return $this;
+    }
+    /**
+     * Specifies from which apps the packet should be received.
+     *
+     * @param string|array|null $apps The app name(s) that should send the packet
+     * @return self
+     */
+    public function from(string|array|null $apps): self
+    {
+        $this->receivers = is_null($apps) ? null : (array) $apps;
         return $this;
     }
 
     /**
+     * Specifies which apps should be excluded from process
+     *
+     * @param string|array|null $apps The app name(s) that should be excluded
+     * @return self
+     */
+    public function except(string|array|null $apps): self
+    {
+        $this->excepts = is_null($apps) ? [] : (array) $apps;
+        return $this;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
      * Send a packet to the target application or all applications.
      */
-    public function send(string $alias, array $payload = []): void
-    {
-        $packet = new Packet(
-            alias: $alias,
-            origin: $this->origin,
-            target: $this->target,
-            queue: $this->queue,
-            payload: $payload,
-        );
+    // public function send(string $alias, array $payload = []): void
+    // {
+    //     (new Sender())->send($alias, $payload);
 
-        if ($this->target === $this->origin) {
-            throw new \InvalidArgumentException("[Outpost] Cannot send a packet to the same app: {$this->origin}");
-        }
-
-        if (empty($this->target)) {
-            $response = Basecamp::apps()->all();
-            $apps = collect($response->json('data'))
-                ->filter(fn($app) => $app['self'] !== true);
-
-            foreach ($apps as $app) {
-                dispatch($packet)
-                    ->onConnection($this->connection)
-                    ->onQueue($this->queue . '.' . $app['name']);
-            }
-        } else {
-            dispatch($packet)->onConnection($this->connection)->onQueue($this->queue . '.' . $this->target);
-        }
-
-        $this->reset();
-    }
+    //     $this->reset();
+    // }
 
     /**
      * Register a listener for a specific Outpost event.
      * This automatically includes the correct prefix based on configuration.
      */
-    public function receive(string|array $alias, string|\Closure|array|null $listener = null): void
-    {
-        if (is_array($alias)) {
-            foreach ($alias as $key => $value) {
-                if (is_array($value)) {
-                    foreach ($value as $subListener) {
-                        Event::listen("{$this->queue}.{$key}", $subListener);
-                    }
-                } else {
-                    Event::listen("{$this->queue}.{$key}", $value);
-                }
-            }
-            return;
-        }
-    
-        if (is_array($listener)) {
-            foreach ($listener as $subListener) {
-                Event::listen("{$this->queue}.{$alias}", $subListener);
-            }
-            return;
-        }
-    
-        Event::listen("{$this->queue}.{$alias}", $listener);
-    }
+    // public function receive(string $alias, string|\Closure $listener): void
+    // {
+    //     (new Receiver())->receive($alias, $listener);
+    // }
 
     /**
      * Reset instance to default values.
      */
     public function reset(): self
     {
-        $this->target = null;
+        $this->targets = null;
+        $this->receivers = null;
+        $this->excepts = [];
         return $this;
     }
 
