@@ -82,7 +82,6 @@ class Manager
         return $this;
     }
 
-
     /**
      * Send a packet to the target application or all applications specified.
      * 

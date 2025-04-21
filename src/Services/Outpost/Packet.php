@@ -32,6 +32,6 @@ class Packet implements ShouldQueue
             return null;
         }
 
-        return is_null($this->userId) ? null : Basecamp::users()->find($this->userId);
+        return is_null($this->userId) ? null : Basecamp::users()->find($this->userId)->json('data');
     }
 }
