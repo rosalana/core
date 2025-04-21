@@ -5,9 +5,12 @@ namespace Rosalana\Core\Services\Outpost;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Rosalana\Core\Facades\Basecamp;
+use Rosalana\Core\Support\Serviceable;
 
 class Manager
 {
+    use Serviceable;
+
     /**
      * Connection name for Rosalana Outpost.
      */
@@ -37,11 +40,6 @@ class Manager
      * Excluded receivers|targets
      */
     protected array $excepts = [];
-
-    /**
-     * Services that the client can use.
-     */
-    protected array $services = [];
 
     public function __construct()
     {
@@ -163,38 +161,5 @@ class Manager
         $this->receivers = null;
         $this->excepts = [];
         return $this;
-    }
-
-    /**
-     * Check if a sub-service is registered.
-     */
-    public function hasService(string $name): bool
-    {
-        return isset($this->services[$name]);
-    }
-
-    /**
-     * Register a new sub-service.
-     */
-    public function registerService(string $name, $instance): void
-    {
-        $this->services[$name] = $instance;
-    }
-
-    /**
-     * Invoke a sub-service.
-     */
-    public function __call($method, $arg)
-    {
-        if (isset($this->services[$method])) {
-            $service = $this->services[$method];
-
-            if (method_exists($service, 'setManagerContext')) {
-                $service->setManagerContext($this);
-            }
-            return $service;
-        }
-
-        throw new \BadMethodCallException("Method [{$method}] does not exist on BasecampManager.");
     }
 }
