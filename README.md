@@ -16,6 +16,7 @@ Rosalana Core is the shared foundation for all applications in the Rosalana ecos
   - [Package Manager](#package-manager)
   - [Pipelines](#pipelines)
   - [Basecamp Connection](#basecamp-connection)
+  - [Outpost Connection](#outpost-connection)
 - [Ecosystem Versioning](#ecosystem-versioning)
 - [May Show in the Future](#may-show-in-the-future)
 - [License](#license)
@@ -45,6 +46,7 @@ This file will grow over time as you add more Rosalana packages to your applicat
 `rosalana/core` package provides configuration options for:
 
 - **basecamp**: Customize the connection to the central server which your application will connect to. More details [below](#basecamp-connection).
+- **outpost**: Defines how your app connects to the **shared queue system**. Used for sending and receiving events across Rosalana applications.
 - **published**: Tracks the packages that are currently installed and published in your application. This section is automatically updated when you publish a package. **Do not edit this section manually.**
 
 ## Features
@@ -169,7 +171,6 @@ Other packages can extend the same pipeline without knowing if the original pack
 **Don't forget to return `$next($response)` to continue the pipeline execution.**  
 If you omit the `return`, the pipeline will stop and the final result will be `null`.
 
-
 ```php
 use Rosalana\Core\Facades\Pipeline;
 
@@ -188,7 +189,7 @@ Pipeline::resolve('user.login')->run($request);
 
 ### Basecamp Connection
 
-> Connect to the central **Rosalana: Basecamp** server
+> Connect to the central **Rosalana: Basecamp** server also used for synchronous communication between apps, while Outpost handles asynchronous event-based communication.
 
 Every package built on `rosalana/core` can communicate with the central Basecamp server using a unified HTTP client provided by the `Rosalana\Core\Services\Basecamp\Manager::class`.
 
@@ -209,6 +210,7 @@ $response = Basecamp::withAuth()
 This approach is great for quick or dynamic requests without needing a dedicated service class.
 
 #### Redirected Requests
+
 By default, the `Basecamp` facade will send requests to the **central Basecamp server**. If you want to redirect the request to a different application in the Rosalana ecosystem, you can use the `to()` method.
 
 ```php
@@ -278,6 +280,64 @@ Basecamp::users()->login(['email' => 'a@a.com', 'password' => '...']);
 You can chain `withAuth()` and `withPipeline()` methods on any request to handle authentication or trigger post-response pipelines.
 
 All services registered this way automatically receive access to the underlying `Basecamp\Manager`, which manages headers, base URL, and request logic.
+
+### Outpost Connection
+
+> Send and receive **cross-application packets** asynchronously. Outpost helps you forward events between applications in the Rosalana ecosystem within Laravel's native event system.
+
+The **Outpost** system allows you to **send events** to other applications (via Redis queue) and **receive events** from other applications, as if they were local events.
+
+Under the hood, it uses Laravel jobs + Laravel events. But thanks to the Outpost fasade, your code stays clean and readable.
+
+#### Global Packet
+
+You can send a packet to all applications in the Rosalana ecosystem using the `Outpost::send()` method. This method accepts a packet name and an optional payload.
+
+```php
+use Rosalana\Core\Facades\Outpost;
+
+Outpost::send('user.registered', [
+    'email' => 'johh@example.com',
+    'name' => 'John Doe',
+]);
+```
+
+#### Direct Packet
+
+You can also send a packet to a specific application using the `Outpost::to()` method. This method accepts the application name.
+
+```php
+Outpost::to('blueprint')->send('user.registered', [...]);
+```
+
+#### Receiving Packets
+
+Packets are transformed into Laravel events with, so you can listen to them using the standard Laravel event system. Registering listeners should be done through `Outpost::receive()` method to handle it reliably across environments.
+
+```php
+Outpost::receive('user.registered', App\Listeners\UserRegisteredListener::class);
+```
+
+You can also register multiple listeners at once.
+
+```php
+Outpost::receive([
+    'user.registered' => App\Listeners\A::class,
+    'user.deleted' => [
+        App\Listeners\B::class,
+        App\Listeners\C::class,
+    ],
+]);
+
+// or
+
+Outpost::receive('user.deleted', [
+        App\Listeners\B::class,
+        App\Listeners\C::class
+    ]);
+```
+
+> Listener will receive the original `Rosalana\Core\Services\Outpost\Packet` object.
 
 ## Ecosystem Versioning
 
