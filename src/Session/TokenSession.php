@@ -40,4 +40,9 @@ class TokenSession
 
         return null;
     }
+
+    public static function expire(): void
+    {
+        session()->put('rosalana.token_expires_at', Carbon::now()->subSecond());
+    }
 }
