@@ -16,6 +16,7 @@ class Package
     public static array $packages = [
         'rosalana/core' => 'Core constracts and services',
         'rosalana/accounts' => 'Package for managing user accounts and authentication',
+        'rosalana/roles' => 'Package for managing user roles and permissions',
     ];
 
     public static function getDescription(string $package): string
