@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Rosalana\Core\Services\Basecamp\Manager to(string $name)
  * @method static \Rosalana\Core\Services\Basecamp\Manager version(string $version)
  * @method static \Rosalana\Core\Services\Basecamp\Manager reset()
+ * @method static \Rosalana\Core\Services\Basecamp\Manager after(string $alias, \Closure $callback)
  * 
  * @see \Rosalana\Core\Services\Basecamp\Manager
  */

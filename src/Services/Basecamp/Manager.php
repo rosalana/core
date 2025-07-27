@@ -208,6 +208,14 @@ class Manager
         return $response;
     }
 
+    public function after(string $alias, \Closure $callback): void
+    {
+        Pipeline::extendIfExists($alias, function ($response, $next) use ($callback) {
+            $callback($response);
+            return $next($response);
+        });
+    }
+
     /**
      * Reset instance to default values.
      */
