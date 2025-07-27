@@ -17,6 +17,7 @@ class Registry
      */
     public static function resolve(string $alias): Pipeline
     {
+        // hodilo by se hledání přes * wildcard - e.g. `test.*` to resolve all pipelines starting with `test.`
         if (!isset(static::$pipelines[$alias])) {
             static::$pipelines[$alias] = new Pipeline($alias);
         }
