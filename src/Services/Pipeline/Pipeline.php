@@ -10,6 +10,7 @@ class Pipeline
 
     public function __construct(
         protected ?string $alias = null,
+        protected ?string $scope = null // not implemented yet - this could be used for `from` on Basecamp Manager
     ) {}
 
     /**
@@ -28,6 +29,14 @@ class Pipeline
     public function pipes(): array
     {
         return $this->pipes;
+    }
+
+    /**
+     * Get the alias of the pipeline.
+     */
+    public function getAlias(): ?string
+    {
+        return $this->alias;
     }
 
     /**

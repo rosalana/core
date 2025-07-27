@@ -208,9 +208,12 @@ class Manager
         return $response;
     }
 
-    public function after(string $alias, \Closure $callback): void
+    /**
+     * Add a callback to be executed after the request is completed.
+     */
+    public function after(string $alias, \Closure $callback)
     {
-        Pipeline::extendIfExists($alias, function ($response, $next) use ($callback) {
+        return Pipeline::extend($alias, function ($response, $next) use ($callback) {
             $callback($response);
             return $next($response);
         });
