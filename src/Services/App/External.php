@@ -4,12 +4,13 @@ namespace Rosalana\Core\Services\App;
 
 use Rosalana\Core\Facades\Basecamp;
 use Illuminate\Http\Client\Response;
+use Rosalana\Core\Facades\App;
 
 class External
 {
     public function self(): Response
     {
-        return Basecamp::apps()->find(config('rosalana.basecamp.name', 'rosalana-app'));
+        return Basecamp::apps()->find(App::slug());
     }
 
     public function list(): Response
