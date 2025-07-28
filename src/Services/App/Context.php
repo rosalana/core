@@ -102,7 +102,7 @@ class Context
         $base = $this->splitKeys($group)[0];
 
         if (!Cache::has($base)) return;
-        
+
         $data = Cache::get($base, []);
         Cache::forget($base);
 
@@ -173,16 +173,12 @@ class Context
 
     protected function normalizeKeyPart(mixed $part): string
     {
-        // pozor možná nedělá z [User::class, 1] -> user.1
-        // nebo ['user', 1] -> user.1
-        // nebo 'user.1' -> user.1
-        // nebo $user (instance) -> user.1
         return match (true) {
-            is_string($part) && class_exists($part) => class_basename($part),
-            is_string($part) => $part, // žádný slug! necháme třeba 'user.1'
-            is_object($part) && method_exists($part, 'getKey') => class_basename($part) . '.' . $part->getKey(),
-            is_object($part) => class_basename($part),
-            is_int($part) => (string) $part,
+            is_string($part) && class_exists($part) => strtolower(class_basename($part)),
+            is_string($part) => strtolower($part), // žádný slug! necháme třeba 'user.1'
+            is_object($part) && method_exists($part, 'getKey') => strtolower(class_basename($part) . '.' . $part->getKey()),
+            is_object($part) => strtolower(class_basename($part)),
+            is_int($part) => (string) strtolower($part),
             default => 'unknown',
         };
     }
