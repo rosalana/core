@@ -27,6 +27,7 @@ class RosalanaCoreServiceProvider extends ServiceProvider
             return new \Rosalana\Core\Services\App\Manager(
                 new \Rosalana\Core\Services\App\Meta(),
                 new \Rosalana\Core\Services\App\External(),
+                new \Rosalana\Core\Services\App\Hooks(),
             );
         });
 

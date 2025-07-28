@@ -8,11 +8,13 @@ class Manager
 {
     protected Meta $meta;
     protected External $external;
+    protected Hooks $hooks;
 
-    public function __construct(Meta $meta, External $external)
+    public function __construct(Meta $meta, External $external, Hooks $hooks)
     {
         $this->meta = $meta;
         $this->external = $external;
+        $this->hooks = $hooks;
     }
 
     public function id(): string
@@ -65,13 +67,13 @@ class Manager
         return $this->external->find($name);
     }
 
-    public function context()
+    public function context(): Context
     {
         return app('rosalana.context');
     }
 
-    public function hooks()
+    public function hooks(): Hooks
     {
-        // not implemented yet
+        return $this->hooks;
     }
 }

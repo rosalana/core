@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool has(mixed $key)
  * @method static void forget(mixed $key)
  * @method static void invalidate(mixed $key)
+ * @method static void flush(string $group)
+ *
+ * @see \Rosalana\Core\Services\App\Context
  */
 class Context extends Facade
 {
