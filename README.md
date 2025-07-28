@@ -462,8 +462,6 @@ The [CLI](#cli) ensures package compatibility and prevents installing mismatched
 - **Plugin infrastructure**
 - **Shared message-bus interfaces**
 - **Realtime WebSocket integration**
-- **Hook & Observer system**
-- **App context**: inject basecamp data into the application at startup and allow packages to register their own initialization logic.
 
 Stay tuned — we're actively shaping the foundation of the Rosalana ecosystem.
 
