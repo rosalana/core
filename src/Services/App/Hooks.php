@@ -42,14 +42,7 @@ class Hooks
             throw new \BadMethodCallException("Method [$method] does not exist.");
         }
 
-        /**
-         * Works for:
-         * - onGroupAction
-         * - onGroup:Action
-         * - ongroup:action
-         * - onGroup:action
-         */
-
+        /** Works for: onGroupAction */
         $raw = substr($method, 2);
         $alias = str_replace(['_', '.'], ':', Str::lower(Str::snake($raw)));
 
