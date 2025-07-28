@@ -17,6 +17,8 @@ Rosalana Core is the shared foundation for all applications in the Rosalana ecos
   - [Pipelines](#pipelines)
   - [Basecamp Connection](#basecamp-connection)
   - [Outpost Connection](#outpost-connection)
+  - [App Context](#app-context)
+  - [App Hooks](#app-hooks)
 - [Ecosystem Versioning](#ecosystem-versioning)
 - [May Show in the Future](#may-show-in-the-future)
 - [License](#license)
@@ -281,6 +283,26 @@ You can chain `withAuth()` and `withPipeline()` methods on any request to handle
 
 All services registered this way automatically receive access to the underlying `Basecamp\Manager`, which manages headers, base URL, and request logic.
 
+#### After Hook
+
+You can attach custom logic to a Basecamp request by using `Basecamp::withPipeline('alias')`. This opens a hook window that other parts of your application can listen to.
+
+To register a callback for a specific hook, use `Basecamp::after()` — typically inside your `AppServiceProvider`:
+
+```php
+use Illuminate\Http\Client\Response;
+use Rosalana\Core\Facades\Basecamp;
+
+public function register()
+{
+    Basecamp::after('user.login', function (Response $response) {
+        // Handle post-login logic
+    });
+}
+```
+
+The callback will be executed after the Basecamp request is completed and if the request was explicitly marked with the `withPipeline()` method.
+
 ### Outpost Connection
 
 > Send and receive **cross-application packets** asynchronously — as if they were local Laravel events. Outpost allows Rosalana applications to communicate over queues without losing simplicity.
@@ -344,6 +366,7 @@ $packet->target; // the app that should receive the packet
 $packet->user(); // the basecamp user|null
 $packet->payload; // data sent in the packet
 ```
+
 You can access payload like this:
 
 ```php
@@ -355,6 +378,70 @@ public function handle(Packet $packet)
 ```
 
 > **Note:** You can use closures or class-based listeners, just like in Laravel. The Outpost::receive() wrapper ensures compatibility with your queue prefix.
+
+### App Context
+
+The App Context provides a centralized way to store and retrieve app-specific or user-specific data across the application lifecycle. It acts like a smarter cache and is especially useful for avoiding unnecessary Basecamp requests.
+
+#### Accessing Context
+
+Use `App::context()` to work with the local context.
+
+```php
+App::context()->get(); // Get full app context
+App::context()->put('app', ['foo' => 'bar']);
+```
+
+You can also bind data to specific models or structured keys:
+
+```php
+App::context()->put($user, ['foo' => 'bar']);
+App::context()->get($user); // ['foo' => 'bar']
+App::context()->get('user.1.foo'); // 'bar'
+App::context()->get([User::class, 1]); // ['foo' => 'bar']
+App::context()->get([User::class, 1, 'foo']); // 'bar'
+```
+
+#### Forgetting Data
+
+You can remove context data selectively:
+
+```php
+App::context()->invalidate('user.1.foo'); // Remove only one attribute
+App::context()->invalidate('user.1'); // Remove entire user context
+App::context()->flush(User::class); // Flush all entries for the User class (not implemented yet)
+```
+
+### App Hooks
+
+Hooks let you register listeners that react to events across your application. Under the hood, this uses the Pipeline system.
+
+#### Registering Hook
+
+```php
+App::hooks()->on('context:update', function ($data) {
+    // Run custom logic after context is updated
+});
+```
+
+You can also use camel-case helpers
+
+```php
+App::hooks()->onContextUpdate(function ($data) {
+    // works like above
+});
+```
+
+#### Triggering a Hook
+
+```php
+App::hooks()->run('context:update', [
+    'key' => 'context.app',
+    'path' => 'foo',
+    'value' => 'bar',
+    'previous' => null,
+]);
+```
 
 ## Ecosystem Versioning
 
