@@ -2,44 +2,76 @@
 
 namespace Rosalana\Core\Services\App;
 
+use Illuminate\Http\Client\Response;
+
 class Manager
 {
-    public function hooks()
+    protected Meta $meta;
+    protected External $external;
+
+    public function __construct(Meta $meta, External $external)
     {
-        // hooks service
+        $this->meta = $meta;
+        $this->external = $external;
+    }
+
+    public function id(): string
+    {
+        return $this->meta->id();
+    }
+
+    public function key(): string
+    {
+        return $this->meta->key();
+    }
+
+    public function slug(): string
+    {
+        return $this->meta->slug();
+    }
+
+    public function name(): string
+    {
+        return $this->meta->name();
+    }
+
+    public function version(): string
+    {
+        return $this->meta->version();
+    }
+
+    public function config(string $key, mixed $default = null): mixed
+    {
+        return $this->meta->config($key, $default);
+    }
+
+    public function meta(): array
+    {
+        return $this->meta->meta();
+    }
+
+    public function self(): Response
+    {
+        return $this->external->self();
+    }
+
+    public function list(): Response
+    {
+        return $this->external->list();
+    }
+
+    public function find(string $name): Response
+    {
+        return $this->external->find($name);
     }
 
     public function context()
     {
-        // context of the application (cached from the basecamp)
+        return app('rosalana.context');
     }
 
-    public function fire()
+    public function hooks()
     {
-        // fire App lifecycle events
+        // not implemented yet
     }
-
-    public function shutdown()
-    {
-        // shutdown the application
-    }
-
-    public function init()
-    {
-        // initialize the application
-    }
-
-    public function pipeline()
-    {
-        // start a pipeline for the application
-    }
-
-    public function config()
-    {
-        // get the rosalana configuration
-    }
-
-
-    // doplnitelné o vlastní metody z jiných balíčků
-
 }

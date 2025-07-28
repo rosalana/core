@@ -3,7 +3,6 @@
 namespace Rosalana\Core\Services\App;
 
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 
 class Context
@@ -22,6 +21,12 @@ class Context
         return Arr::get($data, $path, $default);
     }
 
+    /**
+     * Put a value into the context.
+     * Key can be a string or e.g. [User::class, 1, 'role'].
+     * If the key is a root context (e.g. 'app'),
+     * it will throw an exception to prevent overwriting the whole context.
+     */
     public function put(mixed $key, mixed $value, ?int $ttl = null): void
     {
         if (!$this->interactingWithValue($key) && !is_array($value)) {
@@ -36,6 +41,10 @@ class Context
         }
     }
 
+    /**
+     * Check if a key exists in the context.
+     * Key can be a string or e.g. [User::class, 1, 'role'].
+     */
     public function has(mixed $key): bool
     {
         [$base, $path] = $this->formatKey($key);
@@ -47,6 +56,12 @@ class Context
         return Arr::has($data, $path);
     }
 
+    /**
+     * Forget a key in the context.
+     * Key can be a string or e.g. [User::class, 1, 'role'].
+     * If the key is a root context (e.g. 'app'),
+     * it will remove the whole context object.
+     */
     public function forget(mixed $key): void
     {
         [$base, $path] = $this->formatKey($key);
@@ -60,14 +75,15 @@ class Context
         }
     }
 
+    /**
+     * Forget a key in the context.
+     * Key can be a string or e.g. [User::class, 1, 'role'].
+     * If the key is a root context (e.g. 'app'),
+     * it will remove the whole context object.
+     */
     public function invalidate(mixed $key): void
     {
         $this->forget($key);
-    }
-
-    public function flush(): void
-    {
-        Cache::forget($this->prefix . '.*');
     }
 
     protected function create(mixed $key, mixed $value, ?int $ttl = null): void
@@ -123,6 +139,7 @@ class Context
         // nebo $user (instance) -> user.1
         return match (true) {
             is_string($part) => $part, // žádný slug! necháme třeba 'user.1'
+            is_string($part) && class_exists($part) => class_basename($part),
             is_object($part) && method_exists($part, 'getKey') => class_basename($part) . '.' . $part->getKey(),
             is_object($part) => class_basename($part),
             is_int($part) => (string) $part,

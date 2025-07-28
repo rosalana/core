@@ -19,6 +19,17 @@ class RosalanaCoreServiceProvider extends ServiceProvider
             return new \Rosalana\Core\Services\Basecamp\Manager();
         });
 
+        $this->app->singleton('rosalana.context', function () {
+            return new \Rosalana\Core\Services\App\Context();
+        });
+
+        $this->app->singleton('rosalana.app', function () {
+            return new \Rosalana\Core\Services\App\Manager(
+                new \Rosalana\Core\Services\App\Meta(),
+                new \Rosalana\Core\Services\App\External(),
+            );
+        });
+
         $this->app->singleton('rosalana.outpost', function () {
             return new \Rosalana\Core\Services\Outpost\Manager();
         });
