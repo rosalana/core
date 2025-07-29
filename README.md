@@ -19,6 +19,7 @@ Rosalana Core is the shared foundation for all applications in the Rosalana ecos
   - [Outpost Connection](#outpost-connection)
   - [App Context](#app-context)
   - [App Hooks](#app-hooks)
+- [Available Hooks](#available-hooks)
 - [Ecosystem Versioning](#ecosystem-versioning)
 - [May Show in the Future](#may-show-in-the-future)
 - [License](#license)
@@ -402,6 +403,16 @@ App::context()->get([User::class, 1]); // ['foo' => 'bar']
 App::context()->get([User::class, 1, 'foo']); // 'bar'
 ```
 
+If you are not sure about the exact key, you can find data using patterns
+
+```php
+// Find all users with a specific role
+App::context()->find('user.*', ['role' => 'admin']);
+
+// Find the first user with a specific role
+[$key, $user] = App::context()->findFirst('user.*', ['role' => 'admin']);
+```
+
 #### Forgetting Data
 
 You can remove context data selectively:
@@ -443,6 +454,15 @@ App::hooks()->run('context:update', [
 ]);
 ```
 
+## Available Hooks
+| Hook | Description | Data |
+|------|-------------|------|
+| `context:create` | Triggered when a new context item is created | `key`: Context key path <br> `path`: Created path <br> `value`: Created value |
+| `context:update` | Triggered when the context is updated | `key`: Context key path <br> `path`: Updated path <br> `value`: New value <br> `previous`: Previous value |
+| `context:invalidate` | Triggered when a context item is forgotten | `key`: Context key path <br> `path`: Removed path <br> `previous`: Removed data |
+| `context:flush` | Triggered when the context is flushed for a specific group | `group`: Name of the flushed group |
+
+
 ## Ecosystem Versioning
 
 Rosalana follows a unified versioning system. When you install or update packages, they are automatically matched to the correct version based on your current Rosalana ecosystem version.
@@ -462,31 +482,12 @@ The [CLI](#cli) ensures package compatibility and prevents installing mismatched
 - **Plugin infrastructure**
 - **Shared message-bus interfaces**
 - **Realtime WebSocket integration**
-- **ServiceDownException:** Například v situaci když dostaneme `'role' => 'unknown'` -  znamená to, že se stala chyba v komunikaci s Basecamp serverem. Tato exception může být použitá kdykoliv kdy je podezření že Basecamp nebo jiná service nekomunikuje správně. Případně může být použito `RosalanaHttpException` nebo udělat obecně novou `RosalanaServiceException` a na to navazovat další. Protože to není Http vždy.
-- **Local ID vs Remote ID:** Vymyslet jak najít kontext usera podle local nebo remote id - protože někdy mám k dispozici jedno a někdy druhé a potřebuju tak jako tak najít správný záznam.
-
-```php
-// umět například toto:
-$users = App::context()->find('user.*', [ // all
-    'remote_id' => 1,
-]);
-
-[$key, $user] = App::context()->findFirst('user.*', [ // first
-    'remote_id' => 1,
-]);
-```
-logika dat by měla být takto:
-- klíč by měl být vždy `{model}.{local_id}` aby se dalo hledat i takto `App::context()->get($user);`
-- uvnitř by mělo být vždy `['remote_id' => 1, 'local_id' => 1]` - aby se dalo hledat hezky. toto by tam měl vložit `rosalana/accounts`
-- `rosalana/roles` by měl přidat akorát `['role' => 'admin']` - ke správnému userovi.
-
-Něco jsem přidal teď - je potřeba to zkontrolovat a dolatit.
 
 Stay tuned — we're actively shaping the foundation of the Rosalana ecosystem.
 
 ## Bugs
 
-- **Outpost**: when sending notification.email should be process ones but has no target app. Its target to basecamp. Možná hodit jen do lokální queue a zpracovat lokálně. Je fakt, že pokud něco není potřeba posílat do outpostu, tak to nebudeme posílat. Notification fasada by měla tohle rozhodovat. Jestli je potřeba posílat do outpostu nebo jestli jen poslat email nebo jen hodit do session.
+- **Outpost**: when sending notification.email should be process ones but has no target app. Its target to basecamp. *Možná hodit jen do lokální queue a zpracovat lokálně. Je fakt, že pokud něco není potřeba posílat do outpostu, tak to nebudeme posílat. Notification fasada by měla tohle rozhodovat. Jestli je potřeba posílat do outpostu nebo jestli jen poslat email nebo jen hodit do session.*
 
 ## License
 
