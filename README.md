@@ -462,6 +462,25 @@ The [CLI](#cli) ensures package compatibility and prevents installing mismatched
 - **Plugin infrastructure**
 - **Shared message-bus interfaces**
 - **Realtime WebSocket integration**
+- **ServiceDownException:** Například v situaci když dostaneme `'role' => 'unknown'` -  znamená to, že se stala chyba v komunikaci s Basecamp serverem. Tato exception může být použitá kdykoliv kdy je podezření že Basecamp nebo jiná service nekomunikuje správně. Případně může být použito `RosalanaHttpException` nebo udělat obecně novou `RosalanaServiceException` a na to navazovat další. Protože to není Http vždy.
+- **Local ID vs Remote ID:** Vymyslet jak najít kontext usera podle local nebo remote id - protože někdy mám k dispozici jedno a někdy druhé a potřebuju tak jako tak najít správný záznam.
+
+```php
+// umět například toto:
+$users = App::context()->find('user.*', [ // all
+    'remote_id' => 1,
+]);
+
+[$key, $user] = App::context()->findFirst('user.*', [ // first
+    'remote_id' => 1,
+]);
+```
+logika dat by měla být takto:
+- klíč by měl být vždy `{model}.{local_id}` aby se dalo hledat i takto `App::context()->get($user);`
+- uvnitř by mělo být vždy `['remote_id' => 1, 'local_id' => 1]` - aby se dalo hledat hezky. toto by tam měl vložit `rosalana/accounts`
+- `rosalana/roles` by měl přidat akorát `['role' => 'admin']` - ke správnému userovi.
+
+Něco jsem přidal teď - je potřeba to zkontrolovat a dolatit.
 
 Stay tuned — we're actively shaping the foundation of the Rosalana ecosystem.
 

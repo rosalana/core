@@ -5,6 +5,7 @@ namespace Rosalana\Core\Services\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Arr;
 use Rosalana\Core\Facades\App;
+use Illuminate\Support\Str;
 
 class Context
 {
@@ -40,6 +41,49 @@ class Context
         } else {
             $this->create($key, $value, $ttl);
         }
+    }
+
+    public function find(string $pattern, array $where = []): array
+    {
+        [$base, $path] = $this->formatKey($pattern);
+
+        if (!Cache::has($base)) return [];
+
+        $data = Cache::get($base, []);
+        $results = [];
+
+        foreach ($data as $subkey => $value) {
+            // path = '', tedy hledáme rovnou subkey = 1,2,3
+            if (!Str::is($path ?: '*', (string) $subkey)) {
+                continue;
+            }
+
+            // musí to být pole (jinak nemá smysl hledat v tom klíče)
+            if (!is_array($value)) {
+                continue;
+            }
+
+            // zkontrolujeme všechny where podmínky
+            foreach ($where as $key => $expected) {
+                if (!Arr::has($value, $key) || Arr::get($value, $key) !== $expected) {
+                    continue 2; // pokud nenajdeme shodu, přeskočíme tento záznam
+                }
+            }
+            $results["{$base}.{$subkey}"] = $value;
+        }
+
+        return $results;
+    }
+
+    public function findFirst(string $pattern, array $where = []): ?array
+    {
+        $results = $this->find($pattern, $where);
+        
+        foreach ($results as $key => $value) {
+            return [$key, $value];
+        }
+
+        return null;
     }
 
     /**
