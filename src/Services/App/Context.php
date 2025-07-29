@@ -20,6 +20,8 @@ class Context
 
         $data = Cache::get($base, []);
 
+        if (empty($part)) return $data;
+
         return Arr::get($data, $path, $default);
     }
 
@@ -69,7 +71,9 @@ class Context
                     continue 2; // pokud nenajdeme shodu, přeskočíme tento záznam
                 }
             }
-            $results["{$base}.{$subkey}"] = $value;
+
+            $baseWithoutPrefix = Str::replaceFirst($this->prefix . '.', '', $base);
+            $results["{$baseWithoutPrefix}.{$subkey}"] = $value;
         }
 
         return $results;
