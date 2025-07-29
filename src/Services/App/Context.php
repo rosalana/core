@@ -20,7 +20,7 @@ class Context
 
         $data = Cache::get($base, []);
 
-        if (empty($part)) return $data;
+        if (empty($path)) return $data;
 
         return Arr::get($data, $path, $default);
     }
@@ -45,6 +45,12 @@ class Context
         }
     }
 
+    /**
+     * Find all records by a pattern matching a key.
+     * User '*' as a wildcard for the path.
+     * For example, to find all user with role 'admin',
+     * pattern: 'user.*', where: ['role' => 'admin'].
+     */
     public function find(string $pattern, array $where = []): array
     {
         [$base, $path] = $this->formatKey($pattern);
@@ -55,20 +61,17 @@ class Context
         $results = [];
 
         foreach ($data as $subkey => $value) {
-            // path = '', tedy hledáme rovnou subkey = 1,2,3
             if (!Str::is($path ?: '*', (string) $subkey)) {
                 continue;
             }
 
-            // musí to být pole (jinak nemá smysl hledat v tom klíče)
             if (!is_array($value)) {
                 continue;
             }
 
-            // zkontrolujeme všechny where podmínky
             foreach ($where as $key => $expected) {
                 if (!Arr::has($value, $key) || Arr::get($value, $key) !== $expected) {
-                    continue 2; // pokud nenajdeme shodu, přeskočíme tento záznam
+                    continue 2;
                 }
             }
 
@@ -79,6 +82,12 @@ class Context
         return $results;
     }
 
+    /**
+     * Find the first record by a pattern matching a key.
+     * User '*' as a wildcard for the path.
+     * For example, to find the first user with role 'admin',
+     * pattern: 'user.*', where: ['role' => 'admin'].
+     */
     public function findFirst(string $pattern, array $where = []): ?array
     {
         $results = $this->find($pattern, $where);
