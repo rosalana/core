@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static void forget(mixed $key)
  * @method static void invalidate(mixed $key)
  * @method static void flush(string $group)
+ * @method static array find(string $pattern, array $where = [])
+ * @method static array|null findFirst(string $pattern, array $where = [])
  *
  * @see \Rosalana\Core\Services\App\Context
  */
