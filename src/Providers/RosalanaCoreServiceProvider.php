@@ -26,7 +26,6 @@ class RosalanaCoreServiceProvider extends ServiceProvider
         $this->app->singleton('rosalana.app', function () {
             return new \Rosalana\Core\Services\App\Manager(
                 new \Rosalana\Core\Services\App\Meta(),
-                new \Rosalana\Core\Services\App\External(),
                 new \Rosalana\Core\Services\App\Hooks(),
             );
         });

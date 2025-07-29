@@ -3,17 +3,16 @@
 namespace Rosalana\Core\Services\App;
 
 use Illuminate\Http\Client\Response;
+use Rosalana\Core\Facades\Basecamp;
 
 class Manager
 {
     protected Meta $meta;
-    protected External $external;
     protected Hooks $hooks;
 
-    public function __construct(Meta $meta, External $external, Hooks $hooks)
+    public function __construct(Meta $meta, Hooks $hooks)
     {
         $this->meta = $meta;
-        $this->external = $external;
         $this->hooks = $hooks;
     }
 
@@ -54,17 +53,17 @@ class Manager
 
     public function self(): Response
     {
-        return $this->external->self();
+        return Basecamp::apps()->find($this->slug());
     }
 
     public function list(): Response
     {
-        return $this->external->list();
+        return Basecamp::apps()->all();
     }
 
     public function find(string $name): Response
     {
-        return $this->external->find($name);
+        return Basecamp::apps()->find($name);
     }
 
     public function context(): Context
