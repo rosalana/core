@@ -14,7 +14,7 @@ class Cryptor
         }
 
         if (!$timestamp) {
-            $timestamp = time();
+            $timestamp = (int) (microtime(true) * 1000);
         }
 
         $method = strtoupper($method);
