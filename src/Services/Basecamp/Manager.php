@@ -8,6 +8,7 @@ use Rosalana\Core\Exceptions\BasecampErrorType;
 use Rosalana\Core\Exceptions\HttpAppErrorType;
 use Rosalana\Core\Facades\Basecamp;
 use Rosalana\Core\Facades\Pipeline;
+use Rosalana\Core\Support\Cryptor;
 use Rosalana\Core\Support\Serviceable;
 
 class Manager
@@ -44,10 +45,8 @@ class Manager
     public function __construct()
     {
         $this->url = config('rosalana.basecamp.url');
-        $this->secret = config('rosalana.basecamp.secret');
         $this->version = "/api/" . config('rosalana.basecamp.version') . "/";
 
-        $this->headers['X-App-Secret'] = $this->secret;
         $this->headers['X-App-Proxy'] = false;
         $this->headers['Origin'] = config('app.url');
     }
@@ -176,6 +175,8 @@ class Manager
      */
     protected function request(string $method, string $endpoint, array $data = []): Response
     {
+        $this->headers = array_merge($this->headers, Cryptor::sign($method, $this->url . $this->version . $endpoint, $data));
+
         try {
             $response = Http::withHeaders($this->headers)
                 ->$method($this->url . $this->version . $endpoint, $data);
@@ -229,6 +230,8 @@ class Manager
         $this->headers['X-App-Proxy'] = false;
         $this->pipeline = null;
         unset($this->headers['Authorization']);
+        unset($this->headers['X-Timestamp']);
+        unset($this->headers['X-Signature']);
 
         return $this;
     }
