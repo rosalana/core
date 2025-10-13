@@ -37,6 +37,7 @@ class Core implements Package
                     Config::new('basecamp')
                         ->add('url', "env('ROSALANA_BASECAMP_URL', 'http://localhost:8000')")
                         ->add('secret', "env('ROSALANA_APP_SECRET', 'secret')")
+                        ->add('id', "env('ROSALANA_APP_ID', 'rosalana-app-01')")
                         ->add('name', "env('ROSALANA_APP_NAME', 'app-name-on-basecamp')")
                         ->add('version', "'v1'")
                         ->comment(
@@ -60,6 +61,7 @@ class Core implements Package
                 'run' => function () {
                     $this->setEnvValue('ROSALANA_BASECAMP_URL', 'http://localhost:8000');
                     $this->setEnvValue('ROSALANA_APP_SECRET');
+                    $this->setEnvValue('ROSALANA_APP_ID', 'rosalana-app-');
                 }
             ]
         ];
