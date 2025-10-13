@@ -18,7 +18,7 @@ class Cryptor
         }
 
         $method = strtoupper($method);
-        $bodyString = json_encode($body, JSON_UNESCAPED_SLASHES);
+        $bodyString = empty($body) ? '' : json_encode($body, JSON_UNESCAPED_SLASHES);
         $data = "{$method}\n{$url}\n{$timestamp}\n{$bodyString}\n{$id}";
 
         $computed = hash_hmac('sha256', $data, $secret);
