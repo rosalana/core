@@ -482,6 +482,8 @@ The [CLI](#cli) ensures package compatibility and prevents installing mismatched
 - **Plugin infrastructure**
 - **Shared message-bus interfaces**
 - **Realtime WebSocket integration**
+- **Package actions**: Allow packages to define custom actions that can be triggered via CLI.
+- **Rewrite the config builder** support more complex structures.
 
 Stay tuned — we're actively shaping the foundation of the Rosalana ecosystem.
 
