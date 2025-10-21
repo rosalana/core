@@ -2,44 +2,66 @@
 
 namespace Rosalana\Core\Services\Revizor;
 
+use Rosalana\Core\Facades\App;
 use Rosalana\Core\Support\Cipher;
 
 class Ticket
 {
     /** Original ticket data */
     protected array $original;
-    
     /** Current ticket data */
     protected array $payload;
+    /** Key used for encryption/signing */
+    protected string $key;
+
+    protected $locked = true;
+
+    public function __construct(array|string $ticket = [])
+    {
+        if (is_string($ticket)) {
+            $this->original = Cipher::unwrapFromString($ticket);
+            $this->payload = $this->original;
+        } else {
+            $this->original = $ticket;
+            $this->payload = $ticket;
+        }
+
+        $this->key = App::config('revizor.key', 'key');
+    }
 
     public static function make(array|string $ticket = []): self
     {
-        $instance = new self();
-
-        if (is_string($ticket)) {
-            $instance->original = Cipher::unwrapFromString($ticket);
-            $instance->payload = $instance->original;
-        } else {
-            $instance->original = $ticket;
-            $instance->payload = $ticket;
-        }
-
-        return $instance;
+        return new self($ticket);
     }
 
-    public function payload(string $key, $default = null)
+    public function sign(?int $timestamp = null): self
     {
-        return $this->payload[$key] ?? $default;
+        $signer = TicketSigner::make(ticket: $this->payload, timestamp: $timestamp);
+        $this->payload['signature'] = $signer->sign();
+        $this->payload['timestamp'] = $signer->getTimestamp();
+        unset($this->payload[$this->key]);
+
+        return $this;
     }
 
-    public function seal()
+    public function unlock(): self
     {
-        return Cipher::wrapToString($this->payload);
+        // validation
+
+        $this->payload[$this->key] = Cipher::decrypt($this->payload[$this->key]);
+        $this->locked = false;
+
+        return $this;
     }
 
-    public function sign()
+    public function lock(): self
     {
-        // TicketSigner...
+        // validation
+
+        $this->payload[$this->key] = Cipher::encrypt($this->payload[$this->key]);
+        $this->locked = true;
+        
+        return $this;
     }
 
     public function verify(): bool
@@ -48,9 +70,23 @@ class Ticket
         return true;
     }
 
+    public function payload(string $key, $default = null)
+    {
+        return $this->payload[$key] ?? $default;
+    }
+
     public function getOriginal(): array
     {
         return $this->original;
     }
 
+    public function toArray(): array
+    {
+        return $this->payload;
+    }
+
+    public function seal()
+    {
+        return Cipher::wrapToString($this->payload);
+    }
 }

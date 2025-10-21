@@ -12,11 +12,9 @@ class Manager
 
     public function ticket(array|string|null $ticket = null): Ticket|TicketManager
     {
-        if ($ticket === null) {
-            return $this->ticketManager;
-        } else {
-            return Ticket::make($ticket);
-        }
+        return $ticket === null
+            ? $this->ticketManager
+            : Ticket::make($ticket);
     }
     /**
      * TicketManager je pro Find ticket nebo create a vrací Ticket
