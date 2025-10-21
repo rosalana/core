@@ -54,6 +54,17 @@ class Core implements Package
                             'Outpost Message Broker'
                         )
                         ->save();
+                    
+                    Config::new('revizor')
+                        ->add('active_tickets', "config('rosalana.basecamp.url') . '/.well-known/tickets'")
+                        ->add('key', "'key'")
+                        ->add('signature_ttl', '60')
+                        ->add('cache_prefix', "'revizor_signatures_'")
+                        ->comment(
+                            'Configuration for Revizor, the authentication system for A2A communication within the Rosalana ecosystem.',
+                            'Revizor Authentication'
+                        )
+                        ->save();
                 }
             ],
             'env' => [
