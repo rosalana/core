@@ -32,4 +32,25 @@ class Ticket
         return $this->payload[$key] ?? $default;
     }
 
+    public function seal()
+    {
+        return Cipher::wrapToString($this->payload);
+    }
+
+    public function sign()
+    {
+        // TicketSigner...
+    }
+
+    public function verify(): bool
+    {
+        // TicketValidator...
+        return true;
+    }
+
+    public function getOriginal(): array
+    {
+        return $this->original;
+    }
+
 }
