@@ -6,6 +6,8 @@ use Rosalana\Core\Facades\App;
 
 abstract class Signer
 {
+    protected int $timestamp;
+
     abstract protected function getData(): string;
 
     public static function make(...$arg): self
@@ -32,7 +34,14 @@ abstract class Signer
 
     protected function now(): int
     {
-        return (int) (microtime(true) * 1000);
+        $now = (int) (microtime(true) * 1000);
+        $this->timestamp = $now;
+        return $now;
+    }
+
+    public function getTimestamp(): int
+    {
+        return $this->timestamp;
     }
 
     protected function getSecretKey(): string
