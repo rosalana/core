@@ -13,7 +13,7 @@ class RequestSigner extends Signer
         protected string $method,
         protected string $url,
         protected mixed $body,
-        protected ?int $timestamp = null,
+        ?int $timestamp = null,
     ) {
         $this->method = strtoupper($method);
         $this->appId = App::config('basecamp.id');
