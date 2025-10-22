@@ -34,7 +34,7 @@ class Cipher
         return base64_encode(json_encode($data, JSON_UNESCAPED_SLASHES));
     }
 
-    public static function unwrapFromString(string $data): array
+    public static function unwrapString(string $data): array
     {
         $decoded = base64_decode($data);
         return json_decode($decoded, true) ?? [];

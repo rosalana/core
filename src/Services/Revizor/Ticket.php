@@ -19,7 +19,7 @@ class Ticket
     public function __construct(array|string $ticket = [])
     {
         if (is_string($ticket)) {
-            $this->original = Cipher::unwrapFromString($ticket);
+            $this->original = Cipher::unwrapString($ticket);
             $this->payload = $this->original;
         } else {
             $this->original = $ticket;
