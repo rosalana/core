@@ -6,7 +6,6 @@ use Rosalana\Core\Support\Cipher;
 
 class Manager
 {
-
     public function ticket(array|string|null $ticket = null): Ticket|TicketManager
     {
         if (is_null($ticket)) {
@@ -25,6 +24,16 @@ class Manager
         }
 
         return $tickets->buy($target);
+    }
+
+    public function verifyRequest()
+    {
+        return Ticket::fromRequest()->verify();
+    }
+
+    public function verify(string|array|Ticket $ticket)
+    {
+        return (is_string($ticket) || is_array($ticket) ? Ticket::from($ticket) : $ticket)->verify();
     }
 
     public function request(...$params)
