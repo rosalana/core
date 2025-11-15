@@ -10,7 +10,6 @@ class TicketsService extends Service
     public function list()
     {
         return $this->manager
-            ->withAuth()
             ->get('.well-known/tickets');
     }
 
@@ -18,6 +17,6 @@ class TicketsService extends Service
     {
         return $this->manager
             ->withAuth()
-            ->post('', $data);
+            ->post('tickets', $data);
     }
 }
