@@ -7,6 +7,7 @@ use Rosalana\Core\Facades\App;
 abstract class Signer
 {
     protected int $timestamp;
+    protected string $signature;
 
     abstract protected function getData(): string;
 
@@ -24,7 +25,9 @@ abstract class Signer
             throw new \RuntimeException('Cannot create signature without secret token.');
         }
 
-        return hash_hmac('sha256', $data, $secret);
+        $this->signature = hash_hmac('sha256', $data, $secret);
+
+        return $this->signature;
     }
 
     public function compare(string $signature): bool
@@ -42,6 +45,11 @@ abstract class Signer
     public function getTimestamp(): int
     {
         return $this->timestamp;
+    }
+
+    public function getSignature(): string
+    {
+        return $this->signature;
     }
 
     protected function getSecretKey(): string
