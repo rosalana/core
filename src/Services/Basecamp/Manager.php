@@ -8,6 +8,7 @@ use Rosalana\Core\Exceptions\BasecampErrorType;
 use Rosalana\Core\Exceptions\HttpAppErrorType;
 use Rosalana\Core\Facades\Basecamp;
 use Rosalana\Core\Facades\Pipeline;
+use Rosalana\Core\Facades\Revizor;
 use Rosalana\Core\Support\Cryptor;
 use Rosalana\Core\Support\Serviceable;
 
@@ -175,7 +176,16 @@ class Manager
      */
     protected function request(string $method, string $endpoint, array $data = []): Response
     {
-        $this->headers = array_merge($this->headers, Cryptor::sign($method, $this->url . $this->version . $endpoint, $data));
+        // $this->headers = array_merge($this->headers, Cryptor::sign($method, $this->url . $this->version . $endpoint, $data));
+
+        $this->headers = array_merge(
+            $this->headers,
+            Revizor::request(
+                method: $method,
+                url: $this->url . $this->version . $endpoint,
+                body: $data,
+            )->sign()->headers()
+        );
 
         try {
             $response = Http::withHeaders($this->headers)
