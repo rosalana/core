@@ -484,6 +484,7 @@ The [CLI](#cli) ensures package compatibility and prevents installing mismatched
 - **Realtime WebSocket integration**
 - **Package actions**: Allow packages to define custom actions that can be triggered via CLI.
 - **Rewrite the config builder** support more complex structures.
+- **App2App** use `Revizor::class` to create tickets and update `Basecamp::class` to works with them.
 
 Stay tuned — we're actively shaping the foundation of the Rosalana ecosystem.
 
