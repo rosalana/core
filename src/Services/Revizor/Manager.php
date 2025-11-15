@@ -26,21 +26,23 @@ class Manager
         return $tickets->buy($target);
     }
 
-    public function verifyRequest()
+    public function verifyRequest(): Ticket
     {
         return Ticket::fromRequest()->verify();
     }
 
-    public function verify(string|array|Ticket $ticket)
+    public function verify(string|array|Ticket $ticket): Ticket
     {
         return (is_string($ticket) || is_array($ticket) ? Ticket::from($ticket) : $ticket)->verify();
     }
 
-    public function request(...$params)
+    public function request(string $method, string $url, mixed $body = []): RequestManager
     {
-        // sign request TODO
-        // -> sign() : string
-        // -> headers() : [...headers]
+        return new RequestManager(
+            method: $method,
+            url: $url,
+            body: $body,
+        );
     }
 
     public function hide($value)

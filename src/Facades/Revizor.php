@@ -9,6 +9,13 @@ use Illuminate\Support\Facades\Facade;
  * 
  * @method static \Rosalana\Core\Services\Revizor\Ticket|\Rosalana\Core\Services\Revizor\TicketManager ticket(string|array|null $ticket = null)
  * @method static \Rosalana\Core\Services\Revizor\Ticket ticketFor(string $target)
+ * @method static \Rosalana\Core\Services\Revizor\Ticket verifyRequest()
+ * @method static \Rosalana\Core\Services\Revizor\Ticket verify(string|array|Ticket $ticket)
+ * @method static \Rosalana\Core\Services\Revizor\RequestManager request(string $method, string $url, mixed $body = [])
+ * @method static string hide(mixed $value)
+ * @method static mixed reveal(mixed $value)
+ * @method static string encrypt(mixed $value)
+ * @method static mixed decrypt(mixed $value)
  * 
  * @see \Rosalana\Core\Services\Revizor\Manager
  */
