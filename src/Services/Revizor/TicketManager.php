@@ -48,7 +48,7 @@ class TicketManager
     public function buy(string $target): Ticket
     {
         $ticket = Ticket::from(
-            Basecamp::ticket()->create(['target' => $target])->json('data.ticket')
+            Basecamp::tickets()->create(['target' => $target])->json('data.ticket')
         );
 
         App::context()->put('ticket.' . $target, $ticket->toString(), $ticket->getTTL());
