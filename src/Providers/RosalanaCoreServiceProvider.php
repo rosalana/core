@@ -4,6 +4,7 @@ namespace Rosalana\Core\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Rosalana\Core\Services\Basecamp\AppsService;
+use Rosalana\Core\Services\Basecamp\TicketsService;
 
 class RosalanaCoreServiceProvider extends ServiceProvider
 {
@@ -40,6 +41,10 @@ class RosalanaCoreServiceProvider extends ServiceProvider
 
         $this->app->resolving('rosalana.basecamp', function (\Rosalana\Core\Services\Basecamp\Manager $manager) {
             $manager->registerService('apps', new AppsService());
+        });
+
+        $this->app->resolving('rosalana.basecamp', function (\Rosalana\Core\Services\Basecamp\Manager $manager) {
+            $manager->registerService('tickets', new TicketsService());
         });
     }
 

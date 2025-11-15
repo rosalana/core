@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Facade;
  * Facade for interacting with Rosalana Basecamp and remote applications.
  *
  * @method static \Rosalana\Core\Services\Basecamp\AppsService apps()
+ * @method static \Rosalana\Core\Services\Basecamp\TicketsService tickets()
  * @method static \Rosalana\Accounts\Services\Basecamp\UsersService users()
  * @method static \Rosalana\Accounts\Services\Basecamp\AuthService auth()
  * 
