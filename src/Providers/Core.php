@@ -56,7 +56,7 @@ class Core implements Package
                         ->save();
                     
                     Config::new('revizor')
-                        ->add('active_tickets', "config('rosalana.basecamp.url') . '/.well-known/tickets'")
+                        ->add('active_tickets', "config('rosalana.basecamp.url') . '.well-known/tickets'")
                         ->add('key', "'key'")
                         ->add('signature_ttl', '60')
                         ->add('cache_prefix', "'revizor_signatures_'")
