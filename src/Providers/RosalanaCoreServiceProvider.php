@@ -31,6 +31,10 @@ class RosalanaCoreServiceProvider extends ServiceProvider
             );
         });
 
+        $this->app->singleton('rosalana.revizor', function () {
+            return new \Rosalana\Core\Services\Revizor\Manager();
+        });
+
         $this->app->singleton('rosalana.outpost', function () {
             return new \Rosalana\Core\Services\Outpost\Manager();
         });
