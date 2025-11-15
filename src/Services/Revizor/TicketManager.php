@@ -26,11 +26,11 @@ class TicketManager
      */
     public function search(string|Ticket $ticketOrId): ?Ticket
     {
-        $list = App::context()->get('tickets');
+        $list = App::context()->get('tickets.all');
 
         if (!$list) {
             $list = Basecamp::tickets()->list()->json('data.tickets');
-            App::context()->put('tickets', $list, 86400);
+            App::context()->put('tickets.all', $list, 86400);
         }
 
         foreach ($list as $ticket) {
