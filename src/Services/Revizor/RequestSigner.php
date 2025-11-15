@@ -26,6 +26,11 @@ class RequestSigner extends Signer
         return "{$this->method}\n{$this->url}\n{$this->timestamp}\n{$this->body}\n{$this->appId}";
     }
 
+    public function getId(): string
+    {
+        return $this->appId;
+    }
+
     protected static function normalizeBody(mixed $body): string
     {
         if ($body === null || $body === '' || $body === [] || $body === '{}' || $body === '[]') {
