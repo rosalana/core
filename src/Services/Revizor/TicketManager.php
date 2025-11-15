@@ -24,7 +24,7 @@ class TicketManager
     /**
      * Check if ticket exists on Basecamp
      */
-    public function search(string|Ticket $ticketOrId): ?Ticket
+    public function search(int|Ticket $ticketOrId): ?Ticket
     {
         $list = App::context()->get('tickets.all');
 
@@ -34,7 +34,7 @@ class TicketManager
         }
 
         foreach ($list as $ticket) {
-            if ($ticket['id'] === (is_string($ticketOrId) ? $ticketOrId : $ticketOrId->payload('id'))) {
+            if ($ticket['id'] === (is_int((int)$ticketOrId) ? $ticketOrId : $ticketOrId->payload('id'))) {
                 return Ticket::from($ticket);
             }
         }
