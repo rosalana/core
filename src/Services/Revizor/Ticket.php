@@ -2,72 +2,99 @@
 
 namespace Rosalana\Core\Services\Revizor;
 
-use Rosalana\Core\Facades\App;
+use Illuminate\Support\Carbon;
+use Rosalana\Core\Services\Revizor\TicketSigner;
 use Rosalana\Core\Support\Cipher;
+use Rosalana\Core\Services\Revizor\TicketValidator as Validator;
 
 class Ticket
 {
-    /** Original ticket data */
-    protected array $original;
-    /** Current ticket data */
-    protected array $payload;
-    /** Key used for encryption/signing */
-    protected string $key;
+    protected Validator $validator;
 
-    protected $locked = true;
+    public function __construct(
+        protected array $payload = [],
+    ) {
+        $this->validator = new Validator($this);
 
-    public function __construct(array|string $ticket = [])
+        if (!empty($this->payload['expires_at'])) {
+            $this->payload['expires_at'] = Carbon::parse($this->payload['expires_at']);
+        }
+    }
+
+    public static function from(string|array $payload = []): self
     {
-        if (is_string($ticket)) {
-            $this->original = Cipher::unwrapString($ticket);
-            $this->payload = $this->original;
-        } else {
-            $this->original = $ticket;
-            $this->payload = $ticket;
+        if (is_string($payload)) {
+            $payload = Cipher::unwrap($payload);
         }
 
-        $this->key = App::config('revizor.key', 'key');
+        return new self($payload);
     }
 
-    public static function make(array|string $ticket = []): self
+    public function isSigned(): bool
     {
-        return new self($ticket);
+        return $this->validator->determineState() === 'signed';
     }
 
-    public function sign(?int $timestamp = null): self
+    public function isLocked(): bool
     {
-        $signer = TicketSigner::make(ticket: $this->payload, timestamp: $timestamp);
-        $this->payload['signature'] = $signer->sign();
-        $this->payload['timestamp'] = $signer->getTimestamp();
-        unset($this->payload[$this->key]);
+        return $this->validator->determineState() === 'locked';
+    }
+
+    public function isUnlocked(): bool
+    {
+        return $this->validator->determineState() === 'unlocked';
+    }
+
+    public function isExpired(): bool
+    {
+        $expires = $this->payload('expires_at');
+
+        if (is_null($expires)) {
+            return false;
+        }
+
+        return $expires->isPast();
+    }
+
+    public function lock(): self
+    {
+        if (!$this->isUnlocked()) return $this;
+
+        $this->payload['key'] = Cipher::encrypt($this->payload['key']);
+        $this->payload['locked'] = true;
 
         return $this;
     }
 
     public function unlock(): self
     {
-        // validation
+        if (!$this->isLocked()) return $this;
 
-        $this->payload[$this->key] = Cipher::decrypt($this->payload[$this->key]);
-        $this->locked = false;
+        $this->payload['key'] = Cipher::decrypt($this->payload['key']);
+        $this->payload['locked'] = false;
 
         return $this;
     }
 
-    public function lock(): self
+    public function sign(?int $timestamp = null): self
     {
-        // validation
+        if (!$this->isUnlocked()) {
+            $this->unlock();
+        }
 
-        $this->payload[$this->key] = Cipher::encrypt($this->payload[$this->key]);
-        $this->locked = true;
-        
+        $signer = TicketSigner::make($this, $timestamp);
+        $this->payload['signature'] = $signer->sign();
+        $this->payload['timestamp'] = $signer->getTimestamp();
+        unset($this->payload['key'], $this->payload['locked']);
+
         return $this;
     }
 
-    public function verify(): bool
+    public function verify(): self
     {
-        // TicketValidator...
-        return true;
+        $this->validator->verify();
+
+        return $this;
     }
 
     public function payload(string $key, $default = null)
@@ -75,9 +102,29 @@ class Ticket
         return $this->payload[$key] ?? $default;
     }
 
-    public function getOriginal(): array
+    public function has(string $key): bool
     {
-        return $this->original;
+        return isset($this->payload[$key]);
+    }
+
+    public function getPayload(): array
+    {
+        return $this->payload;
+    }
+
+    public function getTTL(): ?int
+    {
+        $expires = $this->payload('expires_at');
+
+        if (is_null($expires)) {
+            return null;
+        }
+
+        if ($expires->isPast()) {
+            return 0;
+        }
+
+        return now()->diffInSeconds($expires);
     }
 
     public function toArray(): array
@@ -85,8 +132,13 @@ class Ticket
         return $this->payload;
     }
 
-    public function seal()
+    public function toString(): string
     {
-        return Cipher::wrapToString($this->payload);
+        return Cipher::wrap($this->payload);
+    }
+
+    public function seal(): string
+    {
+        return $this->toString();
     }
 }

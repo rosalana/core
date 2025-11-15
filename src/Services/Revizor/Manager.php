@@ -6,25 +6,32 @@ use Rosalana\Core\Support\Cipher;
 
 class Manager
 {
-    public function __construct(
-        protected TicketManager $ticketManager
-    ) {}
 
     public function ticket(array|string|null $ticket = null): Ticket|TicketManager
     {
-        return $ticket === null
-            ? $this->ticketManager
-            : Ticket::make($ticket);
-    }
-    /**
-     * TicketManager je pro Find ticket nebo create a vrací Ticket
-     * Ticket je samotný Ticket
-     * TicketManager může provádět i validace
-     */
+        if (is_null($ticket)) {
+            return new TicketManager();
+        }
 
-    public function request()
+        return Ticket::from($ticket);
+    }
+
+    public function ticketFor(string $target): Ticket
+    {
+        $tickets = $this->ticket();
+
+        if ($tickets->inWallet($target)) {
+            return $tickets->find($target);
+        }
+
+        return $tickets->buy($target);
+    }
+
+    public function request(...$params)
     {
         // sign request TODO
+        // -> sign() : string
+        // -> headers() : [...headers]
     }
 
     public function hide($value)
@@ -35,5 +42,15 @@ class Manager
     public function reveal($value)
     {
         return Cipher::decrypt($value);
+    }
+
+    public function encrypt($value)
+    {
+        return $this->hide($value);
+    }
+
+    public function decrypt($value)
+    {
+        return $this->reveal($value);
     }
 }
