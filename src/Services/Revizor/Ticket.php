@@ -30,6 +30,11 @@ class Ticket
         return new self($payload);
     }
 
+    public static function fromRequest(): self
+    {
+        return self::from(request()->bearerToken());
+    }
+
     public function isSigned(): bool
     {
         return $this->validator->determineState() === 'signed';
