@@ -16,6 +16,8 @@ class Manager
 
     protected ?string $pipeline = null;
 
+    protected bool $mocked = false;
+
     public function __construct()
     {
         $this->reset();
@@ -86,7 +88,12 @@ class Manager
      */
     protected function request(string $method, string $endpoint, array $data = []): Response
     {
-        $response = $this->request->method($method)->send($endpoint, $data);
+        $request = $this->request->method($method);
+        if ($this->mocked) {
+            $response = $request->mock($endpoint, $data);
+        } else {
+            $response = $request->send($endpoint, $data);
+        }
 
         if ($this->pipeline) {
             Pipeline::resolve($this->pipeline)->run($response);
@@ -95,6 +102,12 @@ class Manager
         $this->reset();
 
         return $response;
+    }
+
+    public function mock(): self
+    {
+        $this->mocked = true;
+        return $this;
     }
 
     public function withPipeline(string $pipeline): self
