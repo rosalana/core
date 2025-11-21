@@ -27,13 +27,13 @@ class Manager
     /**
      * General method for making GET requests.
      */
-    public function get(string $endpoint, ?string $pipeline = null)
+    public function get(string $endpoint, array $data = [], ?string $pipeline = null)
     {
         if ($pipeline) {
             $this->pipeline = $pipeline;
         }
 
-        return $this->request('get', $endpoint);
+        return $this->request('get', $endpoint, $data);
     }
 
     /**
@@ -75,13 +75,13 @@ class Manager
     /**
      * General method for making DELETE requests.
      */
-    public function delete(string $endpoint, ?string $pipeline = null)
+    public function delete(string $endpoint, array $data = [], ?string $pipeline = null)
     {
         if ($pipeline) {
             $this->pipeline = $pipeline;
         }
 
-        return $this->request('delete', $endpoint);
+        return $this->request('delete', $endpoint, $data);
     }
 
     /**
