@@ -102,13 +102,17 @@ class Manager
             } catch (\Exception $e) {
                 if ($this->fallback) {
                     $callback = $this->fallback;
-                    $callback($e);
-                    $response = new Response(new MockResponse([
-                        'status' => 'ok',
-                        'data' => [
-                            'message' => 'This is a fallback response due to an exception: ' . $e->getMessage(),
-                        ],
-                    ]));
+                    $fallbackResponse = $callback($e);
+                    if ($fallbackResponse instanceof Response) {
+                        return $fallbackResponse;
+                    } else {
+                        return new Response(new MockResponse([
+                            'status' => 'ok',
+                            'data' => [
+                                'message' => 'This is a fallback response due to an exception: ' . $e->getMessage(),
+                            ],
+                        ]));
+                    }
                 } else {
                     throw $e;
                 }
