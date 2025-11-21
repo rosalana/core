@@ -20,7 +20,8 @@ class Manager
 
     public function __construct()
     {
-        $this->reset();
+        $this->request = new Request();
+        $this->request->strategy(new BasecampStrategy());
     }
 
     /**
@@ -99,8 +100,6 @@ class Manager
             Pipeline::resolve($this->pipeline)->run($response);
         }
 
-        $this->reset();
-
         return $response;
     }
 
@@ -148,12 +147,5 @@ class Manager
             $callback($response);
             return $next($response);
         });
-    }
-
-    protected function reset(): void
-    {
-        $this->request = new Request();
-        $this->request->strategy(new BasecampStrategy());
-        $this->pipeline = null;
     }
 }

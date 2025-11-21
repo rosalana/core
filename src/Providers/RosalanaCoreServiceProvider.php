@@ -16,7 +16,7 @@ class RosalanaCoreServiceProvider extends ServiceProvider
         // Merge default balíčkový config s configem hostitelské aplikace
         $this->mergeConfigFrom(__DIR__ . '/../../config/rosalana.php', 'rosalana');
 
-        $this->app->singleton('rosalana.basecamp', function () {
+        $this->app->bind('rosalana.basecamp', function () {
             return new \Rosalana\Core\Services\Basecamp\Manager();
         });
 
