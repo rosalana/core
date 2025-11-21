@@ -2,6 +2,7 @@
 
 namespace Rosalana\Core\Services\Basecamp;
 
+use Illuminate\Http\Client\Factory;
 use Rosalana\Core\Enums\HttpMethod;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
@@ -137,11 +138,11 @@ class Request
             if (!is_null($this->strategy)) {
                 $this->strategy->throw(
                     $e,
-                    new Response(new MockResponse([
+                    $this->fake([
                         'status' => 'error',
                         'type' => 'UNKNOWN',
                         'message' => $e->getMessage(),
-                    ]))
+                    ])
                 );
             } else {
                 throw new RosalanaHttpException([], $e->getMessage(), $e->getCode(), $e);
@@ -168,13 +169,21 @@ class Request
             $this->strategy->prepare($this);
         }
 
-        return new Response(new MockResponse([
+        return $this->fake(([
             'url' => $this->serializeUrl(),
             'method' => $this->method->value,
             'headers' => $this->headers,
             'body' => $this->body,
             'strategy' => $this->strategy ? get_class($this->strategy) : null,
         ]));
+    }
+
+    /**
+     * Create a fake response.
+     */
+    public function fake(array $response): Response
+    {
+        return new Response((new Factory())->psr7Response($response, 200));
     }
 
     protected function serializeUrl(): string

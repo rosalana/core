@@ -3,6 +3,7 @@
 namespace Rosalana\Core\Services\Basecamp;
 
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Http;
 use Rosalana\Core\Facades\Pipeline;
 use Rosalana\Core\Services\Basecamp\RequestStrategies\AppStrategy;
 use Rosalana\Core\Services\Basecamp\RequestStrategies\BasecampStrategy;
@@ -106,12 +107,12 @@ class Manager
                     if ($fallbackResponse instanceof Response) {
                         return $fallbackResponse;
                     } else {
-                        return new Response(new MockResponse([
+                        return $this->request->fake([
                             'status' => 'ok',
                             'data' => [
                                 'message' => 'This is a fallback response due to an exception: ' . $e->getMessage(),
                             ],
-                        ]));
+                        ]);
                     }
                 } else {
                     throw $e;
