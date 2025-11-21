@@ -60,6 +60,11 @@ class MockResponse implements ResponseInterface
                 return json_encode($this->data);
             }
 
+            public function getMetadata(?string $key = null)
+            {
+                return null;
+            }
+
             public function getContents(): string
             {
                 return json_encode($this->data);
