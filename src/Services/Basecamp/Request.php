@@ -25,6 +25,10 @@ class Request
 
     protected HttpMethod $method;
 
+    protected int $timeout = 30;
+
+    protected int $retry = 0;
+
     protected array $body = [];
 
     protected ?RequestStrategy $strategy = null;
@@ -97,6 +101,18 @@ class Request
         return $this;
     }
 
+    public function timeout(int $seconds): self
+    {
+        $this->timeout = $seconds;
+        return $this;
+    }
+
+    public function retry(int $times): self
+    {
+        $this->retry = $times;
+        return $this;
+    }
+
     public function send(string $endpoint, array $body = []): Response
     {
         $this->endpoint = $endpoint;
@@ -109,8 +125,14 @@ class Request
         $url = $this->serializeUrl();
 
         try {
-            $response = Http::withHeaders($this->headers)
-                ->{$this->method->value}($url, $this->body ?? []);
+            $http = Http::withHeaders($this->headers)
+                ->timeout($this->timeout);
+
+            if ($this->retry > 0) {
+                $http = $http->retry($this->retry);
+            }
+
+            $response = $http->{$this->method->value}($url, $this->body ?? []);
         } catch (\Exception $e) {
             if (!is_null($this->strategy)) {
                 $this->strategy->throw(

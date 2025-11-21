@@ -18,6 +18,10 @@ class Manager
 
     protected bool $mocked = false;
 
+    protected bool $ghost = false;
+
+    protected \Closure|null $fallback = null;
+
     public function __construct()
     {
         $this->request = new Request();
@@ -93,22 +97,64 @@ class Manager
         if ($this->mocked) {
             $response = $request->mock($endpoint, $data);
         } else {
-            $response = $request->send($endpoint, $data);
+            try {
+                $response = $request->send($endpoint, $data);
+            } catch (\Exception $e) {
+                if ($this->fallback) {
+                    $callback = $this->fallback;
+                    return $callback($e);
+                } else {
+                    throw $e;
+                }
+            }
         }
 
-        if ($this->pipeline) {
+        if ($this->pipeline && !$this->ghost) {
             Pipeline::resolve($this->pipeline)->run($response);
         }
 
         return $response;
     }
 
+    /**
+     * Mock the request.
+     */
     public function mock(): self
     {
         $this->mocked = true;
         return $this;
     }
 
+    /**
+     * Ghost the request (skip pipelines).
+     */
+    public function ghost(): self
+    {
+        $this->ghost = true;
+        return $this;
+    }
+
+    /**
+     * Set the request timeout.
+     */
+    public function timeout(int $seconds): self
+    {
+        $this->request->timeout($seconds);
+        return $this;
+    }
+
+    /**
+     * Set the request retry attempts.
+     */
+    public function retry(int $times): self
+    {
+        $this->request->retry($times);
+        return $this;
+    }
+
+    /**
+     * Set the pipeline to be used for the request.
+     */
     public function withPipeline(string $pipeline): self
     {
         $this->pipeline = $pipeline;
@@ -116,6 +162,9 @@ class Manager
         return $this;
     }
 
+    /**
+     * Add auth token to the headers.
+     */
     public function withAuth(?string $token = null): self
     {
         if (empty($token)) {
@@ -126,15 +175,27 @@ class Manager
         return $this;
     }
 
+    /**
+     * Redirect the request to a specific app.
+     */
     public function to(string $name): self
     {
         $this->request->strategy(new AppStrategy($name));
         return $this;
     }
 
+    /**
+     * Set the version of the API to be used.
+     */
     public function version(string $version): self
     {
         $this->request->version($version);
+        return $this;
+    }
+
+    public function fallback(\Closure $callback): self
+    {
+        $this->fallback = $callback;
         return $this;
     }
 
