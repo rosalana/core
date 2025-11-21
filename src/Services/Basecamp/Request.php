@@ -14,7 +14,7 @@ class Request
 
     protected string $prefix = '/api/';
 
-    protected string $version;
+    protected string $version = '';
 
     protected string $endpoint;
 
