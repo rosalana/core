@@ -22,7 +22,11 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Rosalana\Core\Services\Basecamp\Manager withAuth(?string $token = null)
  * @method static \Rosalana\Core\Services\Basecamp\Manager to(string $name)
  * @method static \Rosalana\Core\Services\Basecamp\Manager version(string $version)
- * @method static \Rosalana\Core\Services\Basecamp\Manager reset()
+ * @method static \Rosalana\Core\Services\Basecamp\Manager mock()
+ * @method static \Rosalana\Core\Services\Basecamp\Manager ghost()
+ * @method static \Rosalana\Core\Services\Basecamp\Manager retry(int $times)
+ * @method static \Rosalana\Core\Services\Basecamp\Manager timeout(int $seconds)
+ * @method static \Rosalana\Core\Services\Basecamp\Manager fallback(\Closure $callback)
  * @method static \Rosalana\Core\Services\Basecamp\Manager after(string $alias, \Closure $callback)
  * 
  * @see \Rosalana\Core\Services\Basecamp\Manager
