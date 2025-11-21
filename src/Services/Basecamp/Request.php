@@ -102,10 +102,10 @@ class Request
         $this->endpoint = $endpoint;
         $this->body = $body;
 
-        $url = $this->serializeUrl();
-
         if (!is_null($this->strategy)) $this->strategy->prepare($this);
-
+        
+        $url = $this->serializeUrl();
+        
         try {
             $response = Http::withHeaders($this->headers)
                 ->{$this->method->value}($url, $this->body ?? []);
