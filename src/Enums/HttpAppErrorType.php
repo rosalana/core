@@ -1,6 +1,6 @@
 <?php
 
-namespace Rosalana\Core\Exceptions;
+namespace Rosalana\Core\Enums;
 
 use Rosalana\Core\Exceptions\Http\RosalanaHttpException;
 
