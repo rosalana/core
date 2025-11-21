@@ -5,7 +5,7 @@ namespace Rosalana\Core\Services\Outpost;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 use Rosalana\Core\Facades\Basecamp;
-use Rosalana\Core\Support\Serviceable;
+use Rosalana\Core\Traits\Serviceable;
 
 class Manager
 {
