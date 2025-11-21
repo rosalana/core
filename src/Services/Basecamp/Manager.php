@@ -3,112 +3,22 @@
 namespace Rosalana\Core\Services\Basecamp;
 
 use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Http;
-use Rosalana\Core\Exceptions\BasecampErrorType;
-use Rosalana\Core\Exceptions\HttpAppErrorType;
-use Rosalana\Core\Facades\Basecamp;
 use Rosalana\Core\Facades\Pipeline;
-use Rosalana\Core\Facades\Revizor;
-use Rosalana\Core\Support\Cryptor;
-use Rosalana\Core\Support\Serviceable;
+use Rosalana\Core\Services\Basecamp\RequestStrategies\AppStrategy;
+use Rosalana\Core\Services\Basecamp\RequestStrategies\BasecampStrategy;
+use Rosalana\Core\Traits\Serviceable;
 
 class Manager
 {
     use Serviceable;
-    /**
-     * Base URL of the Rosalana Basecamp.
-     */
-    protected string $url;
 
-    /**
-     * Secret app key of the client.
-     */
-    protected string $secret;
+    protected Request $request;
 
-    /**
-     * Version of the API to be used.
-     */
-    protected string $version;
-
-    /**
-     * Headers for the HTTP requests.
-     */
-    protected array $headers = [
-        'Accept' => 'application/json',
-        'Content-Type' => 'application/json',
-    ];
-
-    /**
-     * Pipeline to be used for the request.
-     */
     protected ?string $pipeline = null;
 
     public function __construct()
     {
-        $this->url = config('rosalana.basecamp.url');
-        $this->version = "/api/" . config('rosalana.basecamp.version') . "/";
-
-        $this->headers['X-App-Proxy'] = false;
-        $this->headers['Origin'] = config('app.url');
-    }
-
-    /**
-     * Set the version of the API to be used.
-     */
-    public function version(string $version): self
-    {
-        $this->version = "/api/" . $version . "/";
-        return $this;
-    }
-
-    /**
-     * Redirect the request to a specific app.
-     * @throws \Rosalana\Core\Exceptions\AppUnreachableException
-     * @throws \Rosalana\Core\Exceptions\AppUnavailableException
-     * @throws \Rosalana\Core\Exceptions\BasecampUnavailableException
-     */
-    public function to(string $name): self
-    {
-        try {
-            $response = Basecamp::apps()->find($name);
-        } catch (\Rosalana\Core\Exceptions\Http\BasecampUnavailableException $e) {
-            throw $e;
-        } catch (\Exception $e) {
-            throw new \Rosalana\Core\Exceptions\Http\AppUnreachableException();
-        }
-
-        if (empty($response->json('data.url'))) {
-            throw new \Rosalana\Core\Exceptions\Http\AppUnreachableException(
-                'The app is unreachable. The URL is unknown in the system.'
-            );
-        }
-
-        $this->url = $response->json('data.url');
-
-        $this->headers['X-App-Proxy'] = true;
-        return $this;
-    }
-
-    /**
-     * Add auth token to the headers.
-     */
-    public function withAuth(?string $token = null): self
-    {
-        if (empty($token)) {
-            $token = \Rosalana\Core\Session\TokenSession::get();
-        }
-
-        $this->headers['Authorization'] = 'Bearer ' . $token;
-        return $this;
-    }
-
-    /**
-     * Set the pipeline to be used for the request.
-     */
-    public function withPipeline(string $pipeline): self
-    {
-        $this->pipeline = $pipeline;
-        return $this;
+        $this->reset();
     }
 
     /**
@@ -176,47 +86,44 @@ class Manager
      */
     protected function request(string $method, string $endpoint, array $data = []): Response
     {
-        // $this->headers = array_merge($this->headers, Cryptor::sign($method, $this->url . $this->version . $endpoint, $data));
-
-        $this->headers = array_merge(
-            $this->headers,
-            Revizor::request(
-                method: $method,
-                url: $this->url . $this->version . $endpoint,
-                body: $data,
-            )->sign()->headers()
-        );
-
-        try {
-            $response = Http::withHeaders($this->headers)
-                ->$method($this->url . $this->version . $endpoint, $data);
-        } catch (\Exception $e) {
-            if (!empty($this->headers['X-App-Proxy'])) {
-                throw new \Rosalana\Core\Exceptions\Http\AppUnavailableException();
-            } else {
-                throw new \Rosalana\Core\Exceptions\Http\BasecampUnavailableException();
-            }
-        }
-
-        if ($response->json('status') !== 'ok') {
-
-            if (!empty($this->headers['X-App-Proxy'])) {
-                $type = HttpAppErrorType::tryFrom($response->json('type') ?? 'UNKNOWN') ?? HttpAppErrorType::UNKNOWN;
-            } else {
-                $type = BasecampErrorType::tryFrom($response->json('type') ?? 'UNKNOWN') ?? BasecampErrorType::UNKNOWN;
-            }
-
-            $type->throw($response->json());
-        }
+        $response = $this->request->method($method)->send($endpoint, $data);
 
         if ($this->pipeline) {
             Pipeline::resolve($this->pipeline)->run($response);
-            $this->pipeline = null;
         }
 
         $this->reset();
 
         return $response;
+    }
+
+    public function withPipeline(string $pipeline): self
+    {
+        $this->pipeline = $pipeline;
+
+        return $this;
+    }
+
+    public function withAuth(?string $token = null): self
+    {
+        if (empty($token)) {
+            $token = \Rosalana\Core\Session\TokenSession::get();
+        }
+
+        $this->request->authorization('Bearer', $token);
+        return $this;
+    }
+
+    public function to(string $name): self
+    {
+        $this->request->strategy(new AppStrategy($name));
+        return $this;
+    }
+
+    public function version(string $version): self
+    {
+        $this->request->version($version);
+        return $this;
     }
 
     /**
@@ -230,19 +137,10 @@ class Manager
         });
     }
 
-    /**
-     * Reset instance to default values.
-     */
-    public function reset(): self
+    protected function reset(): void
     {
-        $this->url = config('rosalana.basecamp.url');
-        $this->version = "/api/" . config('rosalana.basecamp.version') . "/";
-        $this->headers['X-App-Proxy'] = false;
+        $this->request = new Request();
+        $this->request->strategy(new BasecampStrategy());
         $this->pipeline = null;
-        unset($this->headers['Authorization']);
-        unset($this->headers['X-Timestamp']);
-        unset($this->headers['X-Signature']);
-
-        return $this;
     }
 }
