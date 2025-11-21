@@ -33,4 +33,9 @@ class Basecamp extends Facade
     {
         return 'rosalana.basecamp';
     }
+
+    public static function getFacadeRoot()
+    {
+        return app()->make(static::getFacadeAccessor());
+    }
 }
