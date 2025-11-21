@@ -1,6 +1,6 @@
 <?php
 
-namespace Rosalana\Core\Support;
+namespace Rosalana\Core\Traits;
 
 trait Serviceable
 {
