@@ -2,6 +2,7 @@
 
 namespace Rosalana\Core\Services\Revizor;
 
+use Rosalana\Core\Services\Basecamp\Request;
 use Rosalana\Core\Support\Cipher;
 
 class Manager
@@ -36,12 +37,12 @@ class Manager
         return (is_string($ticket) || is_array($ticket) ? Ticket::from($ticket) : $ticket)->verify();
     }
 
-    public function request(string $method, string $url, mixed $body = []): RequestManager
+    public function request(Request $request): RequestManager
     {
         return new RequestManager(
-            method: $method,
-            url: $url,
-            body: $body,
+            method: $request->getMethod(),
+            url: $request->getUrl(),
+            body: $request->getBody()
         );
     }
 
