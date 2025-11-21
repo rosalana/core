@@ -102,16 +102,25 @@ class Request
         $this->endpoint = $endpoint;
         $this->body = $body;
 
-        if (!is_null($this->strategy)) $this->strategy->prepare($this);
-        
+        if (!is_null($this->strategy)) {
+            $this->strategy->prepare($this);
+        }
+
         $url = $this->serializeUrl();
-        
+
         try {
             $response = Http::withHeaders($this->headers)
                 ->{$this->method->value}($url, $this->body ?? []);
         } catch (\Exception $e) {
             if (!is_null($this->strategy)) {
-                $this->strategy->throw($e, new Response([]));
+                $this->strategy->throw(
+                    $e,
+                    new Response(new MockResponse([
+                        'status' => 'error',
+                        'type' => 'UNKNOWN',
+                        'message' => $e->getMessage(),
+                    ]))
+                );
             } else {
                 throw new RosalanaHttpException([], $e->getMessage(), $e->getCode(), $e);
             }
@@ -126,6 +135,24 @@ class Request
         }
 
         return $response;
+    }
+
+    public function mock(string $endpoint, array $body = []): Response
+    {
+        $this->endpoint = $endpoint;
+        $this->body = $body;
+
+        if (!is_null($this->strategy)) {
+            $this->strategy->prepare($this);
+        }
+
+        return new Response(new MockResponse([
+            'url' => $this->serializeUrl(),
+            'method' => $this->method->value,
+            'headers' => $this->headers,
+            'body' => $this->body,
+            'strategy' => $this->strategy ? get_class($this->strategy) : null,
+        ]));
     }
 
     protected function serializeUrl(): string
