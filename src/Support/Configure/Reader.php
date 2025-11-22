@@ -19,11 +19,11 @@ class Reader
     {
         $content = $this->content();
 
-        return collect()
+        return Section::from(collect()
             ->merge(RichComment::parse($content))
             ->merge(Value::parse($content))
             ->sortBy->startLine()
-            ->values();
+            ->values());
     }
 
     public function content(): array
