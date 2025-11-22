@@ -4,6 +4,7 @@ namespace Rosalana\Core\Support\Configure;
 
 use Illuminate\Support\Collection;
 use Rosalana\Core\Support\Configure\Node\RichComment;
+use Rosalana\Core\Support\Configure\Node\Section;
 use Rosalana\Core\Support\Configure\Node\Value;
 
 class Reader
@@ -19,11 +20,11 @@ class Reader
     {
         $content = $this->content();
 
-        return Section::from(collect()
+        return Section::parse(collect()
             ->merge(RichComment::parse($content))
             ->merge(Value::parse($content))
             ->sortBy->startLine()
-            ->values());
+            ->values()->toArray());
     }
 
     public function content(): array
