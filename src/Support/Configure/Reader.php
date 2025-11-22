@@ -3,7 +3,7 @@
 namespace Rosalana\Core\Support\Configure;
 
 use Illuminate\Support\Collection;
-use Rosalana\Core\Support\Configure\Node\Comment;
+use Rosalana\Core\Support\Configure\Node\RichComment;
 use Rosalana\Core\Support\Configure\Node\Value;
 
 class Reader
@@ -20,7 +20,7 @@ class Reader
         $content = $this->content();
 
         return collect()
-            ->merge(Comment::parse($content))
+            ->merge(RichComment::parse($content))
             ->merge(Value::parse($content))
             ->sortBy->startLine()
             ->values();
