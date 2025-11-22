@@ -74,7 +74,6 @@ class RichComment extends Node
         $insideLabel = false;
         $insideDescription = false;
 
-
         foreach ($raw as $line) {
             $trim = trim($line);
 

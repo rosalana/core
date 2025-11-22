@@ -71,6 +71,31 @@ class Value extends Node
         return [];
     }
 
+    public function key(): string
+    {
+        return $this->key;
+    }
+
+    public function setKey(string $key): void
+    {
+        $this->key = $key;
+    }
+
+    public function isNested(): bool
+    {
+        return str_contains($this->key, '.');
+    }
+
+    public function getKey(): string
+    {
+        return explode('.', $this->key)[count(explode('.', $this->key)) - 1];
+    }
+
+    public function getNestedKey(): string
+    {
+        return explode('.', $this->key)[0];
+    }
+
     public function toArray(): array
     {
         return array_merge(parent::toArray(), [
