@@ -21,6 +21,30 @@ class Section extends Node
 
         foreach ($nodes as $node) {
 
+            if ($node instanceof ArrayBlock) {
+                $parts = explode('.', $node->key());
+                $current = &$tree;
+
+                foreach ($parts as $i => $segment) {
+                    if ($i === count($parts) - 1) {
+                        if (!isset($current[$segment]) || !is_array($current[$segment])) {
+                            $current[$segment] = [];
+                        }
+
+                        $current[$segment]['__meta'] = $node;
+                    } else {
+                        if (!isset($current[$segment]) || !is_array($current[$segment])) {
+                            $current[$segment] = [];
+                        }
+
+                        $current = &$current[$segment];
+                    }
+                }
+
+                unset($current);
+                continue;
+            }
+
             if ($node instanceof Value) {
                 $parts = explode('.', $node->key());
                 $current = &$tree;
@@ -64,13 +88,15 @@ class Section extends Node
             }
 
             if (is_array($value)) {
+                $meta = $value['__meta'] ?? null;
+                unset($value['__meta']);
 
                 $children = static::normalize($value);
 
                 $section = new static(
-                    start: static::computeStart($children),
-                    end: static::computeEnd($children),
-                    raw: []
+                    start: $meta?->startLine() ?? static::computeStart($children),
+                    end: $meta?->endLine() ?? static::computeEnd($children),
+                    raw: $meta?->raw() ?? []
                 );
 
                 $section->name($key);

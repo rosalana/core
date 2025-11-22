@@ -3,6 +3,7 @@
 namespace Rosalana\Core\Support\Configure;
 
 use Illuminate\Support\Collection;
+use Rosalana\Core\Support\Configure\Node\ArrayBlock;
 use Rosalana\Core\Support\Configure\Node\RichComment;
 use Rosalana\Core\Support\Configure\Node\Section;
 use Rosalana\Core\Support\Configure\Node\Value;
@@ -23,6 +24,7 @@ class Reader
         return Section::parse(collect()
             ->merge(RichComment::parse($content))
             ->merge(Value::parse($content))
+            ->merge(ArrayBlock::parse($content))
             ->sortBy->startLine()
             ->values()->toArray());
     }
