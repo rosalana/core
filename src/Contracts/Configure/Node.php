@@ -92,9 +92,9 @@ interface Node
     /**
      * Get the number of spaces depth of the node in the config file.
      * 
-     * @return int
+     * @return array
      */
-    public function depth(): int;
+    public function depth(): array;
 
     /**
      * Convert the node to array representation.

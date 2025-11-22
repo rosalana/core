@@ -32,17 +32,14 @@ abstract class Node implements NodeInterface
         return $this->raw;
     }
 
-    public function depth(): int
+    public function depth(): array
     {
-        $depth = 0;
-        foreach ($this->raw as $line) {
+        $depths = [];
+        foreach ($this->raw as $lineNumber => $line) {
             $trimmed = ltrim($line);
-            if (strlen($line) !== strlen($trimmed)) {
-                $depth = strlen($line) - strlen($trimmed);
-                break;
-            }
+            $depths[$lineNumber] = strlen($line) - strlen($trimmed);
         }
-        return (int) ($depth / 4);
+        return $depths;
     }
 
     public function toArray(): array
