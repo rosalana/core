@@ -90,6 +90,13 @@ interface Node
     public function raw(): array;
 
     /**
+     * Get the number of spaces depth of the node in the config file.
+     * 
+     * @return int
+     */
+    public function depth(): int;
+
+    /**
      * Convert the node to array representation.
      * 
      * @return array
