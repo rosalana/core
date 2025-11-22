@@ -45,7 +45,9 @@ class Value extends Node
             $value = trim($match['value']);
 
             if (str_starts_with($value, '[') || str_starts_with($value, 'array(')) {
-                continue;
+                if (str_contains($value, '=>')) {
+                    continue;
+                }
             }
 
             $fullKey = $stack
