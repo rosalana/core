@@ -45,9 +45,11 @@ abstract class Node implements NodeInterface
     public function toArray(): array
     {
         return [
+            'type' => class_basename($this),
             'start' => $this->start,
             'end' => $this->end,
             'raw' => $this->raw,
+            'depth' => $this->depth(),
         ];
     }
 }
