@@ -86,12 +86,12 @@ class Value extends Node
         return str_contains($this->key, '.');
     }
 
-    public function getKey(): string
+    public function originalKey(): string
     {
         return explode('.', $this->key)[count(explode('.', $this->key)) - 1];
     }
 
-    public function getNestedKey(): string
+    public function nestedKey(): string
     {
         return explode('.', $this->key)[0];
     }

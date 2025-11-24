@@ -80,7 +80,7 @@ class Section extends Node
             if ($value instanceof Node && !($value instanceof Section)) {
 
                 if ($value instanceof Value) {
-                    $value->setKey($value->getKey());
+                    $value->setKey($value->originalKey());
                 }
 
                 $result->push($value);
@@ -99,10 +99,10 @@ class Section extends Node
                     raw: $meta?->raw() ?? []
                 );
 
-                $section->name($key);
+                $section->setName($key);
 
                 foreach ($children as $child) {
-                    $section->add($child);
+                    $section->addNode($child);
                 }
 
                 $result->push($section);
@@ -138,7 +138,7 @@ class Section extends Node
         return $ends->max() ?? 0;
     }
 
-    public function add(Node $node): self
+    public function addNode(Node $node): self
     {
         $this->nodes->push($node);
 
@@ -150,7 +150,7 @@ class Section extends Node
         return $this->nodes;
     }
 
-    public function name(string $name): self
+    public function setName(string $name): self
     {
         $this->name = $name;
 
