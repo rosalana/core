@@ -22,6 +22,8 @@ class Configure
     {
         $this->reader = new Reader($this->file);
         $this->writer = new Writer($this->file);
+
+        $this->nodes = collect();
     }
 
     public static function file(string $name): self
@@ -53,12 +55,32 @@ class Configure
 
     public function section(string $path): Node
     {
-        return new Section(0, 0, []);
+        $parent = $this->resolve($path);
+        $key = $this->pathToKey($path);
+
+        if ($parent->hasChild($key)) {
+            return $parent->findNode($key);
+        } else {
+            $section = Section::makeEmpty($key);
+            $parent->addNode($section);
+
+            return $section;
+        }
     }
 
     public function value(string $path): Node
     {
-        return new Value(0, 0, [], 's', 's');
+        $parent = $this->resolve($path);
+        $key = $this->pathToKey($path);
+
+        if ($parent->hasChild($key)) {
+            return $parent->findNode($key);
+        } else {
+            $value = Value::makeEmpty($key);
+            $parent->addNode($value);
+
+            return $value;
+        }
     }
 
     /**
@@ -95,11 +117,52 @@ class Configure
         //
     }
 
-    protected function findParent(string $path): Node|self
+    public function resolve(string $path): Node|self
     {
-        return $this;
+        $parts = explode('.', $path);
+        array_pop($parts);
+
+        $current = $this;
+
+        foreach ($parts as $part) {
+            $child = $current->findNode($part);
+
+            if (! $child) {
+                $child = Section::makeEmpty($part);
+                $current->addNode($child);
+            }
+
+            $current = $child;
+        }
+
+        return $current;
     }
 
+    public function findNode(string $key): ?Node
+    {
+        foreach ($this->nodes as $node) {
+            if ($node instanceof RichComment) {
+                continue;
+            }
+
+            if ($node->key() === $key) {
+                return $node;
+            }
+        }
+
+        return null;
+    }
+
+    public function hasChild(string $key): bool
+    {
+        return !! ($this->findNode($key));
+    }
+
+    protected function pathToKey(string $path): string
+    {
+        $parts = explode('.', $path);
+        return $parts[array_key_last($parts)];
+    }
 
     public function toArray(): array
     {
