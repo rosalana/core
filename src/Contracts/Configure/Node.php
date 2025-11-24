@@ -5,6 +5,12 @@ namespace Rosalana\Core\Contracts\Configure;
 use Illuminate\Support\Collection;
 use Rosalana\Core\Support\Configure as Root;
 
+/**
+ * Fix: Každý uzel musí mít $key a $path vlastnosti.
+ * 
+ * Rozdělit to tak, že $path je ta full $path
+ * a $key je ten poslední segment.
+ */
 interface Node
 {
     /**
@@ -49,6 +55,16 @@ interface Node
      * @return array
      */
     public function depth(): array;
+
+    // /**
+    //  * Get the full path of the node.
+    //  */
+    // public function path(): string;
+
+    // /**
+    //  * Check if the node has the given path.
+    //  */
+    // public function hasPath(string $path): bool;
 
     /**
      * Get the parent node or root configure.
