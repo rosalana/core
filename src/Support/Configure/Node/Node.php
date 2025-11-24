@@ -45,15 +45,24 @@ abstract class Node implements NodeInterface
         return $depths;
     }
 
-    public function setParent(Node|Root $parent): self
-    {
-        $this->parent = $parent;
-        return $this;
-    }
-
     public function parent(): Node|Root|null
     {
         return $this->parent;
+    }
+
+    public function root(): Root
+    {
+        $current = $this;
+
+        while ($current->hasParent()) {
+            if ($current->isRoot()) {
+                return $current->parent();
+            }
+
+            $current = $current->parent();
+        }
+
+        throw new \RuntimeException("Node has no root configure.");
     }
 
     public function isRoot(): bool
@@ -66,7 +75,7 @@ abstract class Node implements NodeInterface
         return $this->parent instanceof Node;
     }
 
-    public function isChildOf(Node|Root $node): bool
+    public function isChildOf(NodeInterface|Root $node): bool
     {
         return $this->parent === $node;
     }
@@ -76,13 +85,49 @@ abstract class Node implements NodeInterface
         return $this->parent !== null;
     }
 
+    public function setParent(NodeInterface|Root $parent): self
+    {
+        $this->parent = $parent;
+        return $this;
+    }
+
     public function siblings(): Collection
     {
         if ($this->hasParent()) {
             return $this->parent->nodes()->filter(fn($node) => $node !== $this);
         }
-        
+
         return collect();
+    }
+
+    // TODO
+    public function keepStart(): NodeInterface
+    {
+        return $this;
+    }
+
+    // TODO
+    public function keepEnd(): self
+    {
+        return $this;
+    }
+
+    // TODO
+    public function before(NodeInterface|string $node): self
+    {
+        return $this;
+    }
+
+    // TODO
+    public function after(NodeInterface|string $node): self
+    {
+        return $this;
+    }
+
+    // TODO
+    public function remove(): NodeInterface|Root
+    {
+        return $this->parent();
     }
 
     public function toArray(): array
