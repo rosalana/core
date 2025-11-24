@@ -202,7 +202,7 @@ class Section extends Node
 
     public function hasNode(string $key): bool
     {
-        return !! ($this->findNode($key));
+        return ! ($this->findNode($key));
     }
 
     public function value(string $key): Value
