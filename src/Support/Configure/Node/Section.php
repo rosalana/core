@@ -185,6 +185,26 @@ class Section extends Node
         return $this;
     }
 
+    public function findNode(string $key): ?Node
+    {
+        foreach ($this->nodes as $node) {
+            if ($node instanceof RichComment) {
+                continue;
+            }
+
+            if ($node->key() === $key) {
+                return $node;
+            }
+        }
+
+        return null;
+    }
+
+    public function hasNode(string $key): bool
+    {
+        return !! ($this->findNode($key));
+    }
+
     public function value(string $key): Value
     {
         return new Value(0, 0, [], $key, '');
