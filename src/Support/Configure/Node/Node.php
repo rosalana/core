@@ -4,9 +4,12 @@ namespace Rosalana\Core\Support\Configure\Node;
 
 use Illuminate\Support\Collection;
 use Rosalana\Core\Contracts\Configure\Node as NodeInterface;
+use Rosalana\Core\Support\Configure as Root;
 
 abstract class Node implements NodeInterface
 {
+    protected Node|Root|null $parent;
+
     public function __construct(
         protected int $start,
         protected int $end,
@@ -40,6 +43,46 @@ abstract class Node implements NodeInterface
             $depths[$lineNumber] = strlen($line) - strlen($trimmed);
         }
         return $depths;
+    }
+
+    public function setParent(Node|Root $parent): self
+    {
+        $this->parent = $parent;
+        return $this;
+    }
+
+    public function parent(): Node|Root|null
+    {
+        return $this->parent;
+    }
+
+    public function isRoot(): bool
+    {
+        return $this->parent instanceof Root;
+    }
+
+    public function isSubNode(): bool
+    {
+        return $this->parent instanceof Node;
+    }
+
+    public function isChildOf(Node|Root $node): bool
+    {
+        return $this->parent === $node;
+    }
+
+    public function hasParent(): bool
+    {
+        return $this->parent !== null;
+    }
+
+    public function siblings(): Collection
+    {
+        if ($this->hasParent()) {
+            return $this->parent->nodes()->filter(fn($node) => $node !== $this);
+        }
+        
+        return collect();
     }
 
     public function toArray(): array
