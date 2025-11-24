@@ -9,9 +9,7 @@ use Rosalana\Core\Support\Configure\Writer;
 
 class Configure
 {
-    protected Collection $sections;
-
-    protected ?Section $active = null;
+    protected Collection $nodes;
 
     protected Reader $reader;
 
@@ -32,7 +30,7 @@ class Configure
 
     protected function read(): self
     {
-        $this->sections = $this->reader->read();
+        $this->nodes = $this->reader->read();
 
         return $this;
     }
@@ -41,6 +39,12 @@ class Configure
     {
         return $this;
     }
+
+    public function nodes(): Collection
+    {
+        return $this->nodes;
+    }
+
 
     protected function activate(string $name): Section
     {
