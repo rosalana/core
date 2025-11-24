@@ -53,7 +53,7 @@ class Configure
         return $this;
     }
 
-    public function section(string $path): Node
+    public function section(string $path): Section
     {
         $parent = $this->resolve($path);
         $key = $this->pathToKey($path);
