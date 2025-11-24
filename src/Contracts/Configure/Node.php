@@ -66,6 +66,11 @@ interface Node
     //  */
     // public function hasPath(string $path): bool;
 
+    // /**
+    //  * Check if the node has child 
+    //  */
+    // public function hasChild(Node|string $node): bool;
+
     /**
      * Get the parent node or root configure.
      * 
