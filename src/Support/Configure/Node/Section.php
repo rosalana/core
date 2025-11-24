@@ -138,9 +138,24 @@ class Section extends Node
         return $ends->max() ?? 0;
     }
 
-    public function addNode(Node $node): self
+    public function render(): array
     {
-        $this->nodes->push($node->setParent($this));
+        return [];
+    }
+
+    public function key(): string
+    {
+        return $this->key;
+    }
+
+    public function setKey(string $key): void
+    {
+        $this->key = $key;
+    }
+
+    public function rename(string $name): self
+    {
+        $this->setKey($name);
 
         return $this;
     }
@@ -150,21 +165,38 @@ class Section extends Node
         return $this->nodes;
     }
 
-    public function key(): string
+    public function addNode(Node $node): self
     {
-        return $this->key;
-    }
-
-    public function setKey(string $key): self
-    {
-        $this->key = $key;
+        $this->nodes->push($node->setParent($this));
 
         return $this;
     }
 
-    public function render(): array
+    public function value(string $key): Value
     {
-        return [];
+        return new Value(0, 0, [], $key, '');
+    }
+
+    /**
+     * Add basic comment node.
+     */
+    public function comment(string $label): RichComment
+    {
+        return new RichComment(0, 0, [], $label, null);
+    }
+
+    /**
+     * Create a rich or simple comment node.
+     * If description is provided, a rich comment is created.
+     * Otherwise, a simple comment is created.
+     */
+    public function withComment(string $label, ?string $description = null): Node
+    {
+        if ($description) {
+            return new RichComment(0, 0, [], $label, $description);
+        }
+
+        return new RichComment(0, 0, [], $label, null); // for now
     }
 
     public function toArray(): array
