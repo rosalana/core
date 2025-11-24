@@ -102,6 +102,10 @@ class ArrayBlock extends Node
         $this->key = $key;
     }
 
+    /**
+     * takhle funkce by měla být smazaná a používat pouze 
+     * $this->isSubNode() ale musí potom každý Node mít $key
+     */
     public function isNested(): bool
     {
         return str_contains($this->key, '.') ?? $this->isSubNode();
