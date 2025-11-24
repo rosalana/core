@@ -30,7 +30,8 @@ class Configure
 
     protected function read(): self
     {
-        $this->nodes = $this->reader->read();
+        $this->nodes = $this->reader->read()
+            ->each(fn($node) => $node->setParent($this));
 
         return $this;
     }
@@ -50,5 +51,4 @@ class Configure
     {
         return new Section();
     }
-
 }
