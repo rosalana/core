@@ -68,7 +68,7 @@ class Configure
         }
     }
 
-    public function value(string $path): Node
+    public function value(string $path): Value
     {
         $parent = $this->resolve($path);
         $key = $this->pathToKey($path);
