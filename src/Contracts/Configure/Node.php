@@ -3,54 +3,8 @@
 namespace Rosalana\Core\Contracts\Configure;
 
 use Illuminate\Support\Collection;
+use Rosalana\Core\Support\Configure as Root;
 
-/**
- * Protože laravel config soubory v sobě mají komentáře i uvnitř polí,
- * je potřeba číst soubor jako text a parsovat ho na jednotlivé uzly.
- * 
- * Základní uzel je ValueNode což je prostě 'key' => 'string',
- * 
- * Další uzel je CommentNode což je komentář.
- * 
- * Ignorujeme tedy ty rodičovské klíče a hledáme pouze key-value páry a komentáře.
- * 
- * Respektive každý Node dostane k dispozici content aby si tam vybral sám sebe.
- * 
- * Rozparsovany config potom může vypadat takto:
- * 
- * [
- *     CommentNode,
- *     [
- *         ValueNode,
- *         ValueNode,
- *         ValueNode,
- *         [
- *             ValueNode,
- *             ValueNode
- *         ],
- *         CommentNode,
- *         ValueNode,
- *         ValueNode,
- *         ValueNode,
- *         ValueNode,
- *     ],
- *     CommentNode,
- *     [
- *         ValueNode,
- *         ValueNode,
- *         ValueNode,
- *         ValueNode,
- *         ValueNode,
- *         ValueNode,
- *     ],
- * ]
- *
- * Upgrade může být převést všechny ty arrays jako Section.
- * Section v sobě bude držet ten obsah (pole Nodes nebo Sections) a může mít svůj CommentNode (ten co je nad ní).
- * Pak by rozparsovaný soubor byl jen pole Sections.
- * 
- * Snažíme se používat Collection všude místo polí.
- */
 interface Node
 {
     /**
@@ -95,6 +49,101 @@ interface Node
      * @return array
      */
     public function depth(): array;
+
+    /**
+     * Get the parent node or root configure.
+     * 
+     * @return Node|Root|null
+     */
+    public function parent(): Node|Root|null;
+
+    /**
+     * Get the root configure.
+     * 
+     * @return Root
+     */
+    public function root(): Root;
+
+    /**
+     * Check if the node is a direct child of the root configure.
+     * 
+     * @return bool
+     */
+    public function isRoot(): bool;
+
+    /**
+     * Check if the node is a sub-node of another node.
+     * 
+     * @return bool
+     */
+    public function isSubNode(): bool;
+
+    /**
+     * Check if the node is a direct child of the given node or root.
+     * 
+     * @param Node|Root $node
+     * @return bool
+     */
+    public function isChildOf(Node|Root $node): bool;
+
+    /**
+     * Check if the node has a parent node or root.
+     * 
+     * @return bool
+     */
+    public function hasParent(): bool;
+
+    /**
+     * Set the parent node or root configure.
+     * 
+     * @param Node|Root $parent
+     * @return self
+     */
+    public function setParent(Node|Root $parent): self;
+
+    /**
+     * Get the sibling nodes of the current node.
+     * 
+     * @return Collection
+     */
+    public function siblings(): Collection;
+
+    /**
+     * Move node to the beginning in the parent nodes list.
+     * 
+     * @return self
+     */
+    public function keepStart(): self;
+
+    /**
+     * Move node to the end in the parent nodes list.
+     * 
+     * @return self
+     */
+    public function keepEnd(): self;
+
+    /**
+     * Move node before another node in the parent nodes list.
+     * 
+     * @param Node|string $node
+     * @return self
+     */
+    public function before(Node|string $node): self;
+
+    /**
+     * Move node after another node in the parent nodes list.
+     * 
+     * @param Node|string $node
+     * @return self
+     */
+    public function after(Node|string $node): self;
+
+    /**
+     * Remove the node from the parent nodes list.
+     * 
+     * @return Node|Root
+     */
+    public function remove(): Node|Root;
 
     /**
      * Convert the node to array representation.
