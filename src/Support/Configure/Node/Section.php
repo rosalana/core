@@ -15,6 +15,19 @@ class Section extends Node
         $this->nodes = collect();
     }
 
+    public static function makeEmpty(string $key, int $startLine = 0, int $endLine = 0, array $raw = []): static
+    {
+        $section = Section::make(
+            start: $startLine,
+            end: $endLine,
+            raw: $raw
+        );
+
+        $section->setKey($key);
+
+        return $section;
+    }
+
     public static function parse(array $nodes): Collection
     {
         $tree = [];

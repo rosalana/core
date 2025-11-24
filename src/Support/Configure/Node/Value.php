@@ -14,6 +14,17 @@ class Value extends Node
         protected string|null $value,
     ) {}
 
+    public static function makeEmpty(string $key, int $startLine = 0, int $endLine = 0, array $raw = []): static
+    {
+        return Value::make(
+            start: $startLine,
+            end: $endLine,
+            raw: $raw,
+            key: $key,
+            value: null
+        );
+    }
+
     public static function parse(array $content): Collection
     {
         $nodes = collect();
