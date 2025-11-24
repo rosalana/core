@@ -31,7 +31,7 @@ class RichComment extends Node
 
                 if (str_ends_with($trim, '*/')) {
                     [$label, $desc] = static::parseLabelDescription($buffer);
-                    $nodes->push(new static($start, $index, $buffer, $label, $desc));
+                    $nodes->push(RichComment::make($start, $index, $buffer, $label, $desc));
                     $start = null;
                     $buffer = [];
                 }
@@ -47,7 +47,7 @@ class RichComment extends Node
 
                     [$label, $desc] = static::parseLabelDescription($buffer);
 
-                    $nodes->push(new static(
+                    $nodes->push(RichComment::make(
                         start: $start,
                         end: $index,
                         raw: $buffer,

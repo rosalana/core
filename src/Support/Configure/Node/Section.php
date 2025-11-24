@@ -93,7 +93,7 @@ class Section extends Node
 
                 $children = static::normalize($value);
 
-                $section = new static(
+                $section = Section::make(
                     start: $meta?->startLine() ?? static::computeStart($children),
                     end: $meta?->endLine() ?? static::computeEnd($children),
                     raw: $meta?->raw() ?? []

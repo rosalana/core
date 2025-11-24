@@ -14,6 +14,14 @@ use Rosalana\Core\Support\Configure as Root;
 interface Node
 {
     /**
+     * Create a new instance of the node.
+     * @param mixed ...$arg
+     * 
+     * @return static 
+     */
+    public static function make(...$arg): static;
+
+    /**
      * Go through the content and parse itself.
      * @param array $content
      * @return Collection

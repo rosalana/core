@@ -54,7 +54,7 @@ class Value extends Node
                 ? implode('.', $stack) . '.' . $key
                 : $key;
 
-            $nodes->push(new static(
+            $nodes->push(Value::make(
                 start: $index,
                 end: $index,
                 key: $fullKey,

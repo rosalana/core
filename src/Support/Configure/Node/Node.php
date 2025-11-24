@@ -16,6 +16,11 @@ abstract class Node implements NodeInterface
         protected array $raw,
     ) {}
 
+    public static function make(...$arg): static
+    {
+        return new static(...$arg);
+    }
+
     abstract public static function parse(array $content): Collection;
 
     abstract public function render(): array;
