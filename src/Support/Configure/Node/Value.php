@@ -11,7 +11,7 @@ class Value extends Node
         protected int $end,
         protected array $raw,
         protected string $key,
-        protected string $value,
+        protected string|null $value,
     ) {}
 
     public static function parse(array $content): Collection
@@ -81,6 +81,56 @@ class Value extends Node
         $this->key = $key;
     }
 
+    public function rename(string $name): self
+    {
+        $this->key = $name;
+        return $this;
+    }
+
+    public function ensure(string $value): self
+    {
+        if (!$this->value) {
+            $this->value = $value;
+        }
+
+        return $this;
+    }
+
+    public function set(string $value): self
+    {
+        $this->value = $value;
+        return $this;
+    }
+
+    /**
+     * Přesunutí klíče do jiné sekce s udrženými daty. 
+     * Value se použije pouze pokud v konfiguraci tento záznam nebyl.
+     * Tedy jsem kopíroval NIC.
+     */
+    public function cut(Node|string|null $parent, string $value): self
+    {
+        return $this;
+    }
+
+    /**
+     * Zkopírování klíče, který je v jiné sekci a stále udržet data uživatele.
+     * Vrací tu zkopírovanou Value.
+     * Path je path k sekci nebo prázdné když to má být root
+     */
+    public function copy(Node|string|null $parent, string $value): self
+    {
+        return $this;
+    }
+
+    public function withComment(string $label): void
+    {
+        //
+    }
+
+    /**
+     * takhle funkce by měla být smazaná a používat pouze 
+     * $this->isSubNode() ale musí potom každý Node mít $key
+     */
     public function isNested(): bool
     {
         return str_contains($this->key, '.') ?? $this->isSubNode();
