@@ -6,7 +6,7 @@ use Illuminate\Support\Collection;
 
 class Section extends Node
 {
-    protected string $name;
+    protected string $key;
 
     protected Collection $nodes;
 
@@ -99,7 +99,7 @@ class Section extends Node
                     raw: $meta?->raw() ?? []
                 );
 
-                $section->setName($key);
+                $section->setKey($key);
 
                 foreach ($children as $child) {
                     $section->addNode($child);
@@ -140,7 +140,7 @@ class Section extends Node
 
     public function addNode(Node $node): self
     {
-        $this->nodes->push($node);
+        $this->nodes->push($node->setParent($this));
 
         return $this;
     }
@@ -150,9 +150,14 @@ class Section extends Node
         return $this->nodes;
     }
 
-    public function setName(string $name): self
+    public function key(): string
     {
-        $this->name = $name;
+        return $this->key;
+    }
+
+    public function setKey(string $key): self
+    {
+        $this->key = $key;
 
         return $this;
     }
@@ -160,5 +165,13 @@ class Section extends Node
     public function render(): array
     {
         return [];
+    }
+
+    public function toArray(): array
+    {
+        return array_merge(parent::toArray(), [
+            'key' => $this->key,
+            'nodes' => $this->nodes->map(fn($node) => $node->toArray())->toArray(),
+        ]);
     }
 }

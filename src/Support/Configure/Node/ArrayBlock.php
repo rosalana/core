@@ -97,9 +97,14 @@ class ArrayBlock extends Node
         return $this->key;
     }
 
+    public function setKey(string $key): void
+    {
+        $this->key = $key;
+    }
+
     public function isNested(): bool
     {
-        return str_contains($this->key, '.');
+        return str_contains($this->key, '.') ?? $this->isSubNode();
     }
 
     public function toArray(): array

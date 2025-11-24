@@ -83,7 +83,7 @@ class Value extends Node
 
     public function isNested(): bool
     {
-        return str_contains($this->key, '.');
+        return str_contains($this->key, '.') ?? $this->isSubNode();
     }
 
     public function originalKey(): string
