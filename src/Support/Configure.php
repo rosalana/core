@@ -155,7 +155,7 @@ class Configure
 
     public function hasNode(string $key): bool
     {
-        return ! ($this->findNode($key));
+        return !! ($this->findNode($key));
     }
 
     protected function pathToKey(string $path): string
