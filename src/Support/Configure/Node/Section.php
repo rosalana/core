@@ -207,7 +207,16 @@ class Section extends Node
 
     public function value(string $key): Value
     {
-        return new Value(0, 0, [], $key, '');
+        $node = $this->findNode($key);
+
+        if ($node instanceof Value) {
+            return $node;
+        }
+
+        $value = Value::makeEmpty($key);
+        $this->addNode($value);
+
+        return $value;
     }
 
     /**
