@@ -140,4 +140,13 @@ abstract class Node implements NodeInterface
             'depth' => $this->depth(),
         ];
     }
+
+    public function __call($name, $arguments)
+    {
+        if (! $this->hasParent()) {
+            throw new \BadMethodCallException("Method {$name} does not exist on " . static::class);
+        }
+
+        return $this->parent()->$name(...$arguments);
+    }
 }
