@@ -4,13 +4,6 @@ namespace Rosalana\Core\Support\Configure\Node;
 
 use Illuminate\Support\Collection;
 
-/**
- * Helper for Section Node
- * POZOR když je section vnitř jiné section tak ta hlavní section
- * nemá v raw kompletní obsah vnitřní section ale jen prázdné řádky.
- * 
- * Měla by to asi mít celé
- */
 class ArrayBlock extends Node
 {
     public function __construct(
@@ -35,23 +28,28 @@ class ArrayBlock extends Node
 
                 $key = $m['key'];
 
-                $fullKey = empty($stack)
+                $nestedKey = empty($stack)
                     ? $key
-                    : ($stack[array_key_last($stack)]['fullKey'] . '.' . $key);
+                    : ($stack[array_key_last($stack)]['nestedKey'] . '.' . $key);
 
                 $stack[] = [
                     'key' => $key,
-                    'fullKey' => $fullKey,
+                    'nestedKey' => $nestedKey,
                     'start' => $index,
                     'depth' => 1,
                     'raw' => [$index => $line],
+                    'parent'    => empty($stack) ? null : array_key_last($stack),
                 ];
+
+                if ($nestedKey !== $key) {
+                    static::propagateLineToParentBlocks($stack, $index, $line);
+                }
 
                 continue;
             }
 
             if (!empty($stack)) {
-                $stack[array_key_last($stack)]['raw'][$index] = $line;
+                static::propagateLineToParentBlocks($stack, $index, $line);
             }
 
             if (!empty($stack) && $trim === '[') {
@@ -70,13 +68,23 @@ class ArrayBlock extends Node
                         start: $top['start'],
                         end: $index,
                         raw: $top['raw'],
-                        key: $top['fullKey']
+                        key: $top['nestedKey'],
                     ));
                 }
             }
         }
 
         return $blocks;
+    }
+
+    protected static function propagateLineToParentBlocks(array &$stack, int $lineIndex, string $line): void
+    {
+        $current = array_key_last($stack);
+
+        while ($current !== null) {
+            $stack[$current]['raw'][$lineIndex] = $line;
+            $current = $stack[$current]['parent'];
+        }
     }
 
     public function render(): array
