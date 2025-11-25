@@ -114,7 +114,6 @@ class Value extends Node
     public function toArray(): array
     {
         return array_merge(parent::toArray(), [
-            'key' => $this->key,
             'value' => $this->value,
         ]);
     }
