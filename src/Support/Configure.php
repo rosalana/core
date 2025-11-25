@@ -58,7 +58,7 @@ class Configure
         $parent = $this->resolve($path);
         $key = $this->pathToKey($path);
 
-        if ($parent->hasNode($key)) {
+        if ($parent->has($key)) {
             return $parent->findNode($key);
         } else {
             $section = Section::makeEmpty($key);
@@ -73,7 +73,7 @@ class Configure
         $parent = $this->resolve($path);
         $key = $this->pathToKey($path);
 
-        if ($parent->hasNode($key)) {
+        if ($parent->has($key)) {
             return $parent->findNode($key);
         } else {
             $value = Value::makeEmpty($key);
@@ -164,7 +164,7 @@ class Configure
         return null;
     }
 
-    public function hasNode(string $key): bool
+    public function has(string $key): bool
     {
         return !! ($this->findNode($key));
     }
