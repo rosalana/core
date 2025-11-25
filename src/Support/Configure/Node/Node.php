@@ -11,6 +11,7 @@ abstract class Node implements NodeInterface
     protected Node|Root|null $parent;
 
     protected string $key;
+    protected bool $created = false;
 
     public function __construct(
         protected int $start,
@@ -29,12 +30,23 @@ abstract class Node implements NodeInterface
             start: 0,
             end: 0,
             raw: []
-        )->setKey($key);
+        )->setKey($key)->setCreated(true);
     }
 
     abstract public static function parse(array $content): Collection;
 
     abstract public function render(): array;
+
+    public function setCreated(bool $created = true): self
+    {
+        $this->created = $created;
+        return $this;
+    }
+    
+    public function wasCreated(): bool
+    {
+        return $this->created;
+    }
 
     public function key(): string
     {
@@ -215,6 +227,7 @@ abstract class Node implements NodeInterface
             'is_root' => $this->isRoot(),
             'is_sub_node' => $this->isSubNode(),
             'parent' => $this->parent()?->key() ?? null,
+            'was_created' => $this->wasCreated(),
         ];
     }
 
