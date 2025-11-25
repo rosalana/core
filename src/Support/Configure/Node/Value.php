@@ -6,13 +6,15 @@ use Illuminate\Support\Collection;
 
 class Value extends Node
 {
+    protected string|null $value = null;
+
     public function __construct(
         protected int $start,
         protected int $end,
         protected array $raw,
-        protected string $key,
-        protected string|null $value,
-    ) {}
+    ) {
+        parent::__construct($start, $end, $raw);
+    }
 
     public static function parse(array $content): Collection
     {
@@ -57,10 +59,8 @@ class Value extends Node
             $nodes->push(Value::make(
                 start: $index,
                 end: $index,
-                key: $fullKey,
-                value: $value,
                 raw: [$index => $line]
-            ));
+            )->setKey($fullKey)->set($value));
         }
 
         return $nodes;
