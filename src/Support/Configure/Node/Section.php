@@ -12,20 +12,8 @@ class Section extends Node
 
     public function __construct(protected int $start, protected int $end, protected array $raw)
     {
+        parent::__construct($start, $end, $raw);
         $this->nodes = collect();
-    }
-
-    public static function makeEmpty(string $key, int $startLine = 0, int $endLine = 0, array $raw = []): static
-    {
-        $section = Section::make(
-            start: $startLine,
-            end: $endLine,
-            raw: $raw
-        );
-
-        $section->setKey($key);
-
-        return $section;
     }
 
     public static function parse(array $nodes): Collection
@@ -93,7 +81,7 @@ class Section extends Node
             if ($value instanceof Node && !($value instanceof Section)) {
 
                 if ($value instanceof Value) {
-                    $value->setKey($value->originalKey());
+                    $value->setKey($value->name());
                 }
 
                 $result->push($value);
@@ -156,26 +144,14 @@ class Section extends Node
         return [];
     }
 
-    public function key(): string
-    {
-        return $this->key;
-    }
-
-    public function setKey(string $key): void
-    {
-        $this->key = $key;
-    }
-
-    public function rename(string $name): self
-    {
-        $this->setKey($name);
-
-        return $this;
-    }
-
     public function nodes(): Collection
     {
         return $this->nodes;
+    }
+
+    public function has(string $key): bool
+    {
+        return !! ($this->findNode($key));
     }
 
     public function addNode(Node $node): self
@@ -198,11 +174,6 @@ class Section extends Node
         }
 
         return null;
-    }
-
-    public function hasNode(string $key): bool
-    {
-        return !! ($this->findNode($key));
     }
 
     public function value(string $key): Value
@@ -244,7 +215,6 @@ class Section extends Node
     public function toArray(): array
     {
         return array_merge(parent::toArray(), [
-            'key' => $this->key,
             'nodes' => $this->nodes->map(fn($node) => $node->toArray())->toArray(),
         ]);
     }

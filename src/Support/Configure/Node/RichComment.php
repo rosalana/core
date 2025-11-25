@@ -6,13 +6,17 @@ use Illuminate\Support\Collection;
 
 class RichComment extends Node
 {
+    protected string $label;
+    protected ?string $description = null;
+
     public function __construct(
         protected int $start,
         protected int $end,
-        protected array $raw,
-        protected ?string $label,
-        protected ?string $description,
-    ) {}
+        protected array $raw
+    ) {
+        parent::__construct($start, $end, $raw);
+        $this->key = 'richcomment_' . bin2hex(random_bytes(8)); // placeholder
+    }
 
     public static function parse(array $content): Collection
     {
@@ -51,9 +55,7 @@ class RichComment extends Node
                         start: $start,
                         end: $index,
                         raw: $buffer,
-                        label: $label,
-                        description: $desc
-                    ));
+                    )->setLabel($label)->setDescription($desc));
 
                     $start = null;
                     $buffer = [];
@@ -114,6 +116,28 @@ class RichComment extends Node
     public function render(): array
     {
         return [];
+    }
+
+    public function label(): string
+    {
+        return $this->label;
+    }
+
+    public function description(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setLabel(string $label): self
+    {
+        $this->label = $label;
+        return $this;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
+        return $this;
     }
 
     public function toArray(): array

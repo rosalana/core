@@ -14,17 +14,6 @@ class Value extends Node
         protected string|null $value,
     ) {}
 
-    public static function makeEmpty(string $key, int $startLine = 0, int $endLine = 0, array $raw = []): static
-    {
-        return Value::make(
-            start: $startLine,
-            end: $endLine,
-            raw: $raw,
-            key: $key,
-            value: null
-        );
-    }
-
     public static function parse(array $content): Collection
     {
         $nodes = collect();
@@ -82,22 +71,6 @@ class Value extends Node
         return [];
     }
 
-    public function key(): string
-    {
-        return $this->key;
-    }
-
-    public function setKey(string $key): void
-    {
-        $this->key = $key;
-    }
-
-    public function rename(string $name): self
-    {
-        $this->key = $name;
-        return $this;
-    }
-
     public function ensure(string $value): self
     {
         if (!$this->value) {
@@ -136,25 +109,6 @@ class Value extends Node
     public function withComment(string $label): void
     {
         //
-    }
-
-    /**
-     * takhle funkce by měla být smazaná a používat pouze 
-     * $this->isSubNode() ale musí potom každý Node mít $key
-     */
-    public function isNested(): bool
-    {
-        return str_contains($this->key, '.') ?? $this->isSubNode();
-    }
-
-    public function originalKey(): string
-    {
-        return explode('.', $this->key)[count(explode('.', $this->key)) - 1];
-    }
-
-    public function nestedKey(): string
-    {
-        return explode('.', $this->key)[0];
     }
 
     public function toArray(): array

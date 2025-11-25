@@ -10,8 +10,9 @@ class ArrayBlock extends Node
         protected int $start,
         protected int $end,
         protected array $raw,
-        protected string $key,
-    ) {}
+    ) {
+        parent::__construct($start, $end, $raw);
+    }
 
     public static function parse(array $content): Collection
     {
@@ -64,12 +65,11 @@ class ArrayBlock extends Node
 
                     $top = array_pop($stack);
 
-                    $blocks->push(new static(
+                    $blocks->push(ArrayBlock::make(
                         start: $top['start'],
                         end: $index,
                         raw: $top['raw'],
-                        key: $top['nestedKey'],
-                    ));
+                    )->setKey($top['nestedKey']));
                 }
             }
         }
@@ -90,31 +90,5 @@ class ArrayBlock extends Node
     public function render(): array
     {
         return $this->raw;
-    }
-
-    public function key(): string
-    {
-        return $this->key;
-    }
-
-    public function setKey(string $key): void
-    {
-        $this->key = $key;
-    }
-
-    /**
-     * takhle funkce by měla být smazaná a používat pouze 
-     * $this->isSubNode() ale musí potom každý Node mít $key
-     */
-    public function isNested(): bool
-    {
-        return str_contains($this->key, '.') ?? $this->isSubNode();
-    }
-
-    public function toArray(): array
-    {
-        return array_merge(parent::toArray(), [
-            'key' => $this->key,
-        ]);
     }
 }

@@ -117,6 +117,17 @@ class Configure
         //
     }
 
+    public function path(): string
+    {
+        // return $this->file; // coud be better
+        return '';
+    }
+
+    public function key(): string
+    {
+        return ''; // je to potřeba kvůli generovaní path??
+    }
+
     public function resolve(string $path): Node|self
     {
         $parts = explode('.', $path);

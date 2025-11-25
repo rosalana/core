@@ -10,6 +10,8 @@ abstract class Node implements NodeInterface
 {
     protected Node|Root|null $parent;
 
+    protected string $key;
+
     public function __construct(
         protected int $start,
         protected int $end,
@@ -21,9 +23,73 @@ abstract class Node implements NodeInterface
         return new static(...$arg);
     }
 
+    public static function makeEmpty(string $key): static
+    {
+        return static::make(
+            start: 0,
+            end: 0,
+            raw: []
+        )->setKey($key);
+    }
+
     abstract public static function parse(array $content): Collection;
 
     abstract public function render(): array;
+
+    public function key(): string
+    {
+        return $this->key;
+    }
+
+    public function name(): string
+    {
+        $parts = explode('.', $this->key);
+        return $parts[array_key_last($parts)];
+    }
+
+    public function setKey(string $key): self
+    {
+        $this->key = $key;
+        return $this;
+    }
+
+    public function rename(string $name): self
+    {
+        $parts = explode('.', $this->key());
+        $parts[array_key_last($parts)] = $name;
+
+        return $this->setKey(implode('.', $parts));
+    }
+
+    public function path(): string
+    {
+        if ($this->hasParent()) {
+            $parentPath = $this->parent()->path();
+
+            if ($parentPath) {
+                return $parentPath . '.' . $this->key();
+            } else {
+                return $this->key();
+            }
+        } else {
+            return $this->key();
+        }
+    }
+
+    public function has(string $node): bool
+    {
+        return false;
+    }
+
+    public function hasPath(string $path): bool
+    {
+        return $this->path() === $path;
+    }
+
+    public function pathToArray(): array
+    {
+        return explode('.', $this->path());
+    }
 
     public function startLine(): int
     {
@@ -77,7 +143,7 @@ abstract class Node implements NodeInterface
 
     public function isSubNode(): bool
     {
-        return $this->parent instanceof Node;
+        return count($this->pathToArray()) > 1 || $this->parent instanceof Node;
     }
 
     public function isChildOf(NodeInterface|Root $node): bool
@@ -143,6 +209,12 @@ abstract class Node implements NodeInterface
             'end' => $this->end,
             'raw' => $this->raw,
             'depth' => $this->depth(),
+            'key' => $this->key(),
+            'path' => $this->path(),
+            'name' => $this->name(),
+            'is_root' => $this->isRoot(),
+            'is_sub_node' => $this->isSubNode(),
+            'parent' => $this->parent()?->key() ?? null,
         ];
     }
 

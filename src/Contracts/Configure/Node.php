@@ -5,12 +5,6 @@ namespace Rosalana\Core\Contracts\Configure;
 use Illuminate\Support\Collection;
 use Rosalana\Core\Support\Configure as Root;
 
-/**
- * Fix: Každý uzel musí mít $key a $path vlastnosti.
- * 
- * Rozdělit to tak, že $path je ta full $path
- * a $key je ten poslední segment.
- */
 interface Node
 {
     /**
@@ -20,6 +14,14 @@ interface Node
      * @return static 
      */
     public static function make(...$arg): static;
+
+    /**
+     * Create an empty instance of the node with the given key.
+     * 
+     * @param string $key
+     * @return static
+     */
+    public static function makeEmpty(string $key): static;
 
     /**
      * Go through the content and parse itself.
@@ -64,20 +66,25 @@ interface Node
      */
     public function depth(): array;
 
-    // /**
-    //  * Get the full path of the node.
-    //  */
-    // public function path(): string;
+    /**
+     * Get the key of the node.
+     * 
+     * @return string
+     */
+    public function key(): string;
 
-    // /**
-    //  * Check if the node has the given path.
-    //  */
-    // public function hasPath(string $path): bool;
+    /**
+     * Set the key of the node.
+     * 
+     * @param string $key
+     * @return self
+     */
+    public function setKey(string $key): self;
 
-    // /**
-    //  * Check if the node has child 
-    //  */
-    // public function hasChild(Node|string $node): bool;
+    /**
+     * Get the full path of the node.
+     */
+    public function path(): string;
 
     /**
      * Get the parent node or root configure.
@@ -116,11 +123,24 @@ interface Node
     public function isChildOf(Node|Root $node): bool;
 
     /**
+     * Check if the node has child
+     * 
+     * @param string $node - Node instance or key
+     * @return bool
+     */
+    public function has(string $node): bool;
+
+    /**
      * Check if the node has a parent node or root.
      * 
      * @return bool
      */
     public function hasParent(): bool;
+
+    /**
+     * Check if the node has the given path.
+     */
+    public function hasPath(string $path): bool;
 
     /**
      * Set the parent node or root configure.
