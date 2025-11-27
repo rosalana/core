@@ -6,11 +6,8 @@ use Illuminate\Support\Collection;
 
 class ArrayBlock extends Node
 {
-    public function __construct(
-        protected int $start,
-        protected int $end,
-        protected array $raw,
-    ) {
+    public function __construct(int $start, int $end, array $raw)
+    {
         parent::__construct($start, $end, $raw);
     }
 

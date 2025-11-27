@@ -9,7 +9,7 @@ class Section extends Node
 
     protected Collection $nodes;
 
-    public function __construct(protected int $start, protected int $end, protected array $raw)
+    public function __construct(int $start, int $end, array $raw)
     {
         parent::__construct($start, $end, $raw);
         $this->nodes = collect();

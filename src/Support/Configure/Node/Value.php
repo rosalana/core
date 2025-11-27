@@ -8,11 +8,8 @@ class Value extends Node
 {
     protected string|null $value = null;
 
-    public function __construct(
-        protected int $start,
-        protected int $end,
-        protected array $raw,
-    ) {
+    public function __construct(int $start, int $end, array $raw)
+    {
         parent::__construct($start, $end, $raw);
     }
 
