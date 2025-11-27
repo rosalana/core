@@ -6,7 +6,6 @@ use Illuminate\Support\Collection;
 
 class Section extends Node
 {
-
     protected Collection $nodes;
 
     public function __construct(int $start, int $end, array $raw)
