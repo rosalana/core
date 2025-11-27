@@ -6,7 +6,6 @@ use Illuminate\Support\Collection;
 
 class Section extends Node
 {
-    protected string $key;
 
     protected Collection $nodes;
 
