@@ -10,6 +10,10 @@ use Rosalana\Core\Support\Configure\Node\Value;
 use Rosalana\Core\Support\Configure\Reader;
 use Rosalana\Core\Support\Configure\Writer;
 
+/**
+ * Pravděpodobně bude potřeba udělat value a array value,
+ * protože array value může být na více řádků a je potřeba trochu jinak držovat depth a nebude fungovat indexRender přesně
+ */
 class Configure
 {
     protected Collection $nodes;
