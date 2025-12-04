@@ -151,7 +151,19 @@ class Section extends Node
 
     public function render(): array
     {
-        return [];
+        $result = collect()
+            ->push("'{$this->name()}' => [")
+            ->push($this->nodes()->map(
+                fn($node) => $node->render()
+            ))
+            ->push("],");
+
+        $result = $this->indexRender($result);
+        $lastLine = array_last($result);
+        unset($result[array_key_last($result)]);
+        $result[$this->endLine()] = $lastLine;
+
+        return $result;
     }
 
     public function nodes(): Collection

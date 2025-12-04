@@ -65,10 +65,13 @@ class Value extends Node
 
     public function render(): array
     {
-        return [];
+        $result = collect()
+            ->push("'{$this->name()}' => {$this->value},");
+
+        return $this->indexRender($result);
     }
 
-    public function ensure(string $value): self
+    public function add(string $value): self
     {
         if (!$this->value) {
             $this->value = $value;

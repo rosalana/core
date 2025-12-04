@@ -42,7 +42,18 @@ abstract class Node implements NodeInterface
         $this->created = $created;
         return $this;
     }
-    
+
+    protected function indexRender(Collection $lines): array
+    {
+        $depth = array_first($this->depth());
+
+        return $lines->mapWithKeys(function ($line, $index) use ($depth) {
+            if ($line instanceof Collection) return $line;
+
+            return [$this->startLine() + $index => str_repeat(' ', $depth) . $line];
+        })->toArray();
+    }
+
     public function wasCreated(): bool
     {
         return $this->created;

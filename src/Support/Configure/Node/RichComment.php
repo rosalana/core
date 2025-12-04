@@ -60,12 +60,14 @@ class RichComment extends Node
 
                     $key = 'richcomment_' . bin2hex(random_bytes(4));
 
-                    $nodes->push(RichComment::make(
-                        start: $start,
-                        end: $index,
-                        raw: $buffer,
-                    )->setLabel($label)->setDescription($desc)->setKey(
-                        $stack ? implode('.', $stack) . '.' . $key : $key)
+                    $nodes->push(
+                        RichComment::make(
+                            start: $start,
+                            end: $index,
+                            raw: $buffer,
+                        )->setLabel($label)->setDescription($desc)->setKey(
+                            $stack ? implode('.', $stack) . '.' . $key : $key
+                        )
                     );
 
                     $start = null;
@@ -126,7 +128,22 @@ class RichComment extends Node
 
     public function render(): array
     {
-        return [];
+        $result = collect();
+
+        $result->push('/*');
+        $result->push('|--------------------------------------------------------------------------');
+        $result->push('| ' . $this->label());
+        $result->push('|--------------------------------------------------------------------------');
+        if ($this->description()) {
+            $result->push('|');
+            foreach (explode("\n", $this->description()) as $line) {
+                $result->push('| ' . $line);
+            }
+            $result->push('|');
+        }
+        $result->push('*/');
+
+        return $this->indexRender($result);
     }
 
     public function label(): string
