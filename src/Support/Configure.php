@@ -114,7 +114,7 @@ class Configure
 
     public function save(): void
     {
-        //
+        $this->writer->write($this->nodes);
     }
 
     public function path(): string
