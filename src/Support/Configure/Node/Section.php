@@ -176,9 +176,30 @@ class Section extends Node
         return !! ($this->findNode($key));
     }
 
+    // pozor mělo by to posunout i všechny další nadcházející uzly
+    // stejně tak je potřeba upravit depth podle jeho siblings
     public function addNode(Node $node): self
     {
-        $this->nodes->push($node->setParent($this));
+        $node->setParent($this);
+
+        if (! $node->isIndexed()) {
+            $distance = abs($node->startLine() - $node->endLine());
+            $lastNode = $this->nodes()->last();
+
+            if ($lastNode) {
+                $offset = $lastNode instanceof Value ? 1 : 2;
+                $start = $lastNode->endLine() + $offset;
+            } else {
+                $start = $this->startLine() + 1;
+            }
+
+            $node->setStartLine($start);
+            $node->setEndLine($start + $distance);
+
+            $this->setEndLine($node->endLine() + 1);
+        }
+
+        $this->nodes->push($node);
 
         return $this;
     }

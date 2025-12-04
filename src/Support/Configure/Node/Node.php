@@ -59,6 +59,21 @@ abstract class Node implements NodeInterface
         return $this->created;
     }
 
+    public function isTouched(): bool
+    {
+        return ! $this->startLine() === 0 || ! $this->endLine() === 0 || ! empty($this->raw());
+    }
+
+    /**
+     * Ty které nejsou zaindexované
+     * tedy třeba se přesouvají - by pořád měli držet svoji původní start a end
+     * ale měly by mít přesunuté do záporu (aby se to nepletlo)
+     */
+    public function isIndexed(): bool
+    {
+        return $this->startLine() > 0 && $this->endLine() > 0;
+    }
+
     public function key(): string
     {
         return $this->key;
@@ -122,6 +137,18 @@ abstract class Node implements NodeInterface
     public function endLine(): int
     {
         return $this->end;
+    }
+
+    public function setStartLine(int $line): self
+    {
+        $this->start = $line;
+        return $this;
+    }
+
+    public function setEndLine(int $line): self
+    {
+        $this->end = $line;
+        return $this;
     }
 
     public function raw(): array

@@ -52,6 +52,22 @@ interface Node
     public function endLine(): int;
 
     /**
+     * Set the line number where the node starts.
+     * 
+     * @param int $line
+     * @return self
+     */
+    public function setStartLine(int $line): self;
+    
+    /**
+     * Set the line number where the node ends.
+     * 
+     * @param int $line
+     * @return self
+     */
+    public function setEndLine(int $line): self;
+
+    /**
      * Get the raw content of the node.
      * It is the cut of the original file lines.
      * 
@@ -99,6 +115,11 @@ interface Node
      * @return Root
      */
     public function root(): Root;
+
+    /**
+     * Check if the node has indexes set.
+     */
+    public function isIndexed(): bool;
 
     /**
      * Check if the node is a direct child of the root configure.
