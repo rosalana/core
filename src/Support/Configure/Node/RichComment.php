@@ -12,7 +12,6 @@ class RichComment extends Node
     public function __construct(int $start, int $end, array $raw)
     {
         parent::__construct($start, $end, $raw);
-        $this->key = 'richcomment_' . bin2hex(random_bytes(8)); // placeholder
     }
 
     public static function parse(array $content): Collection
@@ -21,10 +20,21 @@ class RichComment extends Node
 
         $start = null;
         $buffer = [];
+        $stack = [];
+
+        $arrayStartRegex = '/^\s*([\'"])(?<key>[^\'"]+)\1\s*=>\s*\[\s*$/';
 
         foreach ($content as $index => $line) {
 
             $trim = trim($line);
+
+            if (preg_match($arrayStartRegex, $line, $match)) {
+                $stack[] = $match['key'];
+            }
+
+            if ($trim === '],' || $trim === ']') {
+                array_pop($stack);
+            }
 
             if (str_starts_with($trim, '/*')) {
                 $start = $index;
@@ -48,11 +58,15 @@ class RichComment extends Node
 
                     [$label, $desc] = static::parseLabelDescription($buffer);
 
+                    $key = 'richcomment_' . bin2hex(random_bytes(4));
+
                     $nodes->push(RichComment::make(
                         start: $start,
                         end: $index,
                         raw: $buffer,
-                    )->setLabel($label)->setDescription($desc));
+                    )->setLabel($label)->setDescription($desc)->setKey(
+                        $stack ? implode('.', $stack) . '.' . $key : $key)
+                    );
 
                     $start = null;
                     $buffer = [];

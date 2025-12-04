@@ -63,7 +63,21 @@ class Section extends Node
             }
 
             if ($node instanceof RichComment) {
-                $tree[] = $node;
+                $parts = explode('.', $node->key());
+                $current = &$tree;
+
+                foreach ($parts as $i => $segment) {
+                    if ($i === count($parts) - 1) {
+                        $current[$segment] = $node;
+                    } else {
+                        if (!isset($current[$segment]) || !is_array($current[$segment])) {
+                            $current[$segment] = [];
+                        }
+                        $current = &$current[$segment];
+                    }
+                }
+
+                unset($current);
             }
         }
 
@@ -78,9 +92,7 @@ class Section extends Node
 
             if ($value instanceof Node && !($value instanceof Section)) {
 
-                if ($value instanceof Value) {
-                    $value->setKey($value->name());
-                }
+                $value->setKey($value->name());
 
                 $result->push($value);
                 continue;
