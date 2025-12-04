@@ -28,19 +28,31 @@ class Writer
             $result[$index] = $node->render();
         }
 
-        $this->flatWithKeys($result);
+        $this->flatWithOriginalKeys($result);
         $this->pushEmptyLineToMissingIndex($result);
 
         return $result;
     }
 
-    protected function flatWithKeys(array &$array): void
+    protected function flatWithOriginalKeys(array &$array): void
     {
         $result = [];
 
-        array_walk_recursive($array, function ($value, $key) use (&$result) {
-            $result[$key] = $value;
-        });
+        $iterator = function ($value) use (&$result, &$iterator) {
+            if (is_array($value)) {
+                foreach ($value as $k => $v) {
+                    if (is_array($v)) {
+                        $iterator($v);
+                        continue;
+                    }
+
+                    // Pokud index už existuje -> je to bug v render() některého nodeu
+                    $result[$k] = $v;
+                }
+            }
+        };
+
+        $iterator($array);
 
         $array = $result;
     }
