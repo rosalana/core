@@ -2,11 +2,7 @@
 
 namespace Rosalana\Core\Support;
 
-use Illuminate\Support\Collection;
-use Rosalana\Core\Contracts\Configure\Node;
-use Rosalana\Core\Support\Configure\Node\RichComment;
-use Rosalana\Core\Support\Configure\Node\Section;
-use Rosalana\Core\Support\Configure\Node\Value;
+use Rosalana\Core\Support\Configure\Node\Root;
 use Rosalana\Core\Support\Configure\Reader;
 use Rosalana\Core\Support\Configure\Writer;
 
@@ -16,10 +12,10 @@ use Rosalana\Core\Support\Configure\Writer;
  */
 class Configure
 {
-    protected Collection $nodes;
-
+    protected Root $root;
+    
     protected Reader $reader;
-
+    
     protected Writer $writer;
 
     public function __construct(protected string $file)
@@ -27,181 +23,176 @@ class Configure
         $this->reader = new Reader($this->file);
         $this->writer = new Writer($this->file);
 
-        $this->nodes = collect();
+        $this->root = new Root($this);
     }
 
-    public static function file(string $name): self
+    public static function file(string $name): Root
     {
         if (!str_ends_with($name, '.php')) $name .= '.php';
 
         return (new self(config_path($name)))->read();
     }
 
-    protected function read(): self
+    protected function read(): Root
     {
         $this->reader->read()
-            ->each(fn($node) => $this->addNode($node));
+            ->each(fn($node) => $this->root->addChild($node));
 
-        return $this;
+        return $this->root;
     }
 
-    public function nodes(): Collection
+    public function save(): void
     {
-        return $this->nodes;
+        $this->writer->write($this->root->nodes());
     }
 
     // pozor mělo by to posunout i všechny další nadcházející uzly
     // stejně tak je potřeba upravit depth podle jeho siblings
 
     // udělat trait ve stylu HasChildren - pro Configure a pro Section
-    public function addNode(Node $node): self
-    {
-        $node->setParent($this);
+    // public function addNode(Node $node): self
+    // {
+    //     $node->setParent($this);
 
-        if (! $node->isIndexed()) {
-            $distance = abs($node->startLine() - $node->endLine());
-            $lastNode = $this->nodes->last();
+    //     if (! $node->isIndexed()) {
+    //         $distance = abs($node->start() - $node->end());
+    //         $lastNode = $this->nodes->last();
 
-            if ($lastNode) {
-                $offset = $lastNode instanceof Value ? 1 : 2;
-                $start = $lastNode->endLine() + $offset;
-            } else {
-                $start = 0; // !!!! hodin na pozici prvního nodu
-            }
+    //         if ($lastNode) {
+    //             $offset = $lastNode instanceof Value ? 1 : 2;
+    //             $start = $lastNode->end() + $offset;
+    //         } else {
+    //             $start = 0; // !!!! hodin na pozici prvního nodu
+    //         }
 
-            $node->setStartLine($start);
-            $node->setEndLine($start + $distance);
-        }
+    //         $node->setStartLine($start);
+    //         $node->setEndLine($start + $distance);
+    //     }
 
-        $this->nodes->push($node);
+    //     $this->nodes->push($node);
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
-    public function section(string $path): Section
-    {
-        $parent = $this->resolve($path);
-        $key = $this->pathToKey($path);
+    // public function section(string $path): Section
+    // {
+    //     $parent = $this->resolve($path);
+    //     $key = $this->pathToKey($path);
 
-        if ($parent->has($key)) {
-            return $parent->findNode($key);
-        } else {
-            $section = Section::makeEmpty($key);
-            $parent->addNode($section);
+    //     if ($parent->has($key)) {
+    //         return $parent->findNode($key);
+    //     } else {
+    //         $section = Section::makeEmpty($key);
+    //         $parent->addNode($section);
 
-            return $section;
-        }
-    }
+    //         return $section;
+    //     }
+    // }
 
-    public function value(string $path): Value
-    {
-        $parent = $this->resolve($path);
-        $key = $this->pathToKey($path);
+    // public function value(string $path): Value
+    // {
+    //     $parent = $this->resolve($path);
+    //     $key = $this->pathToKey($path);
 
-        if ($parent->has($key)) {
-            return $parent->findNode($key);
-        } else {
-            $value = Value::makeEmpty($key);
-            $parent->addNode($value);
+    //     if ($parent->has($key)) {
+    //         return $parent->findNode($key);
+    //     } else {
+    //         $value = Value::makeEmpty($key);
+    //         $parent->addNode($value);
 
-            return $value;
-        }
-    }
+    //         return $value;
+    //     }
+    // }
 
-    /**
-     * Create a rich or simple comment node.
-     * If description is provided, a rich comment is created.
-     * Otherwise, a simple comment is created.
-     */
-    public function comment(string $label, ?string $description = null): Node
-    {
-        if ($description) {
-            return new RichComment(0, 0, [], $label, $description);
-        }
+    // /**
+    //  * Create a rich or simple comment node.
+    //  * If description is provided, a rich comment is created.
+    //  * Otherwise, a simple comment is created.
+    //  */
+    // public function comment(string $label, ?string $description = null): Node
+    // {
+    //     if ($description) {
+    //         return new RichComment(0, 0, [], $label, $description);
+    //     }
 
-        return new RichComment(0, 0, [], $label, null); // for now
-    }
+    //     return new RichComment(0, 0, [], $label, null); // for now
+    // }
 
-    public function add(string $path, string $value): Node
-    {
-        return new Value(0, 0, [], '', '');
-    }
+    // public function add(string $path, string $value): Node
+    // {
+    //     return new Value(0, 0, [], '', '');
+    // }
 
-    public function set(string $path, string $value): Node
-    {
-        return new Value(0, 0, [], '', '');
-    }
+    // public function set(string $path, string $value): Node
+    // {
+    //     return new Value(0, 0, [], '', '');
+    // }
 
-    public function remove(string $path): self
-    {
-        return $this;
-    }
+    // public function remove(string $path): self
+    // {
+    //     return $this;
+    // }
 
-    public function save(): void
-    {
-        $this->writer->write($this->nodes);
-    }
+    // public function path(): string
+    // {
+    //     // return $this->file; // coud be better
+    //     return '';
+    // }
 
-    public function path(): string
-    {
-        // return $this->file; // coud be better
-        return '';
-    }
+    // public function key(): string
+    // {
+    //     return ''; // je to potřeba kvůli generovaní path??
+    // }
 
-    public function key(): string
-    {
-        return ''; // je to potřeba kvůli generovaní path??
-    }
+    // protected function resolve(string $path): Node
+    // {
+    //     $parts = explode('.', $path);
+    //     array_pop($parts);
 
-    public function resolve(string $path): Node|self
-    {
-        $parts = explode('.', $path);
-        array_pop($parts);
+    //     $current = $this;
 
-        $current = $this;
+    //     foreach ($parts as $part) {
+    //         $child = $current->findNode($part);
 
-        foreach ($parts as $part) {
-            $child = $current->findNode($part);
+    //         if (! $child) {
+    //             $child = Section::makeEmpty($part);
+    //             $current->addNode($child);
+    //         }
 
-            if (! $child) {
-                $child = Section::makeEmpty($part);
-                $current->addNode($child);
-            }
+    //         $current = $child;
+    //     }
 
-            $current = $child;
-        }
+    //     return $current;
+    // }
 
-        return $current;
-    }
+    // public function findNode(string $key): ?Node
+    // {
+    //     foreach ($this->nodes as $node) {
+    //         if ($node instanceof RichComment) {
+    //             continue;
+    //         }
 
-    public function findNode(string $key): ?Node
-    {
-        foreach ($this->nodes as $node) {
-            if ($node instanceof RichComment) {
-                continue;
-            }
+    //         if ($node->key() === $key) {
+    //             return $node;
+    //         }
+    //     }
 
-            if ($node->key() === $key) {
-                return $node;
-            }
-        }
+    //     return null;
+    // }
 
-        return null;
-    }
+    // // public function has(string $key): bool
+    // // {
+    // //     return !! ($this->findNode($key));
+    // // }
 
-    public function has(string $key): bool
-    {
-        return !! ($this->findNode($key));
-    }
-
-    protected function pathToKey(string $path): string
-    {
-        $parts = explode('.', $path);
-        return $parts[array_key_last($parts)];
-    }
+    // // protected function pathToKey(string $path): string
+    // // {
+    // //     $parts = explode('.', $path);
+    // //     return $parts[array_key_last($parts)];
+    // // }
 
     public function toArray(): array
     {
-        return $this->nodes->map(fn($node) => $node->toArray())->toArray();
+        return $this->root->nodes()->map(fn($node) => $node->toArray())->toArray();
     }
 }
