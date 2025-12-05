@@ -3,7 +3,7 @@
 namespace Rosalana\Core\Contracts\Configure;
 
 use Illuminate\Support\Collection;
-use Rosalana\Core\Support\Configure as Root;
+use Rosalana\Core\Support\Configure\Node\Root;
 
 interface Node
 {
@@ -42,12 +42,20 @@ interface Node
     public function render(): array;
 
     /**
+     * Get the key of the node.
+     * 
+     * @internal
+     * @return string
+     */
+    public function key(): string;
+
+    /**
      * Get the line number where the node starts.
      * 
      * @internal
      * @return int
      */
-    public function startLine(): int;
+    public function start(): int;
 
     /**
      * Get the line number where the node ends.
@@ -55,16 +63,7 @@ interface Node
      * @internal
      * @return int
      */
-    public function endLine(): int;
-
-    /**
-     * Set the line index where the node starts.
-     * 
-     * @internal
-     * @param int $line
-     * @return self
-     */
-    public function setIndex(int $line): self;
+    public function end(): int;
 
     /**
      * Get the raw content of the node.
@@ -76,31 +75,6 @@ interface Node
     public function raw(): array;
 
     /**
-     * Get the number of spaces depth of the node in the config file.
-     * 
-     * @internal
-     * @return array
-     */
-    public function depth(): array;
-
-    /**
-     * Get the key of the node.
-     * 
-     * @internal
-     * @return string
-     */
-    public function key(): string;
-
-    /**
-     * Set the key of the node.
-     * 
-     * @internal
-     * @param string $key
-     * @return self
-     */
-    public function setKey(string $key): self;
-
-    /**
      * Get the full path of the node.
      * 
      * @internal
@@ -109,33 +83,19 @@ interface Node
     public function path(): string;
 
     /**
-     * Get the parent node or root configure.
-     * 
-     * @return Node|Root|null
-     */
-    public function parent(): Node|Root|null;
-
-    /**
-     * Get the root configure.
-     * 
-     * @return Root
-     */
-    public function root(): Root;
-
-    /**
-     * Check if the node has indexes set.
+     * Get the number of spaces depth of the node in the config file.
      * 
      * @internal
-     * @return bool
+     * @return array
      */
-    public function isIndexed(): bool;
+    public function depth(): array;
 
     /**
-     * Check if the node is a direct child of the root configure.
+     * Get the parent node or root configure.
      * 
-     * @return bool
+     * @return Node|null
      */
-    public function isRoot(): bool;
+    public function parent(): Node|null;
 
     /**
      * Check if the node is a sub-node of another node.
@@ -151,34 +111,6 @@ interface Node
      * @return bool
      */
     public function isChildOf(Node|Root $node): bool;
-
-    /**
-     * Check if the node has child
-     * 
-     * @param string $node - Node instance or key
-     * @return bool
-     */
-    public function has(string $node): bool;
-
-    /**
-     * Check if the node has a parent node or root.
-     * 
-     * @return bool
-     */
-    public function hasParent(): bool;
-
-    /**
-     * Check if the node has the given path.
-     */
-    public function hasPath(string $path): bool;
-
-    /**
-     * Set the parent node or root configure.
-     * 
-     * @param Node|Root $parent
-     * @return self
-     */
-    public function setParent(Node|Root $parent): self;
 
     /**
      * Get the sibling nodes of the current node.
@@ -220,9 +152,9 @@ interface Node
     /**
      * Remove the node from the parent nodes list.
      * 
-     * @return Node|Root
+     * @return Node
      */
-    public function remove(): Node|Root;
+    public function remove(): Node;
 
     /**
      * Convert the node to array representation.
