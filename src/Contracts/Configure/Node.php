@@ -11,6 +11,7 @@ interface Node
      * Create a new instance of the node.
      * @param mixed ...$arg
      * 
+     * @internal
      * @return static 
      */
     public static function make(...$arg): static;
@@ -19,6 +20,7 @@ interface Node
      * Create an empty instance of the node with the given key.
      * 
      * @param string $key
+     * @internal
      * @return static
      */
     public static function makeEmpty(string $key): static;
@@ -26,6 +28,7 @@ interface Node
     /**
      * Go through the content and parse itself.
      * @param array $content
+     * @internal
      * @return Collection
      */
     public static function parse(array $content): Collection;
@@ -33,6 +36,7 @@ interface Node
     /**
      * Render the node back to array of lines.
      * 
+     * @internal
      * @return array
      */
     public function render(): array;
@@ -40,6 +44,7 @@ interface Node
     /**
      * Get the line number where the node starts.
      * 
+     * @internal
      * @return int
      */
     public function startLine(): int;
@@ -47,30 +52,25 @@ interface Node
     /**
      * Get the line number where the node ends.
      * 
+     * @internal
      * @return int
      */
     public function endLine(): int;
 
     /**
-     * Set the line number where the node starts.
+     * Set the line index where the node starts.
      * 
+     * @internal
      * @param int $line
      * @return self
      */
-    public function setStartLine(int $line): self;
-    
-    /**
-     * Set the line number where the node ends.
-     * 
-     * @param int $line
-     * @return self
-     */
-    public function setEndLine(int $line): self;
+    public function setIndex(int $line): self;
 
     /**
      * Get the raw content of the node.
      * It is the cut of the original file lines.
      * 
+     * @internal
      * @return array
      */
     public function raw(): array;
@@ -78,6 +78,7 @@ interface Node
     /**
      * Get the number of spaces depth of the node in the config file.
      * 
+     * @internal
      * @return array
      */
     public function depth(): array;
@@ -85,6 +86,7 @@ interface Node
     /**
      * Get the key of the node.
      * 
+     * @internal
      * @return string
      */
     public function key(): string;
@@ -92,6 +94,7 @@ interface Node
     /**
      * Set the key of the node.
      * 
+     * @internal
      * @param string $key
      * @return self
      */
@@ -99,6 +102,9 @@ interface Node
 
     /**
      * Get the full path of the node.
+     * 
+     * @internal
+     * @return string
      */
     public function path(): string;
 
@@ -118,6 +124,9 @@ interface Node
 
     /**
      * Check if the node has indexes set.
+     * 
+     * @internal
+     * @return bool
      */
     public function isIndexed(): bool;
 
