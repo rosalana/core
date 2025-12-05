@@ -139,15 +139,13 @@ abstract class Node implements NodeInterface
         return $this->end;
     }
 
-    public function setStartLine(int $line): self
+    public function setIndex(int $line): self
     {
-        $this->start = $line;
-        return $this;
-    }
+        $distance = abs($this->startLine() - $this->endLine());
 
-    public function setEndLine(int $line): self
-    {
-        $this->end = $line;
+        $this->start = $line;
+        $this->end = $line + $distance;
+
         return $this;
     }
 
