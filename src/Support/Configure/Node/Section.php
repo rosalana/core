@@ -4,7 +4,7 @@ namespace Rosalana\Core\Support\Configure\Node;
 
 use Illuminate\Support\Collection;
 
-class Section extends Node
+class Section extends ParentNode
 {
     protected Collection $nodes;
 
@@ -161,7 +161,7 @@ class Section extends Node
         $result = $this->indexRender($result);
         $lastLine = array_last($result);
         unset($result[array_key_last($result)]);
-        $result[$this->endLine()] = $lastLine;
+        $result[$this->end()] = $lastLine;
 
         return $result;
     }
@@ -171,75 +171,70 @@ class Section extends Node
         return $this->nodes;
     }
 
-    public function has(string $key): bool
-    {
-        return !! ($this->findNode($key));
-    }
-
     // pozor mělo by to posunout i všechny další nadcházející uzly
     // stejně tak je potřeba upravit depth podle jeho siblings
-    public function addNode(Node $node): self
-    {
-        $node->setParent($this);
+    // public function addNode(Node $node): self
+    // {
+    //     $node->setParent($this);
 
-        if (! $node->isIndexed()) {
-            $distance = abs($node->startLine() - $node->endLine());
-            $lastNode = $this->nodes()->last();
+    //     if (! $node->isIndexed()) {
+    //         $distance = abs($node->start() - $node->end());
+    //         $lastNode = $this->nodes()->last();
 
-            if ($lastNode) {
-                $offset = $lastNode instanceof Value ? 1 : 2;
-                $start = $lastNode->endLine() + $offset;
-            } else {
-                $start = $this->startLine() + 1;
-            }
+    //         if ($lastNode) {
+    //             $offset = $lastNode instanceof Value ? 1 : 2;
+    //             $start = $lastNode->end() + $offset;
+    //         } else {
+    //             $start = $this->start() + 1;
+    //         }
 
-            $node->setStartLine($start);
-            $node->setEndLine($start + $distance);
+    //         $node->setStartLine($start);
+    //         $node->setEndLine($start + $distance);
 
-            $this->setEndLine($node->endLine() + 1);
-        }
+    //         $this->setEndLine($node->endLine() + 1);
+    //     }
 
-        $this->nodes->push($node);
+    //     $this->nodes->push($node);
 
-        return $this;
-    }
+    //     return $this;
+    // }
 
-    public function findNode(string $key): ?Node
-    {
-        foreach ($this->nodes as $node) {
-            if ($node instanceof RichComment) {
-                continue;
-            }
+    // public function findNode(string $key): ?Node
+    // {
+    //     foreach ($this->nodes as $node) {
+    //         if ($node instanceof RichComment) {
+    //             continue;
+    //         }
 
-            if ($node->key() === $key) {
-                return $node;
-            }
-        }
+    //         if ($node->key() === $key) {
+    //             return $node;
+    //         }
+    //     }
 
-        return null;
-    }
+    //     return null;
+    // }
 
-    public function value(string $key): Value
-    {
-        $node = $this->findNode($key);
+    // public function value(string $key): Value
+    // {
+    //     $node = $this->findNode($key);
 
-        if ($node instanceof Value) {
-            return $node;
-        }
+    //     if ($node instanceof Value) {
+    //         return $node;
+    //     }
 
-        $value = Value::makeEmpty($key);
-        $this->addNode($value);
+    //     $value = Value::makeEmpty($key);
+    //     $this->addNode($value);
 
-        return $value;
-    }
+    //     return $value;
+    // }
 
     /**
      * Add basic comment node.
      */
-    public function comment(string $label): RichComment
-    {
-        return new RichComment(0, 0, [], $label, null);
-    }
+    // public function comment(string $label): RichComment
+    // {
+    //     return new RichComment(0, 0, [], $label, null);
+    // }
 
     /**
      * Create a rich or simple comment node.
