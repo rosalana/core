@@ -4,11 +4,11 @@ namespace Rosalana\Core\Support\Configure\Node;
 
 use Illuminate\Support\Collection;
 use Rosalana\Core\Contracts\Configure\Node as NodeInterface;
-use Rosalana\Core\Support\Configure as Root;
+use Rosalana\Core\Support\Configure\Node\Root;
 
 abstract class Node implements NodeInterface
 {
-    protected Node|Root|null $parent;
+    protected ParentNode|null $parent;
 
     protected string $key;
     protected bool $created = false;
@@ -19,6 +19,9 @@ abstract class Node implements NodeInterface
         protected array $raw,
     ) {}
 
+    abstract public static function parse(array $content): Collection;
+    abstract public function render(): array;
+
     public static function make(...$arg): static
     {
         return new static(...$arg);
@@ -26,17 +29,13 @@ abstract class Node implements NodeInterface
 
     public static function makeEmpty(string $key): static
     {
-        return static::make(
-            start: 0,
-            end: 0,
-            raw: []
-        )->setKey($key)->setCreated(true);
+        $instance = static::make(start: 0, end: 0, raw: []);
+        $instance->setKey($key)->created = true;
+
+        return $instance;
     }
 
-    abstract public static function parse(array $content): Collection;
-
-    abstract public function render(): array;
-
+    // #remove
     protected function indexRender(Collection $lines): array
     {
         $depth = array_first($this->depth());
@@ -44,24 +43,18 @@ abstract class Node implements NodeInterface
         return $lines->mapWithKeys(function ($line, $index) use ($depth) {
             if ($line instanceof Collection) return $line;
 
-            return [$this->startLine() + $index => str_repeat(' ', $depth) . $line];
+            return [$this->start() + $index => str_repeat(' ', $depth) . $line];
         })->toArray();
     }
 
-    public function setCreated(bool $created = true): self
-    {
-        $this->created = $created;
-        return $this;
-    }
-
-    public function wasCreated(): bool
+    public function isNew(): bool
     {
         return $this->created;
     }
 
-    public function isTouched(): bool
+    public function isDirty(): bool
     {
-        return ! $this->startLine() === 0 || ! $this->endLine() === 0 || ! empty($this->raw());
+        return false; // not implemented yet
     }
 
     /**
@@ -71,24 +64,44 @@ abstract class Node implements NodeInterface
      */
     public function isIndexed(): bool
     {
-        return $this->startLine() > 0 && $this->endLine() > 0;
+        return $this->start() > 0 && $this->end() > 0;
     }
 
+    /** @internal */
     public function key(): string
     {
         return $this->key;
+    }
+
+    /** @internal */
+    public function start(): int
+    {
+        return $this->start;
+    }
+
+    /** @internal */
+    public function end(): int
+    {
+        return $this->end;
+    }
+
+    /** @internal */
+    public function raw(): array
+    {
+        return $this->raw;
+    }
+
+    /** @internal */
+    public function setKey(string $key): self
+    {
+        $this->key = $key;
+        return $this;
     }
 
     public function name(): string
     {
         $parts = explode('.', $this->key);
         return $parts[array_key_last($parts)];
-    }
-
-    public function setKey(string $key): self
-    {
-        $this->key = $key;
-        return $this;
     }
 
     public function rename(string $name): self
@@ -114,44 +127,14 @@ abstract class Node implements NodeInterface
         }
     }
 
-    public function has(string $node): bool
-    {
-        return false;
-    }
-
-    public function hasPath(string $path): bool
-    {
-        return $this->path() === $path;
-    }
-
-    public function pathToArray(): array
-    {
-        return explode('.', $this->path());
-    }
-
-    public function startLine(): int
-    {
-        return $this->start;
-    }
-
-    public function endLine(): int
-    {
-        return $this->end;
-    }
-
     public function setIndex(int $line): self
     {
-        $distance = abs($this->startLine() - $this->endLine());
+        $distance = abs($this->start() - $this->end());
 
         $this->start = $line;
         $this->end = $line + $distance;
 
         return $this;
-    }
-
-    public function raw(): array
-    {
-        return $this->raw;
     }
 
     public function depth(): array
@@ -164,7 +147,7 @@ abstract class Node implements NodeInterface
         return $depths;
     }
 
-    public function parent(): Node|Root|null
+    public function parent(): ParentNode|null
     {
         return $this->parent;
     }
@@ -191,10 +174,12 @@ abstract class Node implements NodeInterface
 
     public function isSubNode(): bool
     {
-        return count($this->pathToArray()) > 1 || $this->parent instanceof Node;
+        $path = explode('.', $this->path());
+
+        return count($path) > 1 || $this->parent instanceof ParentNode;
     }
 
-    public function isChildOf(NodeInterface|Root $node): bool
+    public function isChildOf(NodeInterface $node): bool
     {
         return $this->parent === $node;
     }
@@ -204,7 +189,7 @@ abstract class Node implements NodeInterface
         return $this->parent !== null;
     }
 
-    public function setParent(NodeInterface|Root $parent): self
+    public function setParent(NodeInterface $parent): self
     {
         $this->parent = $parent;
         return $this;
@@ -263,7 +248,7 @@ abstract class Node implements NodeInterface
             'is_root' => $this->isRoot(),
             'is_sub_node' => $this->isSubNode(),
             'parent' => $this->parent()?->key() ?? null,
-            'was_created' => $this->wasCreated(),
+            'was_created' => $this->isNew(),
         ];
     }
 
