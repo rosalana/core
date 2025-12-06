@@ -32,7 +32,7 @@ class Reader
 
         $sections = Section::parse($sorted->toArray());
 
-        $sections->each(fn ($node) => $this->file->addChild($node));
+        $sections->each(fn ($node) => $this->file->addChild($node, true));
 
         return $this->file;
     }

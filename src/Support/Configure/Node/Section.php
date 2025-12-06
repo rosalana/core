@@ -78,71 +78,6 @@ class Section extends ParentNode
         return static::normalize($tree);
     }
 
-    public static function normalize(array $tree): Collection
-    {
-        $result = collect();
-
-        foreach ($tree as $key => $value) {
-
-            if ($value instanceof Node && !($value instanceof Section)) {
-
-                $value->setKey($value->name());
-
-                $result->push($value);
-                continue;
-            }
-
-            if (is_array($value)) {
-                $meta = $value['__meta'] ?? null;
-                unset($value['__meta']);
-
-                $children = static::normalize($value);
-
-                $section = Section::make(
-                    start: $meta?->start() ?? static::computeStart($children),
-                    end: $meta?->end() ?? static::computeEnd($children),
-                    raw: $meta?->raw() ?? []
-                );
-
-                $section->setKey($key);
-
-                foreach ($children as $child) {
-                    $section->addChild($child);
-                }
-
-                $result->push($section);
-            }
-        }
-
-        return $result;
-    }
-
-    protected static function computeStart(Collection $children): int
-    {
-        $starts = $children
-            ->map(
-                fn($node) => $node instanceof Section
-                    ? static::computeStart($node->nodes())
-                    : $node->start()
-            )
-            ->filter(fn($v) => $v > 0);
-
-        return $starts->min() ?? 0;
-    }
-
-    protected static function computeEnd(Collection $children): int
-    {
-        $ends = $children
-            ->map(
-                fn($node) => $node instanceof Section
-                    ? static::computeEnd($node->nodes())
-                    : $node->endLine()
-            )
-            ->filter(fn($v) => $v > 0);
-
-        return $ends->max() ?? 0;
-    }
-
     public function render(): array
     {
         $result = collect()
@@ -237,5 +172,70 @@ class Section extends ParentNode
         }
 
         return new RichComment(0, 0, [], $label, null); // for now
+    }
+
+    public static function normalize(array $tree): Collection
+    {
+        $result = collect();
+
+        foreach ($tree as $key => $value) {
+
+            if ($value instanceof Node && !($value instanceof Section)) {
+
+                $value->setKey($value->name());
+
+                $result->push($value);
+                continue;
+            }
+
+            if (is_array($value)) {
+                $meta = $value['__meta'] ?? null;
+                unset($value['__meta']);
+
+                $children = static::normalize($value);
+
+                $section = Section::make(
+                    start: $meta?->start() ?? static::computeStart($children),
+                    end: $meta?->end() ?? static::computeEnd($children),
+                    raw: $meta?->raw() ?? []
+                );
+
+                $section->setKey($key);
+
+                foreach ($children as $child) {
+                    $section->addChild($child, true);
+                }
+
+                $result->push($section);
+            }
+        }
+
+        return $result;
+    }
+
+    protected static function computeStart(Collection $children): int
+    {
+        $starts = $children
+            ->map(
+                fn($node) => $node instanceof Section
+                    ? static::computeStart($node->nodes())
+                    : $node->start()
+            )
+            ->filter(fn($v) => $v > 0);
+
+        return $starts->min() ?? 0;
+    }
+
+    protected static function computeEnd(Collection $children): int
+    {
+        $ends = $children
+            ->map(
+                fn($node) => $node instanceof Section
+                    ? static::computeEnd($node->nodes())
+                    : $node->endLine()
+            )
+            ->filter(fn($v) => $v > 0);
+
+        return $ends->max() ?? 0;
     }
 }

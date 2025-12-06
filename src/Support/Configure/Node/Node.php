@@ -35,7 +35,7 @@ abstract class Node implements NodeInterface
         return $instance;
     }
 
-    // #remove
+    /**  @deprecated use parent()->indent()  */
     protected function indexRender(Collection $lines): array
     {
         $depth = array_first($this->depth());
