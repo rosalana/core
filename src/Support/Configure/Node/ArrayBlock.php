@@ -11,6 +11,11 @@ class ArrayBlock extends Node
         parent::__construct($start, $end, $raw);
     }
 
+    public function padding(): int
+    {
+        return 0;
+    }
+
     public static function parse(array $content): Collection
     {
         $blocks = collect();
