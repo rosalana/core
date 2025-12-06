@@ -8,7 +8,7 @@ use Rosalana\Core\Support\Configure;
 
 abstract class Node implements NodeInterface
 {
-    protected ParentNode|null $parent;
+    protected ParentNode|Configure|null $parent;
 
     protected string $key;
     protected bool $created = false;
