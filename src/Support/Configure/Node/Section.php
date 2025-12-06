@@ -97,9 +97,9 @@ class Section extends ParentNode
 
         $result[$this->start()] = "'{$this->name()}' => [";
 
-        array_push($result, $this->nodes()->map(
+        array_push($result, ...$this->nodes()->map(
             fn($node) => $node->render()
-        )->toArray());
+        )->flatten()->toArray());
 
         $result[$this->end()] = "],";
 
