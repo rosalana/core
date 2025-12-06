@@ -105,7 +105,7 @@ abstract class Node implements NodeInterface
      * 
      * @return self
      */
-    public function setIndex(int $line): self
+    public function moveTo(int $line): self
     {
         $distance = abs($this->start() - $this->end());
 
@@ -197,7 +197,7 @@ abstract class Node implements NodeInterface
     {
         $path = explode('.', $this->path());
 
-        return count($path) > 1 || $this->parent instanceof Section;
+        return count($path) > 1 || $this->parent instanceof NodeInterface;
     }
 
     public function isChildOf(NodeInterface $node): bool
