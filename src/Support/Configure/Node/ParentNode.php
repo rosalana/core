@@ -8,9 +8,6 @@ abstract class ParentNode extends Node
 {
     protected Collection $nodes;
 
-    protected int $indent = 1;
-    /** {num}*4 = počet ' ' */
-
     public function __construct(int $start, int $end, array $raw)
     {
         parent::__construct($start, $end, $raw);
@@ -24,6 +21,13 @@ abstract class ParentNode extends Node
     public function nodes(): Collection
     {
         return $this->nodes;
+    }
+
+    public function indent(): int
+    {
+        $depth = $this->path() ? count(explode('.', $this->path())) : 0;
+
+        return ($depth + 1) * 4;
     }
 
     public function addChild(Node|self $node): self
@@ -71,6 +75,7 @@ abstract class ParentNode extends Node
     {
         return array_merge(parent::toArray(), [
             'nodes' => $this->nodes->map(fn($node) => $node->toArray())->toArray(),
+            'indent' => $this->indent(),
         ]);
     }
 }

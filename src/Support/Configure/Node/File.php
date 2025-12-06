@@ -58,7 +58,7 @@ class File extends ParentNode
 
     public function path(): string
     {
-        return $this->path;
+        return '';
     }
 
     public function lines(): array
