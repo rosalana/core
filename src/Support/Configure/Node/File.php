@@ -20,7 +20,7 @@ class File extends ParentNode
 
     public function render(): array
     {
-        return [];
+        return $this->nodes()->map(fn($node) => $node->render())->toArray();
     }
 
     public static function makeEmpty(string $name): static

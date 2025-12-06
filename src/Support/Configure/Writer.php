@@ -16,7 +16,7 @@ class Writer
 
     public function write(): void
     {
-        $render = $this->render($this->file->nodes());
+        $render = $this->file->render();
 
         dd($render);
     }
