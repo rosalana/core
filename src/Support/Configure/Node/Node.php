@@ -240,6 +240,14 @@ abstract class Node implements NodeInterface
         return collect();
     }
 
+    /**
+     * Get siblings that come after this node.
+     */
+    public function siblingsAfter(): Collection
+    {
+        return $this->siblings()->filter(fn($node) => $node->start() > $this->end());
+    }
+
     // TODO
     public function keepStart(): NodeInterface
     {
