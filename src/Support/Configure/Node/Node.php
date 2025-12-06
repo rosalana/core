@@ -36,18 +36,6 @@ abstract class Node implements NodeInterface
 
     abstract public function render(): array;
 
-    /**  @deprecated use parent()->indent()  */
-    protected function indexRender(Collection $lines): array
-    {
-        $depth = array_first($this->depth());
-
-        return $lines->mapWithKeys(function ($line, $index) use ($depth) {
-            if ($line instanceof Collection) return $line;
-
-            return [$this->start() + $index => str_repeat(' ', $depth) . $line];
-        })->toArray();
-    }
-
     public function key(): string
     {
         return $this->key;
