@@ -86,7 +86,7 @@ interface Node
     /**
      * Get the number of spaces depth of the node in the config file.
      * 
-     * @internal
+     * @deprecated use parent()->indent()
      * @return array
      */
     public function depth(): array;

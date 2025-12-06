@@ -19,10 +19,21 @@ abstract class ParentNode extends Node
         return collect();
     }
 
+    /**
+     * Wrap nodes into a hierarchical structure.
+     * 
+     * @param Collection $nodes
+     * @return Collection
+     */
     abstract public static function wrap(Collection $nodes): Collection;
 
     abstract public function render(): array;
 
+    /**
+     * Get the child nodes of this parent node.
+     * 
+     * @return Collection
+     */
     public function nodes(): Collection
     {
         return $this->nodes;
@@ -48,6 +59,12 @@ abstract class ParentNode extends Node
         return $section;
     }
 
+    /**
+     * Get or create a Value node by key.
+     * 
+     * @param string $key
+     * @return Value
+     */
     public function value(string $key): Value
     {
         $node = $this->getChild($key);
@@ -68,6 +85,11 @@ abstract class ParentNode extends Node
         return RichComment::makeEmpty($key)->setDescription($description);
     }
 
+    /**
+     * Get the number of spaces for child nodes indentation.
+     * 
+     * @return int
+     */
     public function indent(): int
     {
         $depth = $this->path() ? count(explode('.', $this->path())) : 0;
@@ -122,11 +144,20 @@ abstract class ParentNode extends Node
         return $this;
     }
 
+    /**
+     * Check if the parent node has the given child node.
+     * 
+     * @param Node|self $node
+     * @return bool
+     */
     public function hasChild(Node|self $node): bool
     {
         return $this->nodes->contains($node);
     }
 
+    /**
+     * Get a child node by its name.
+     */
     public function getChild(string $name): Node|self|null
     {
         foreach ($this->nodes as $node) {
