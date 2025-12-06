@@ -53,6 +53,17 @@ abstract class ParentNode extends Node
         return $this;
     }
 
+    public function scaleDown(int $lines): self
+    {
+        $this->end -= $lines;
+
+        if ($this->isSubNode()) {
+            $this->parent()?->scaleDown($lines);
+        }
+
+        return $this;
+    }
+
     /**
      * Get the child nodes of this parent node.
      * 
@@ -132,8 +143,7 @@ abstract class ParentNode extends Node
     {
         $node->setParent($this);
 
-        if (!$ghost) {
-
+        if (! $ghost) {
             $originalEnd = $this->end;
 
             if ($this->nodes->isEmpty()) {
@@ -147,10 +157,11 @@ abstract class ParentNode extends Node
 
             $this->scaleUp($distance);
 
-            $this->siblingsAfter()->each(
-                fn($sibling) =>
-                $sibling->moveTo($sibling->start() + $distance)
-            );
+            $this->siblingsAfter()
+                ->each(
+                    fn($sibling) =>
+                    $sibling->moveTo($sibling->start() + $distance)
+                );
         }
 
         $this->nodes->push($node);
@@ -167,6 +178,19 @@ abstract class ParentNode extends Node
      */
     public function removeChild(Node|self $node, bool $ghost = false): self
     {
+        if (! $this->hasChild($node)) return $this;
+
+        if (! $ghost) {
+            $distance = abs($node->start() - $node->end()) + $node->padding();
+
+            $this->scaleDown($distance);
+
+            $this->siblingsAfter($node)->each(
+                fn($sibling) =>
+                $sibling->moveTo($sibling->start() - $distance)
+            );
+        }
+
         $this->nodes = $this->nodes->reject(fn($n) => $n === $node)->values();
 
         return $this;
@@ -180,6 +204,17 @@ abstract class ParentNode extends Node
      */
     public function clearChildren(bool $ghost = false): self
     {
+        if (! $ghost) {
+            $distance = abs($this->start() - $this->end()) - 1;
+
+            $this->scaleDown($distance);
+
+            $this->siblingsAfter()->each(
+                fn($sibling) =>
+                $sibling->moveTo($sibling->start() - $distance)
+            );
+        }
+
         $this->nodes = collect();
 
         return $this;
