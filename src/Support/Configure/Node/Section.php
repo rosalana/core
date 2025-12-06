@@ -93,17 +93,21 @@ class Section extends ParentNode
 
     public function render(): array
     {
-        $result = collect()
-            ->push("'{$this->name()}' => [")
-            ->push($this->nodes()->map(
-                fn($node) => $node->render()
-            ))
-            ->push("],");
+        $result = [];
 
-        $result = $this->indexRender($result);
-        $lastLine = array_last($result);
-        unset($result[array_key_last($result)]);
-        $result[$this->end()] = $lastLine;
+        $result[$this->start()] = "'{$this->name()}' => [";
+
+        array_push($result, $this->nodes()->map(
+            fn($node) => $node->render()
+        )->toArray());
+
+        $result[$this->end()] = "],";
+
+        foreach ($result as $index => $line) {
+            if (is_array($line)) continue;
+
+            $result[$index] = str_repeat(' ', $this->parent()?->indent() ?? 0) . $line;
+        }
 
         return $result;
     }

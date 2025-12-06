@@ -70,10 +70,9 @@ class Value extends Node
 
     public function render(): array
     {
-        $result = collect()
-            ->push("'{$this->name()}' => {$this->value},");
-
-        return $this->indexRender($result);
+        return [
+            $this->start() => str_repeat(' ', $this->parent()?->indent() ?? 0) . "'{$this->name()}' => {$this->value},",
+        ];
     }
 
     public function add(string $value): self

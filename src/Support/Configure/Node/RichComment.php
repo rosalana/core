@@ -148,7 +148,9 @@ class RichComment extends Node
         }
         $result->push('*/');
 
-        return $this->indexRender($result);
+        return $result->mapWithKeys(function ($line, $index) {
+            return [$this->start() + $index => str_repeat(' ', $this->parent()?->indent() ?? 0) . $line];
+        })->toArray();
     }
 
     public function label(): string
