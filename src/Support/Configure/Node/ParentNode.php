@@ -46,6 +46,12 @@ abstract class ParentNode extends Node
     {
         $this->end += $lines;
 
+        $this->siblingsAfter()
+            ->each(
+                fn($sibling) =>
+                $sibling->moveTo($sibling->start() + $lines)
+            );
+
         if ($this->isSubNode()) {
             $this->parent()?->scaleUp($lines);
         }
@@ -56,6 +62,11 @@ abstract class ParentNode extends Node
     public function scaleDown(int $lines): self
     {
         $this->end -= $lines;
+
+        $this->siblingsAfter()->each(
+            fn($sibling) =>
+            $sibling->moveTo($sibling->start() - $lines)
+        );
 
         if ($this->isSubNode()) {
             $this->parent()?->scaleDown($lines);
@@ -156,12 +167,6 @@ abstract class ParentNode extends Node
             $distance = $this->end - $originalEnd + $this->padding();
 
             $this->scaleUp($distance);
-
-            $this->siblingsAfter()
-                ->each(
-                    fn($sibling) =>
-                    $sibling->moveTo($sibling->start() + $distance)
-                );
         }
 
         $this->nodes->push($node);
@@ -184,11 +189,6 @@ abstract class ParentNode extends Node
             $distance = abs($node->start() - $node->end()) + $node->padding();
 
             $this->scaleDown($distance);
-
-            $this->siblingsAfter($node)->each(
-                fn($sibling) =>
-                $sibling->moveTo($sibling->start() - $distance)
-            );
         }
 
         $this->nodes = $this->nodes->reject(fn($n) => $n === $node)->values();
@@ -208,11 +208,6 @@ abstract class ParentNode extends Node
             $distance = abs($this->start() - $this->end()) - 1;
 
             $this->scaleDown($distance);
-
-            $this->siblingsAfter()->each(
-                fn($sibling) =>
-                $sibling->moveTo($sibling->start() - $distance)
-            );
         }
 
         $this->nodes = collect();
