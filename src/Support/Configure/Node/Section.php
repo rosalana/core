@@ -238,11 +238,4 @@ class Section extends ParentNode
 
         return new RichComment(0, 0, [], $label, null); // for now
     }
-
-    public function toArray(): array
-    {
-        return array_merge(parent::toArray(), [
-            'nodes' => $this->nodes->map(fn($node) => $node->toArray())->toArray(),
-        ]);
-    }
 }

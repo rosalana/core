@@ -66,4 +66,11 @@ abstract class ParentNode extends Node
 
         return null;
     }
+
+    public function toArray(): array
+    {
+        return array_merge(parent::toArray(), [
+            'nodes' => $this->nodes->map(fn($node) => $node->toArray())->toArray(),
+        ]);
+    }
 }
