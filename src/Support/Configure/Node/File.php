@@ -8,9 +8,9 @@ class File extends ParentNode
 {
     protected string $path = '';
 
-    public static function parse(array $nodes): Collection
+    public static function wrap(Collection $nodes): Collection
     {
-        return collect();
+        return $nodes;
     }
 
     public function render(): array

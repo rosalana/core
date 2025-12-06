@@ -28,9 +28,7 @@ class Reader
             ->merge(Value::parse($content))
             ->merge(ArrayBlock::parse($content));
 
-        $sorted = $parse->sortBy->start()->values();
-
-        $sections = Section::parse($sorted->toArray());
+        $sections = Section::wrap($parse);
 
         $sections->each(fn ($node) => $this->file->addChild($node, true));
 

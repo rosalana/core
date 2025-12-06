@@ -8,9 +8,10 @@ class Section extends ParentNode
 {
     protected Collection $nodes;
 
-    public static function parse(array $nodes): Collection
+    public static function wrap(Collection $nodes): Collection
     {
         $tree = [];
+        $nodes = $nodes->sortBy->start()->values()->toArray();
 
         foreach ($nodes as $node) {
 

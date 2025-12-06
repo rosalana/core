@@ -14,13 +14,58 @@ abstract class ParentNode extends Node
         $this->nodes = collect();
     }
 
-    abstract public static function parse(array $nodes): Collection;
+    public static function parse(array $nodes): Collection
+    {
+        return collect();
+    }
+
+    abstract public static function wrap(Collection $nodes): Collection;
 
     abstract public function render(): array;
 
     public function nodes(): Collection
     {
         return $this->nodes;
+    }
+
+    /**
+     * Get or create a Section node by key.
+     * 
+     * @param string $key
+     * @return Section
+     */
+    public function section(string $key): Section
+    {
+        $node = $this->getChild($key);
+
+        if ($node instanceof Section) {
+            return $node;
+        }
+
+        $section = Section::makeEmpty($key);
+        $this->addChild($section);
+
+        return $section;
+    }
+
+    public function value(string $key): Value
+    {
+        $node = $this->getChild($key);
+
+        if ($node instanceof Value) {
+            return $node;
+        }
+
+        $value = Value::makeEmpty($key);
+        $this->addChild($value);
+
+        return $value;
+    }
+
+    /** @todo implement comments properly */
+    public function comment(string $key, string $description): RichComment
+    {
+        return RichComment::makeEmpty($key)->setDescription($description);
     }
 
     public function indent(): int
