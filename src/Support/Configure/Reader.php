@@ -28,7 +28,7 @@ class Reader
             ->merge(Value::parse($content))
             ->merge(ArrayBlock::parse($content));
 
-        $sorted = $parse->sortBy->startLine()->values();
+        $sorted = $parse->sortBy->start()->values();
 
         $sections = Section::parse($sorted->toArray());
 

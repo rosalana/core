@@ -114,7 +114,7 @@ abstract class Node implements NodeInterface
 
     public function path(): string
     {
-        if ($this->hasParent()) {
+        if ($this->parent() instanceof NodeInterface) {
             $parentPath = $this->parent()->path();
 
             if ($parentPath) {
@@ -147,7 +147,7 @@ abstract class Node implements NodeInterface
         return $depths;
     }
 
-    public function parent(): ParentNode|null
+    public function parent(): ParentNode|Configure|null
     {
         return $this->parent;
     }
@@ -156,7 +156,7 @@ abstract class Node implements NodeInterface
     {
         $current = $this;
 
-        while ($current->hasParent()) {
+        while ($current->parent() instanceof NodeInterface) {
             if ($current->isRoot()) {
                 return $current->parent();
             }
@@ -192,7 +192,7 @@ abstract class Node implements NodeInterface
 
     public function siblings(): Collection
     {
-        if ($this->hasParent()) {
+        if ($this->parent() instanceof ParentNode) {
             return $this->parent->nodes()->filter(fn($node) => $node !== $this);
         }
 
@@ -249,7 +249,7 @@ abstract class Node implements NodeInterface
 
     public function __call($name, $arguments)
     {
-        if (! $this->hasParent()) {
+        if ($this->parent() === null) {
             throw new \BadMethodCallException("Method {$name} does not exist on " . static::class);
         }
 

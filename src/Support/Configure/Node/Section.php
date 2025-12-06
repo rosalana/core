@@ -99,15 +99,15 @@ class Section extends ParentNode
                 $children = static::normalize($value);
 
                 $section = Section::make(
-                    start: $meta?->startLine() ?? static::computeStart($children),
-                    end: $meta?->endLine() ?? static::computeEnd($children),
+                    start: $meta?->start() ?? static::computeStart($children),
+                    end: $meta?->end() ?? static::computeEnd($children),
                     raw: $meta?->raw() ?? []
                 );
 
                 $section->setKey($key);
 
                 foreach ($children as $child) {
-                    $section->addNode($child);
+                    $section->addChild($child);
                 }
 
                 $result->push($section);
@@ -123,7 +123,7 @@ class Section extends ParentNode
             ->map(
                 fn($node) => $node instanceof Section
                     ? static::computeStart($node->nodes())
-                    : $node->startLine()
+                    : $node->start()
             )
             ->filter(fn($v) => $v > 0);
 

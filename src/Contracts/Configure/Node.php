@@ -3,6 +3,7 @@
 namespace Rosalana\Core\Contracts\Configure;
 
 use Illuminate\Support\Collection;
+use Rosalana\Core\Support\Configure;
 use Rosalana\Core\Support\Configure\Node\Root;
 
 interface Node
@@ -95,7 +96,7 @@ interface Node
      * 
      * @return Node|null
      */
-    public function parent(): Node|null;
+    public function parent(): Node|Configure|null;
 
     /**
      * Check if the node is a sub-node of another node.
