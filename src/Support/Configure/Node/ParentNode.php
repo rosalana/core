@@ -29,6 +29,30 @@ abstract class ParentNode extends Node
 
     abstract public function render(): array;
 
+    public function moveTo(int $line): self
+    {
+        $distance = abs($this->start() - $this->end());
+        $this->start = $line;
+        $this->end = $line + $distance;
+
+        foreach ($this->nodes as $node) {
+            $node->moveTo($node->start() + $distance);
+        }
+
+        return $this;
+    }
+
+    public function scaleUp(int $lines): self
+    {
+        $this->end += $lines;
+
+        if ($this->isSubNode()) {
+            $this->parent()?->scaleUp($lines);
+        }
+
+        return $this;
+    }
+
     /**
      * Get the child nodes of this parent node.
      * 
@@ -109,7 +133,24 @@ abstract class ParentNode extends Node
         $node->setParent($this);
 
         if (!$ghost) {
-            // set indexes!!
+
+            $originalEnd = $this->end;
+
+            if ($this->nodes->isEmpty()) {
+                $node->moveTo($this->start + 1 + $node->padding());
+            } else {
+                $lastChild = $this->nodes->last();
+                $node->moveTo($lastChild->end + 1 + $node->padding());
+            }
+
+            $distance = $this->end - $originalEnd + $this->padding();
+
+            $this->scaleUp($distance);
+
+            $this->siblingsAfter()->each(
+                fn($sibling) =>
+                $sibling->moveTo($sibling->start() + $distance)
+            );
         }
 
         $this->nodes->push($node);
