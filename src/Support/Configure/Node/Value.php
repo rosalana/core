@@ -57,7 +57,7 @@ class Value extends Node
                 start: $index,
                 end: $index,
                 raw: [$index => $line]
-            )->setKey($fullKey)->set($value));
+            )->set($value)->setKey($fullKey));
         }
 
         return $nodes;

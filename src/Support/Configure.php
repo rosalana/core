@@ -41,6 +41,11 @@ class Configure
         return $this->file->nodes()->map(fn($node) => $node->toArray())->toArray();
     }
 
+    public function key(): string
+    {
+        return '';
+    }
+
     // pozor mělo by to posunout i všechny další nadcházející uzly
     // stejně tak je potřeba upravit depth podle jeho siblings
 
