@@ -110,7 +110,7 @@ interface Node
      * @param Node|Root $node
      * @return bool
      */
-    public function isChildOf(Node|Root $node): bool;
+    public function isChildOf(Node $node): bool;
 
     /**
      * Get the sibling nodes of the current node.

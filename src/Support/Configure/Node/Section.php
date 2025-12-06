@@ -8,12 +8,6 @@ class Section extends ParentNode
 {
     protected Collection $nodes;
 
-    public function __construct(int $start, int $end, array $raw)
-    {
-        parent::__construct($start, $end, $raw);
-        $this->nodes = collect();
-    }
-
     public static function parse(array $nodes): Collection
     {
         $tree = [];
@@ -164,11 +158,6 @@ class Section extends ParentNode
         $result[$this->end()] = $lastLine;
 
         return $result;
-    }
-
-    public function nodes(): Collection
-    {
-        return $this->nodes;
     }
 
     // pozor mělo by to posunout i všechny další nadcházející uzly

@@ -3,19 +3,20 @@
 namespace Rosalana\Core\Support\Configure;
 
 use Illuminate\Support\Collection;
+use Rosalana\Core\Support\Configure\Node\File;
 
 class Writer
 {
-    public function __construct(protected string $file)
+    public function __construct(protected File $file)
     {
-        if (!file_exists($this->file)) {
-            throw new \RuntimeException("Configuration file not found: {$this->file}");
+        if (!$this->file->exists()) {
+            throw new \RuntimeException("Configuration file not found: {$this->file->fullName()}");
         }
     }
 
-    public function write(Collection $nodes): void
+    public function write(): void
     {
-        $render = $this->render($nodes);
+        $render = $this->render($this->file->nodes());
 
         dd($render);
     }

@@ -4,7 +4,7 @@ namespace Rosalana\Core\Support\Configure\Node;
 
 use Illuminate\Support\Collection;
 use Rosalana\Core\Contracts\Configure\Node as NodeInterface;
-use Rosalana\Core\Support\Configure\Node\Root;
+use Rosalana\Core\Support\Configure;
 
 abstract class Node implements NodeInterface
 {
@@ -152,7 +152,7 @@ abstract class Node implements NodeInterface
         return $this->parent;
     }
 
-    public function root(): Root
+    public function root(): File
     {
         $current = $this;
 
@@ -169,14 +169,14 @@ abstract class Node implements NodeInterface
 
     public function isRoot(): bool
     {
-        return $this->parent instanceof Root;
+        return $this->parent instanceof File;
     }
 
     public function isSubNode(): bool
     {
         $path = explode('.', $this->path());
 
-        return count($path) > 1 || $this->parent instanceof ParentNode;
+        return count($path) > 1 || $this->parent instanceof Section;
     }
 
     public function isChildOf(NodeInterface $node): bool
@@ -184,12 +184,7 @@ abstract class Node implements NodeInterface
         return $this->parent === $node;
     }
 
-    public function hasParent(): bool
-    {
-        return $this->parent !== null;
-    }
-
-    public function setParent(NodeInterface $parent): self
+    public function setParent(NodeInterface|Configure $parent): self
     {
         $this->parent = $parent;
         return $this;
@@ -229,7 +224,7 @@ abstract class Node implements NodeInterface
     }
 
     // TODO
-    public function remove(): NodeInterface|Root
+    public function remove(): NodeInterface
     {
         return $this->parent();
     }

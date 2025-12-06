@@ -2,36 +2,44 @@
 
 namespace Rosalana\Core\Support\Configure;
 
-use Illuminate\Support\Collection;
 use Rosalana\Core\Support\Configure\Node\ArrayBlock;
+use Rosalana\Core\Support\Configure\Node\File;
 use Rosalana\Core\Support\Configure\Node\RichComment;
 use Rosalana\Core\Support\Configure\Node\Section;
 use Rosalana\Core\Support\Configure\Node\Value;
 
 class Reader
 {
-    public function __construct(protected string $file)
+    public function __construct(protected File $file)
     {
-        if (!file_exists($this->file)) {
-            throw new \RuntimeException("Configuration file not found: {$this->file}");
+        if (!$this->file->exists()) {
+            throw new \RuntimeException("Configuration file not found: {$this->file->fullName()}");
         }
     }
 
-    public function read(): Collection
+    public function read(): File
     {
         $content = $this->content();
 
-        return Section::parse(collect()
+        $this->file->setRaw($content);
+
+        $parse = collect()
             ->merge(RichComment::parse($content))
             ->merge(Value::parse($content))
-            ->merge(ArrayBlock::parse($content))
-            ->sortBy->startLine()
-            ->values()->toArray());
+            ->merge(ArrayBlock::parse($content));
+
+        $sorted = $parse->sortBy->startLine()->values();
+
+        $sections = Section::parse($sorted->toArray());
+
+        $sections->each(fn ($node) => $this->file->addChild($node));
+
+        return $this->file;
     }
 
     public function content(): array
     {
-        $lines = file($this->file, FILE_IGNORE_NEW_LINES);
+        $lines = $this->file->lines();
 
         $start = null;
         $end = null;

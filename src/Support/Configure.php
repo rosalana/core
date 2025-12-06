@@ -2,7 +2,7 @@
 
 namespace Rosalana\Core\Support;
 
-use Rosalana\Core\Support\Configure\Node\Root;
+use Rosalana\Core\Support\Configure\Node\File;
 use Rosalana\Core\Support\Configure\Reader;
 use Rosalana\Core\Support\Configure\Writer;
 
@@ -12,38 +12,33 @@ use Rosalana\Core\Support\Configure\Writer;
  */
 class Configure
 {
-    protected Root $root;
-    
+    protected File $file;
+
     protected Reader $reader;
-    
+
     protected Writer $writer;
 
-    public function __construct(protected string $file)
+    public function __construct(string $file)
     {
+        $this->file = File::makeEmpty($file)->setParent($this);
+
         $this->reader = new Reader($this->file);
         $this->writer = new Writer($this->file);
-
-        $this->root = new Root($this);
     }
 
-    public static function file(string $name): Root
+    public static function file(string $name): File
     {
-        if (!str_ends_with($name, '.php')) $name .= '.php';
-
-        return (new self(config_path($name)))->read();
-    }
-
-    protected function read(): Root
-    {
-        $this->reader->read()
-            ->each(fn($node) => $this->root->addChild($node));
-
-        return $this->root;
+        return (new self($name))->reader->read();
     }
 
     public function save(): void
     {
-        $this->writer->write($this->root->nodes());
+        $this->writer->write();
+    }
+
+    public function toArray(): array
+    {
+        return $this->file->nodes()->map(fn($node) => $node->toArray())->toArray();
     }
 
     // pozor mělo by to posunout i všechny další nadcházející uzly
@@ -190,9 +185,4 @@ class Configure
     // //     $parts = explode('.', $path);
     // //     return $parts[array_key_last($parts)];
     // // }
-
-    public function toArray(): array
-    {
-        return $this->root->nodes()->map(fn($node) => $node->toArray())->toArray();
-    }
 }
