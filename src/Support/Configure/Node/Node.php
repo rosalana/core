@@ -281,6 +281,7 @@ abstract class Node implements NodeInterface
             'is_sub_node' => $this->isSubNode(),
             'parent' => $this->parent()?->key() ?? null,
             'was_created' => $this->isNew(),
+            'render' => $this->render(),
         ];
     }
 
