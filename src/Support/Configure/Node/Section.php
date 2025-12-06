@@ -84,6 +84,13 @@ class Section extends ParentNode
         return 1;
     }
 
+    public static function makeEmpty(string $key): static
+    {
+        $instance = parent::makeEmpty($key);
+        $instance->end += 1; // for closing bracket
+        return $instance;
+    }
+
     public function render(): array
     {
         $result = collect()
