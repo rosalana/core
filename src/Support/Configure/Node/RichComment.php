@@ -126,6 +126,11 @@ class RichComment extends Node
         ];
     }
 
+    public function padding(): int
+    {
+        return 1;
+    }
+
     public function render(): array
     {
         $result = collect();

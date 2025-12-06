@@ -79,6 +79,11 @@ class Section extends ParentNode
         return static::normalize($tree);
     }
 
+    public function padding(): int
+    {
+        return 1;
+    }
+
     public function render(): array
     {
         $result = collect()

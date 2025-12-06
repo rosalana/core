@@ -13,6 +13,11 @@ class File extends ParentNode
         return $nodes;
     }
 
+    public function padding(): int
+    {
+        return 0;
+    }
+
     public function render(): array
     {
         return [];

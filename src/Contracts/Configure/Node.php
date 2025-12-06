@@ -35,6 +35,13 @@ interface Node
     public static function parse(array $content): Collection;
 
     /**
+     * Number of blank lines to keep before this node.
+     *
+     * @return int
+     */
+    public function padding(): int;
+
+    /**
      * Render the node back to array of lines.
      * 
      * @internal
