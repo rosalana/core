@@ -20,7 +20,26 @@ class File extends ParentNode
 
     public function render(): array
     {
-        return $this->nodes()->map(fn($node) => $node->render())->toArray();
+        $result = [];
+
+        $this->nodes()->each(function ($node) use (&$result) {
+            $rendered = $node->render();
+            foreach ($rendered as $index => $content) {
+                $result[$index] = $content;
+            }
+        });
+
+        $maxIndex = max(array_keys($result));
+
+        for ($i = 0; $i <= $maxIndex; $i++) {
+            if (!array_key_exists($i, $result)) {
+                $result[$i] = '';
+            }
+        }
+
+        ksort($result);
+
+        return $result;
     }
 
     public static function makeEmpty(string $name): static
