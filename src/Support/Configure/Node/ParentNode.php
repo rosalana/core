@@ -32,11 +32,12 @@ abstract class ParentNode extends Node
     public function moveTo(int $line): self
     {
         $distance = abs($this->start() - $this->end());
+        $offset = $line - $this->start();
         $this->start = $line;
         $this->end = $line + $distance;
 
         foreach ($this->nodes as $node) {
-            $node->moveTo($node->start() + $distance);
+            $node->moveTo($node->start() + $offset);
         }
 
         return $this;
