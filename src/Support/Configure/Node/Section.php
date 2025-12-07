@@ -97,17 +97,30 @@ class Section extends ParentNode
 
         $result[$this->start()] = "'{$this->name()}' => [";
 
-        array_push($result, ...$this->nodes()->map(
-            fn($node) => $node->render()
-        )->flatten()->toArray());
+        $this->nodes()->each(function ($node) use (&$result) {
+            $rendered = $node->render();
+            foreach ($rendered as $index => $line) {
+                $result[$index] = $line;
+            }
+        });
 
         $result[$this->end()] = "],";
+
+        $minKey = min(array_keys($result));
 
         foreach ($result as $index => $line) {
             if (is_array($line)) continue;
 
             $result[$index] = str_repeat(' ', $this->parent()?->indent() ?? 0) . $line;
+
+            if (!array_key_exists($minKey, $result)) {
+                $result[$minKey] = '';
+            }
+
+            $minKey++;
         }
+
+        ksort($result);
 
         return $result;
     }
