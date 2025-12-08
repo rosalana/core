@@ -163,7 +163,7 @@ abstract class ParentNode extends Node
                 $node->moveTo($this->start + 1 + $node->padding());
             } else {
                 $lastChild = $this->nodes->last();
-                $node->moveTo($lastChild->end + 1 + $node->padding());
+                $node->moveTo($lastChild->end() + 1 + $node->padding());
             }
 
             $this->scaleUp($node->scale());
