@@ -45,9 +45,10 @@ abstract class ParentNode extends Node
 
     public function scaleUp(int $lines): self
     {
+        $siblingsToMove = $this->siblingsAfter();
         $this->end += $lines;
 
-        $this->siblingsAfter()
+        $siblingsToMove
             ->each(
                 fn($sibling) =>
                 $sibling->moveTo($sibling->start() + $lines)
@@ -62,9 +63,10 @@ abstract class ParentNode extends Node
 
     public function scaleDown(int $lines): self
     {
+        $siblingsToMove = $this->siblingsAfter();
         $this->end -= $lines;
 
-        $this->siblingsAfter()->each(
+        $siblingsToMove->each(
             fn($sibling) =>
             $sibling->moveTo($sibling->start() - $lines)
         );
@@ -156,7 +158,6 @@ abstract class ParentNode extends Node
         $node->setParent($this);
 
         if (! $ghost) {
-            $originalEnd = $this->end;
 
             if ($this->nodes->isEmpty()) {
                 $node->moveTo($this->start + 1 + $node->padding());
@@ -165,9 +166,7 @@ abstract class ParentNode extends Node
                 $node->moveTo($lastChild->end + 1 + $node->padding());
             }
 
-            $distance = $this->end - $originalEnd + $this->padding();
-
-            $this->scaleUp($distance);
+            $this->scaleUp($node->scale());
         }
 
         $this->nodes->push($node);

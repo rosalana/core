@@ -133,6 +133,11 @@ abstract class Node implements NodeInterface
         return $depths;
     }
 
+    public function scale(): int
+    {
+        return ($this->end - $this->start + 1) + ($this->padding() * 2);
+    }
+
     public function parent(): ParentNode|Configure|null
     {
         return $this->parent;
