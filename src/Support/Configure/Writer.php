@@ -27,10 +27,19 @@ class Writer
             array_shift($render);
         }
 
+        $prefix = $this->file->surroundingLines()['prefix'];
+        $suffix = $this->file->surroundingLines()['suffix'];
+
+        if (str_contains(array_last($prefix), '[]')) {
+            array_pop($prefix);
+            array_push($prefix, 'return [');
+            $suffix = ['];'];
+        }
+
         return array_merge(
-            $this->file->surroundingLines()['prefix'],
+            $prefix,
             $render,
-            $this->file->surroundingLines()['suffix'],
+            $suffix,
         );
     }
 }
