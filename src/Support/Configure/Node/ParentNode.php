@@ -157,14 +157,21 @@ abstract class ParentNode extends Node
 
         if (! $ghost) {
 
+            $extraPadding = 0;
+
             if ($this->nodes->isEmpty()) {
                 $node->moveTo($this->start + 1 + $node->padding());
-                $this->scaleUp($node->scale());
             } else {
                 $lastChild = $this->nodes->last();
-                $node->moveTo($lastChild->end() + 1 + $node->padding() + $lastChild->padding());
-                $this->scaleUp($node->scale() + $lastChild->padding());
+
+                if ($lastChild->padding() != $node->padding()) {
+                    $extraPadding = $lastChild->padding();
+                }
+
+                $node->moveTo($lastChild->end() + 1 + $node->padding() + $extraPadding);
             }
+
+            $this->scaleUp($node->scale() + $extraPadding);
         }
 
         $this->nodes->push($node);
