@@ -74,8 +74,14 @@ class Value extends Node
             $this->value = "'" . trim($this->value, "'\"") . "'";
         }
 
+        $comma = ',';
+
+        if ($this->isLastChild()) {
+            $comma = '';
+        }
+
         return [
-            $this->start() => str_repeat(' ', $this->parent()?->indent() ?? 0) . "'{$this->name()}' => {$this->value},",
+            $this->start() => str_repeat(' ', $this->parent()?->indent() ?? 0) . "'{$this->name()}' => {$this->value}{$comma}",
         ];
     }
 
