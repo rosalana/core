@@ -288,6 +288,29 @@ abstract class Node implements NodeInterface
         return $this;
     }
 
+    public function moveUp(): self
+    {
+        $beforeNode = $this->siblingsBefore()->last();
+
+        if (! $beforeNode) return $this;
+
+        $this->moveTo($beforeNode->start());
+        $beforeNode->moveTo($this->start() + (max(2, $this->scale() - $this->padding())));
+
+        return $this;
+    }
+
+    public function moveDown(): self
+    {
+        $afterNode = $this->siblingsAfter()->first();
+
+        if (! $afterNode) return $this;
+
+        $afterNode->moveUp();
+
+        return $this;
+    }
+
     // TODO
     public function remove(): NodeInterface
     {
