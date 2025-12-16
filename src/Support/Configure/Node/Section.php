@@ -125,6 +125,15 @@ class Section extends ParentNode
         return $result;
     }
 
+    public function section(string $key): Section
+    {
+        if (str_contains($key, '.') && $this !== $this->root()) {
+            return $this->root()->section($key);
+        }
+
+        return parent::section($key);
+    }
+
     /**
      * Create a rich or simple comment node.
      * If description is provided, a rich comment is created.

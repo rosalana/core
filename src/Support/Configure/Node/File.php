@@ -94,4 +94,20 @@ class File extends ParentNode
     {
         return file_exists($this->path);
     }
+
+    public function section(string $key): Section
+    {
+        if (str_contains($key, '.')) {
+            $parts = explode('.', $key);
+            $instance = $this;
+
+            foreach ($parts as $part) {
+                $instance = $instance->section($part);
+            }
+
+            return $instance;
+        }
+
+        return parent::section($key);
+    }
 }
