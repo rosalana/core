@@ -114,7 +114,7 @@ abstract class ParentNode extends Node
      * @param string $key
      * @return Value
      */
-    public function value(string $key): Value
+    public function value(string $key, ?string $addValue = null): Value
     {
         $node = $this->getChild($key);
 
@@ -124,6 +124,10 @@ abstract class ParentNode extends Node
 
         $value = Value::makeEmpty($key);
         $this->addChild($value);
+
+        if (! is_null($addValue)) {
+            $value->add($addValue);
+        }
 
         return $value;
     }
