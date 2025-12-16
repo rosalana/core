@@ -141,9 +141,7 @@ abstract class ParentNode extends Node
      */
     public function indent(): int
     {
-        $depth = $this->path() ? count(explode('.', $this->path())) : 0;
-
-        return ($depth + 1) * 4;
+        return 4;
     }
 
     /**
