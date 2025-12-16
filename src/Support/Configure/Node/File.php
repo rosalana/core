@@ -102,6 +102,7 @@ class File extends ParentNode
             $instance = $this;
 
             foreach ($parts as $part) {
+                if ($part === '') continue;
                 $instance = $instance->section($part);
             }
 
