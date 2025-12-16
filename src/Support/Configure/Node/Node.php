@@ -241,6 +241,11 @@ abstract class Node implements NodeInterface
         return $this->siblings()->filter(fn($node) => $node->start() > $this->end());
     }
 
+    public function siblingsBefore(): Collection
+    {
+        return $this->siblings()->filter(fn($node) => $node->end() < $this->start());
+    }
+
     // TODO
     public function keepStart(): NodeInterface
     {
