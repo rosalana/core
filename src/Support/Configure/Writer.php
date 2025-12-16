@@ -2,7 +2,6 @@
 
 namespace Rosalana\Core\Support\Configure;
 
-use Illuminate\Support\Collection;
 use Rosalana\Core\Support\Configure\Node\File;
 
 class Writer
@@ -18,56 +17,20 @@ class Writer
     {
         $render = $this->file->render();
 
-        dd($render);
+        $this->file->insert($this->render($render));
     }
 
-    protected function render(Collection $nodes): array
+    protected function render(array $render): array
     {
-        $result = [];
-
-        foreach ($nodes as $index => $node) {
-            $result[$index] = $node->render();
+        // Remove empty lines from the beginning of render
+        while (!empty($render) && trim($render[0]) === '') {
+            array_shift($render);
         }
 
-        $this->flatWithOriginalKeys($result);
-        $this->pushEmptyLineToMissingIndex($result);
-
-        return $result;
-    }
-
-    protected function flatWithOriginalKeys(array &$array): void
-    {
-        $result = [];
-
-        $iterator = function ($value) use (&$result, &$iterator) {
-            if (is_array($value)) {
-                foreach ($value as $k => $v) {
-                    if (is_array($v)) {
-                        $iterator($v);
-                        continue;
-                    }
-
-                    // Pokud index už existuje -> je to bug v render() některého nodeu
-                    $result[$k] = $v;
-                }
-            }
-        };
-
-        $iterator($array);
-
-        $array = $result;
-    }
-
-    protected function pushEmptyLineToMissingIndex(array &$array): void
-    {
-        $maxIndex = max(array_keys($array));
-
-        for ($i = 0; $i <= $maxIndex; $i++) {
-            if (!array_key_exists($i, $array)) {
-                $array[$i] = '';
-            }
-        }
-
-        ksort($array);
+        return array_merge(
+            $this->file->surroundingLines()['prefix'],
+            $render,
+            $this->file->surroundingLines()['suffix'],
+        );
     }
 }

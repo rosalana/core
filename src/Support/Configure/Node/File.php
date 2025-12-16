@@ -90,6 +90,33 @@ class File extends ParentNode
         return file($this->path, FILE_IGNORE_NEW_LINES);
     }
 
+    public function insert(array $content): void
+    {
+        file_put_contents($this->path, implode(PHP_EOL, $content));
+    }
+
+    public function surroundingLines(): array
+    {
+        $lines = [];
+
+        foreach ($this->lines() as $i => $line) {
+            if (preg_match('/return\s*\[/i', $line)) {
+                $lines['prefix'] = array_slice($this->lines(), 0, $i + 1);
+                break;
+            }
+        }
+
+        for ($i = array_key_last($this->lines()); $i >= 0; $i--) {
+            if (preg_match('/\];\s*$/', trim($this->lines()[$i]))) {
+                $lines['suffix'] = array_slice($this->lines(), $i);
+                break;
+            }
+        }
+
+        return $lines;
+    }
+
+
     public function exists(): bool
     {
         return file_exists($this->path);
