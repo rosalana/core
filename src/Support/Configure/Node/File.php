@@ -29,6 +29,8 @@ class File extends ParentNode
             }
         });
 
+        if (empty($result)) return $result;
+
         $maxIndex = max(array_keys($result));
 
         for ($i = 0; $i <= $maxIndex; $i++) {
@@ -69,8 +71,8 @@ class File extends ParentNode
     public function setRaw(array $raw): self
     {
         $this->raw = $raw;
-        $this->start = array_key_first($raw);
-        $this->end = array_key_last($raw);
+        $this->start = array_key_first($raw) ?? 0;
+        $this->end = array_key_last($raw) ?? 0;
 
         return $this;
     }
