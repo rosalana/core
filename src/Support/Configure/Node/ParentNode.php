@@ -135,7 +135,7 @@ abstract class ParentNode extends Node
     }
 
     /**
-     * Get the number of spaces for child nodes indentation.
+     * Get the number of spaces for tab.
      * 
      * @return int
      */
