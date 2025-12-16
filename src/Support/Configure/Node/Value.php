@@ -70,9 +70,30 @@ class Value extends Node
 
     public function render(): array
     {
+        if ($this->getValueDataType() === 'string' && !preg_match('/^([\'"]).*\1$/', $this->value)) {
+            $this->value = "'" . trim($this->value, "'\"") . "'";
+        }
+
         return [
             $this->start() => str_repeat(' ', $this->parent()?->indent() ?? 0) . "'{$this->name()}' => {$this->value},",
         ];
+    }
+
+    protected function getValueDataType(): string
+    {
+        if (is_numeric($this->value)) {
+            return 'number';
+        }
+
+        if (in_array(strtolower($this->value), ['true', 'false'], true)) {
+            return 'boolean';
+        }
+
+        if (str_starts_with($this->value, '[') && str_ends_with($this->value, ']')) {
+            return 'array';
+        }
+
+        return 'string';
     }
 
     public function add(string $value): self
