@@ -198,6 +198,24 @@ abstract class Node implements NodeInterface
         return $this->parent === $node;
     }
 
+    public function isLastChild(): bool
+    {
+        if ($this->parent() instanceof ParentNode) {
+            return $this->parent()->nodes()->last() === $this;
+        }
+
+        return false;
+    }
+
+    public function isFirstChild(): bool
+    {
+        if ($this->parent() instanceof ParentNode) {
+            return $this->parent()->nodes()->first() === $this;
+        }
+
+        return false;
+    }
+
     /**
      * Indicates whether the node was newly created and 
      * does not yet exist in the configuration file.
