@@ -9,6 +9,10 @@ use Rosalana\Core\Support\Configure\Writer;
 /**
  * Pravděpodobně bude potřeba udělat value a array value,
  * protože array value může být na více řádků a je potřeba trochu jinak držovat depth a nebude fungovat indexRender přesně
+ * 
+ * 
+ * Removing nodes ještě nefunguje. Nefunguje spravně posouvání dalších nodů
+ * - jinak mažeme asi tím $this->parent()->removeChild($this);
  */
 class Configure
 {

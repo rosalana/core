@@ -372,10 +372,9 @@ abstract class Node implements NodeInterface
         return $this;
     }
 
-    // TODO
-    public function remove(): NodeInterface
+    public function remove(): ParentNode
     {
-        return $this->parent();
+        return $this->parent()->removeChild($this);
     }
 
     public function toArray(): array
