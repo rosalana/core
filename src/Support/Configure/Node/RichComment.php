@@ -6,12 +6,21 @@ use Illuminate\Support\Collection;
 
 class RichComment extends Node
 {
-    protected string $label;
+    protected string $label = '';
     protected ?string $description = null;
 
     public function __construct(int $start, int $end, array $raw)
     {
         parent::__construct($start, $end, $raw);
+    }
+
+    public static function makeEmpty(string $label, ?string $description = null): static
+    {
+        $instance = parent::makeEmpty('richcomment_' . bin2hex(random_bytes(4)));
+        $instance->setLabel($label);
+        $instance->setDescription($description);
+
+        return $instance;
     }
 
     public static function parse(array $content): Collection

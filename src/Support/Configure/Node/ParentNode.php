@@ -132,10 +132,19 @@ abstract class ParentNode extends Node
         return $value;
     }
 
-    /** @todo implement comments properly */
-    public function comment(string $key, string $description): RichComment
+    /**
+     * Get or create a RichComment node by key.
+     * 
+     * @param string $key
+     * @param string|null $description
+     * @return RichComment
+     */
+    public function comment(string $key, ?string $description = null): RichComment
     {
-        return RichComment::makeEmpty($key)->setDescription($description);
+        $comment = RichComment::makeEmpty($key, $description);
+        $this->addChild($comment);
+
+        return $comment;
     }
 
     /**
