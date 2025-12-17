@@ -140,4 +140,83 @@ class File extends ParentNode
 
         return parent::section($key);
     }
+
+    public function diff(): array
+    {
+        $raw = $this->raw();
+
+        $render = $this->render();
+        $render = $this->trimLeadingEmptyLines($render);
+
+        return $this->computeDiff($raw, $render);
+    }
+
+
+    public function computeDiff(array $raw, array $render): array
+    {
+        $diff = [];
+
+        $allKeys = array_unique(array_merge(
+            array_keys($raw),
+            array_keys($render)
+        ));
+
+        sort($allKeys);
+
+        foreach ($allKeys as $line) {
+
+            $oldExists = array_key_exists($line, $raw);
+            $newExists = array_key_exists($line, $render);
+
+            if ($oldExists && !$newExists) {
+                $diff[$line] = [
+                    'type' => 'removed',
+                    'old'  => $raw[$line],
+                    'new'  => null,
+                ];
+                continue;
+            }
+
+            if (!$oldExists && $newExists) {
+                $diff[$line] = [
+                    'type' => 'added',
+                    'old'  => null,
+                    'new'  => $render[$line],
+                ];
+                continue;
+            }
+
+            if ($raw[$line] !== $render[$line]) {
+                $diff[$line] = [
+                    'type' => 'changed',
+                    'old'  => $raw[$line],
+                    'new'  => $render[$line],
+                ];
+            }
+        }
+
+        return $diff;
+    }
+
+    protected function trimLeadingEmptyLines(array $array): array
+    {
+        $firstContentKey = null;
+
+        foreach ($array as $key => $line) {
+            if ($line !== '') {
+                $firstContentKey = $key;
+                break;
+            }
+        }
+
+        if ($firstContentKey === null) {
+            return $array;
+        }
+
+        return array_filter(
+            $array,
+            fn($_, $k) => $k >= $firstContentKey,
+            ARRAY_FILTER_USE_BOTH
+        );
+    }
 }
