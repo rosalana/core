@@ -134,6 +134,15 @@ class Section extends ParentNode
         return parent::section($key);
     }
 
+    public function value(string $key, ?string $addValue = null): Value
+    {
+        if (str_contains($key, '.') && $this !== $this->root()) {
+            return $this->root()->value($key, $addValue);
+        }
+
+        return parent::value($key, $addValue);
+    }
+
     /**
      * Create a rich or simple comment node.
      * If description is provided, a rich comment is created.
