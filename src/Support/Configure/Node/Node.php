@@ -203,6 +203,11 @@ abstract class Node implements NodeInterface
         return $this->parent === $node;
     }
 
+    public function isSiblingOf(NodeInterface $node): bool
+    {
+        return $this->parent === $node->parent();
+    }
+
     public function isLastChild(): bool
     {
         if ($this->parent() instanceof ParentNode) {
