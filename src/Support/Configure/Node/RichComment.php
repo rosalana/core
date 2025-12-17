@@ -19,6 +19,7 @@ class RichComment extends Node
         $instance = parent::makeEmpty('richcomment_' . bin2hex(random_bytes(4)));
         $instance->setLabel($label);
         $instance->setDescription($description);
+        $instance->end += 4 + ($description ? (count(explode("\n", $description)) + 2) : 0);
 
         return $instance;
     }

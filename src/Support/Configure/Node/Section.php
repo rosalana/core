@@ -148,13 +148,20 @@ class Section extends ParentNode
      * If description is provided, a rich comment is created.
      * Otherwise, a simple comment is created.
      */
-    public function withComment(string $label, ?string $description = null): Node
+    public function withComment(string $label, ?string $description = null): self
     {
-        if ($description) {
-            return new RichComment(0, 0, [], $label, $description);
+        if ($this->siblingsBefore()->last() instanceof RichComment) {
+            $this->siblingsBefore()->last()
+                ->setLabel($label)
+                ->setDescription($description);
+        } else {
+            $comment = RichComment::makeEmpty($label, $description);
+
+            $this->parent()->addChild($comment);
+            $comment->before($this);
         }
 
-        return new RichComment(0, 0, [], $label, null); // for now
+        return $this;
     }
 
     public static function normalize(array $tree): Collection
