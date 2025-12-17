@@ -142,22 +142,6 @@ interface Node
     public function keepEnd(): self;
 
     /**
-     * Move node before another node in the parent nodes list.
-     * 
-     * @param Node|string $node
-     * @return self
-     */
-    public function before(Node|string $node): self;
-
-    /**
-     * Move node after another node in the parent nodes list.
-     * 
-     * @param Node|string $node
-     * @return self
-     */
-    public function after(Node|string $node): self;
-
-    /**
      * Remove the node from the parent nodes list.
      * 
      * @return Node
