@@ -41,6 +41,11 @@ abstract class Node implements NodeInterface
         return $this->key;
     }
 
+    public function is(Node $node): bool
+    {
+        return $this === $node;
+    }
+
     /**
      * Set the key of the node.
      * 
@@ -216,6 +221,16 @@ abstract class Node implements NodeInterface
         return false;
     }
 
+    public function isNextBefore(Node $node): bool
+    {
+        return $this->siblingsBefore()->last()?->is($node) ?? false;
+    }
+
+    public function isNextAfter(Node $node): bool
+    {
+        return $this->siblingsAfter()->first()?->is($node) ?? false;
+    }
+
     /**
      * Indicates whether the node was newly created and 
      * does not yet exist in the configuration file.
@@ -264,27 +279,69 @@ abstract class Node implements NodeInterface
         return $this->siblings()->filter(fn($node) => $node->end() < $this->start());
     }
 
-    // TODO
-    public function keepStart(): NodeInterface
+    public function keepStart(): self
     {
-        return $this;
+        return $this->before($this->siblings()->first());
     }
 
-    // TODO
     public function keepEnd(): self
     {
+        return $this->after($this->siblings()->last());
+    }
+
+    public function before(Node|string $node): self
+    {
+        if (is_string($node)) {
+            $node = $this->parent()->getChild($node);
+        }
+
+        if (! $node || ! $this->isSiblingOf($this)) return $this;
+
+        $direction = $this->start() < $node->start() ? 'down' : 'up';
+
+        while (! $this->isNextAfter($node)) {
+            if ($direction === 'down') {
+                $this->moveDown();
+                if ($this->isLastChild()) break;
+            } else {
+                $this->moveUp();
+                if ($this->isFirstChild()) break;
+            }
+        }
+
         return $this;
     }
 
-    // TODO
-    public function before(NodeInterface|string $node): self
+    public function after(Node|string $node): self
     {
+        if (is_string($node)) {
+            $node = $this->parent()->getChild($node);
+        }
+
+        if (! $node || ! $this->isSiblingOf($this)) return $this;
+
+        $direction = $this->start() < $node->start() ? 'down' : 'up';
+
+        while (! $this->isNextBefore($node)) {
+            if ($direction === 'down') {
+                $this->moveDown();
+                if ($this->isLastChild()) break;
+            } else {
+                $this->moveUp();
+                if ($this->isFirstChild()) break;
+            }
+        }
+
         return $this;
     }
 
-    // TODO
-    public function after(NodeInterface|string $node): self
+    protected function swapPosition(Node $node): self
     {
+        $paddingDiff = $this->padding() != $node->padding();
+
+        $this->moveTo($node->start() + ($paddingDiff ? $this->padding() : 0));
+        $node->moveTo($this->start() + $this->scale() - $this->padding() + ($paddingDiff ? $node->padding() : 0));
+
         return $this;
     }
 
@@ -294,8 +351,7 @@ abstract class Node implements NodeInterface
 
         if (! $beforeNode) return $this;
 
-        $this->moveTo($beforeNode->start());
-        $beforeNode->moveTo($this->start() + (max(2, $this->scale() - $this->padding())));
+        $this->swapPosition($beforeNode);
 
         return $this;
     }
@@ -306,7 +362,7 @@ abstract class Node implements NodeInterface
 
         if (! $afterNode) return $this;
 
-        $afterNode->moveUp();
+        $afterNode->swapPosition($this);
 
         return $this;
     }
