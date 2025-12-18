@@ -192,6 +192,10 @@ abstract class ParentNode extends Node
 
             $node->moveTo($cursor);
             $cursor += $node->scale() - ($node->padding() * 2);
+
+            if ($index === $reordered->count() - 1) {
+                $cursor += $node->padding();
+            }
         }
 
         if ($cursor < $this->end()) {
