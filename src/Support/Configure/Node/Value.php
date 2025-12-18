@@ -93,6 +93,14 @@ class Value extends Node
             return 'array';
         }
 
+        if (preg_match('/^\w+\([^)]*\)/', $this->value)) {
+            return 'function';
+        }
+
+        if (preg_match('/^[\w\\\\]+::class$/', $this->value)) {
+            return 'class';
+        }
+
         return 'string';
     }
 
