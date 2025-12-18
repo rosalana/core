@@ -233,7 +233,7 @@ class Section extends ParentNode
             ->map(
                 fn($node) => $node instanceof Section
                     ? static::computeEnd($node->nodes())
-                    : $node->endLine()
+                    : $node->end()
             )
             ->filter(fn($v) => $v > 0);
 
