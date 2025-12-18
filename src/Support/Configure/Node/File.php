@@ -145,17 +145,17 @@ class File extends ParentNode
     {
         if (str_contains($key, '.')) {
             $parts = explode('.', $key);
-            $sectionsInWay = array_slice($parts, 0, -1);
-            $valueName = array_pop($parts);
+            $path = array_slice($parts, 0, -1);
+            $name = array_pop($parts);
 
             $parent = $this;
 
-            foreach ($sectionsInWay as $section) {
+            foreach ($path as $section) {
                 if ($section === '') continue;
                 $parent = $parent->section($section);
             }
 
-            return $parent->value($valueName, $addValue);
+            return $parent->value($name, $addValue);
         }
 
         return parent::value($key, $addValue);
