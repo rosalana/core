@@ -88,6 +88,23 @@ abstract class ParentNode extends Node
         return $this->nodes;
     }
 
+    protected function reordered(Node|self $a, Node|self $b): Collection
+    {
+        $nodes = $this->nodes->values();
+
+        $i = $nodes->search($a);
+        $j = $nodes->search($b);
+
+        if ($i === false || $j === false) {
+            return collect();
+        }
+
+        $nodes[$i] = $b;
+        $nodes[$j] = $a;
+
+        return $nodes;
+    }
+
     /**
      * Get or create a Section node by key.
      * 
@@ -155,6 +172,39 @@ abstract class ParentNode extends Node
     public function indent(): int
     {
         return 4;
+    }
+
+    public function swapChildren(Node|self $first, Node|self $second): self
+    {
+        $cursor = $this->start();
+
+        if ($this instanceof Section) {
+            $cursor += 1; // account for opening brace
+        }
+
+        $reordered = $this->reordered($first, $second);
+
+        foreach ($reordered as $index => $node) {
+            if ($index > 0) {
+                $previous = $reordered[$index - 1];
+                $cursor += max($previous->padding(), $node->padding());
+            }
+
+            $node->moveTo($cursor);
+            $cursor += $node->scale() - ($node->padding() * 2);
+        }
+
+        if ($cursor < $this->end()) {
+            $this->scaleDown($this->end() - $cursor);
+        }
+
+        if ($cursor > $this->end()) {
+            $this->scaleUp($cursor - $this->end());
+        }
+
+        $this->nodes = $reordered->values();
+
+        return $this;
     }
 
     /**

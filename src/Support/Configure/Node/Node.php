@@ -340,14 +340,9 @@ abstract class Node implements NodeInterface
         return $this;
     }
 
-    protected function swapPosition(Node $node): self
+    protected function swapWith(Node $other): void
     {
-        $paddingDiff = $this->padding() != $node->padding();
-
-        $this->moveTo($node->start() + ($paddingDiff ? $this->padding() : 0));
-        $node->moveTo($this->start() + $this->scale() - $this->padding() + ($paddingDiff ? $node->padding() : 0));
-
-        return $this;
+        $this->parent()->swapChildren($this, $other);
     }
 
     public function moveUp(): self
@@ -356,7 +351,7 @@ abstract class Node implements NodeInterface
 
         if (! $beforeNode) return $this;
 
-        $this->swapPosition($beforeNode);
+        $this->swapWith($beforeNode);
 
         return $this;
     }
@@ -367,7 +362,7 @@ abstract class Node implements NodeInterface
 
         if (! $afterNode) return $this;
 
-        $afterNode->swapPosition($this);
+        $afterNode->swapWith($this);
 
         return $this;
     }
