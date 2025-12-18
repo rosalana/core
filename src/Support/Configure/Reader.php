@@ -2,6 +2,7 @@
 
 namespace Rosalana\Core\Support\Configure;
 
+use Rosalana\Core\Support\Configure\Node\Comment;
 use Rosalana\Core\Support\Configure\Node\ContextHelper;
 use Rosalana\Core\Support\Configure\Node\File;
 use Rosalana\Core\Support\Configure\Node\RichComment;
@@ -25,6 +26,7 @@ class Reader
 
         $parse = collect()
             ->merge(RichComment::parse($content))
+            ->merge(Comment::parse($content))
             ->merge(Value::parse($content))
             ->merge(ContextHelper::parse($content));
 
