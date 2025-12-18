@@ -74,6 +74,24 @@ class Section extends ParentNode
 
                 unset($current);
             }
+
+            if ($node instanceof Comment) {
+                $parts = explode('.', $node->key());
+                $current = &$tree;
+
+                foreach ($parts as $i => $segment) {
+                    if ($i === count($parts) - 1) {
+                        $current[$segment] = $node;
+                    } else {
+                        if (!isset($current[$segment]) || !is_array($current[$segment])) {
+                            $current[$segment] = [];
+                        }
+                        $current = &$current[$segment];
+                    }
+                }
+
+                unset($current);
+            }
         }
 
         return static::normalize($tree);
