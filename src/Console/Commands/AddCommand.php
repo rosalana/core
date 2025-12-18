@@ -4,6 +4,7 @@ namespace Rosalana\Core\Console\Commands;
 
 use Illuminate\Console\Command;
 use Laravel\Prompts\Concerns\Colors;
+use Rosalana\Configure\Configure;
 use Rosalana\Core\Services\Package;
 use Rosalana\Core\Support\Config;
 
@@ -86,8 +87,11 @@ class AddCommand extends Command
                 }
         }, $processLabel);
 
-
-        Config::get('published')->add($package->name, "null")->save();
+        Configure::file('rosalana')
+            ->section('.published')
+            ->value($package->name, "null")->withComment(
+                "Package {$package->name} installed on " . now()->toDateTimeString()
+            )->save();
 
         $this->components->success("{$package->name} has been installed");
     }

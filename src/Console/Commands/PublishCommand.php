@@ -4,6 +4,7 @@ namespace Rosalana\Core\Console\Commands;
 
 use Illuminate\Console\Command;
 use Laravel\Prompts\Concerns\Colors;
+use Rosalana\Configure\Configure;
 use Rosalana\Core\PackageStatus;
 use Rosalana\Core\Services\Package;
 use Rosalana\Core\Support\Config;
@@ -90,10 +91,14 @@ class PublishCommand extends Command
                 $publishOptions[$searchOptions]['run']();
             }
 
-            Config::get('published')
-                ->set($package->name, var_export($package->installedVersion, true))
+            Configure::file('rosalana')
+                ->section('.published')
+                ->value($package->name, var_export($package->installedVersion, true))
+                ->withComment(
+                    "Package {$package->name} published on " . now()->toDateTimeString()
+                )
                 ->save();
-                
+
         }, "Publishing $searchOptions for $package->name");
 
 
