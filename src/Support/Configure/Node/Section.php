@@ -143,23 +143,16 @@ class Section extends ParentNode
         return parent::value($key, $addValue);
     }
 
-    /**
-     * Create a rich or simple comment node.
-     * If description is provided, a rich comment is created.
-     * Otherwise, a simple comment is created.
-     */
     public function withComment(string $label, ?string $description = null): self
     {
         if ($this->siblingsBefore()->last() instanceof RichComment) {
-            $this->siblingsBefore()->last()
-                ->setLabel($label)
-                ->setDescription($description);
-        } else {
-            $comment = RichComment::makeEmpty($label, $description);
-
-            $this->parent()->addChild($comment);
-            $comment->before($this);
+            $this->siblingsBefore()->last()->remove();
         }
+
+        $comment = RichComment::makeEmpty($label, $description);
+        $this->parent()->addChild($comment);
+
+        $comment->before($this);
 
         return $this;
     }
