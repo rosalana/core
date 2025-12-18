@@ -83,8 +83,8 @@ class RemoveCommand extends Command
 
         $value = Configure::file('rosalana')->section('.published')->value($package->name);
 
-        if ($value->isEmpty()) {
-            $value->remove()->save();
+        if ($value->isNull()) {
+            $value->withComment('')->remove()->remove()->save();
         }
 
         $this->components->success("Package {$package->name} removed successfully");
