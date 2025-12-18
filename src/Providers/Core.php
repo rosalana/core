@@ -3,6 +3,7 @@
 namespace Rosalana\Core\Providers;
 
 use Illuminate\Support\Facades\Artisan;
+use Rosalana\Configure\Configure;
 use Rosalana\Core\Console\InternalCommands;
 use Rosalana\Core\Contracts\Package;
 use Rosalana\Core\Support\Config;
@@ -27,42 +28,42 @@ class Core implements Package
                         '--tag' => "rosalana-config"
                     ]);
 
-                    Config::new('published')
-                        ->comment(
-                            'List of all published Rosalana packages. This array is used to determine which packages have been installed and which version is currently active. This section is managed automatically. DO NOT EDIT THIS MANUALLY.',
-                            'Published Packages'
+                    Configure::file('rosalana')
+                        ->section('.published')
+                        ->withComment(
+                            'Published Rosalana Packages',
+                            "List of all published Rosalana packages. \nThis array is used to determine which packages have been installed and which version is currently active. \nThis section is managed automatically. \n\nDO NOT EDIT THIS MANUALLY."
                         )
-                        ->save();
 
-                    Config::new('basecamp')
-                        ->add('url', "env('ROSALANA_BASECAMP_URL', 'http://localhost:8000')")
-                        ->add('secret', "env('ROSALANA_APP_SECRET', 'secret')")
-                        ->add('id', "env('ROSALANA_APP_ID', 'rosalana-app-01')")
-                        ->add('name', "env('ROSALANA_APP_NAME', 'app-name-on-basecamp')")
-                        ->add('version', "'v1'")
-                        ->comment(
-                            'Defines how your application connects to the central Rosalana Basecamp server, which manages shared data and communication across the ecosystem.',
-                            'Basecamp Connection'
+                        ->section('.basecamp')
+                        ->withComment(
+                            'Basecamp Connection',
+                            "Defines how your application connects to the central Rosalana Basecamp server, \nwhich manages shared data and communication across the ecosystem."
                         )
-                        ->save();
+                        ->value('url', "env('ROSALANA_BASECAMP_URL', 'http://localhost:8000')")
+                        ->value('secret', "env('ROSALANA_APP_SECRET', 'secret')")
+                        ->value('id', "env('ROSALANA_APP_ID', 'rosalana-app-01')")
+                        ->value('name', "env('ROSALANA_APP_NAME', 'app-name-on-basecamp')")
+                        ->value('version', "v1")
 
-                    Config::new('outpost')
-                        ->add('connection', "'redis'")
-                        ->add('queue', "'outpost'")
-                        ->comment(
-                            'Configuration for Rosalana Outpost, the global message broker used for asynchronous app-to-app communication. All packets are dispatched to Redis queues using this setup. Each application listens to its own dedicated queue based on this prefix.',
-                            'Outpost Message Broker'
+                        ->section('.outpost')
+                        ->withComment(
+                            'Outpost Message Broker',
+                            "Configuration for Rosalana Outpost, the global message broker used for asynchronous app-to-app communication. \nAll packets are dispatched to Redis queues using this setup. Each application listens to \nits own dedicated queue based on this prefix.",
                         )
-                        ->save();
-                    
-                    Config::new('revizor')
-                        ->add('active_tickets', "config('rosalana.basecamp.url') . '.well-known/tickets'")
-                        ->add('signature_ttl', '60')
-                        ->add('cache_prefix', "'revizor_signatures_'")
-                        ->comment(
-                            'Configuration for Revizor, the authentication system for A2A communication within the Rosalana ecosystem.',
-                            'Revizor Authentication'
+                        ->value('connection', "redis")
+                        ->value('queue', "outpost")
+
+
+                        ->section('.revizor')
+                        ->withComment(
+                            'Revizor Authentication',
+                            "Configuration for Revizor, the authentication system for \nA2A communication within the Rosalana ecosystem.",
                         )
+                        ->value('active_tickets', "config('rosalana.basecamp.url') . '.well-known/tickets'")
+                        ->value('signature_ttl', '60')
+                        ->value('cache_prefix', "revizor_signatures_")
+
                         ->save();
                 }
             ],
