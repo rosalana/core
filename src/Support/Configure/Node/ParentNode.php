@@ -174,39 +174,25 @@ abstract class ParentNode extends Node
         return 4;
     }
 
-    public function swapChildren(Node|self $first, Node|self $second): self
+    public function swapChildren(Node|self $first, Node|self $second, bool $ghost = false): self
     {
-        $cursor = $this->start();
+        $nodes = $this->nodes->values();
 
-        if ($this instanceof Section) {
-            $cursor += 1; // account for opening brace
+        $i = $nodes->search($first);
+        $j = $nodes->search($second);
+
+        if ($i === false || $j === false) {
+            return $this;
         }
 
-        $reordered = $this->reordered($first, $second);
+        $nodes[$i] = $second;
+        $nodes[$j] = $first;
 
-        foreach ($reordered as $index => $node) {
-            if ($index > 0) {
-                $previous = $reordered[$index - 1];
-                $cursor += max($previous->padding(), $node->padding());
-            }
+        $this->nodes = $nodes->values();
 
-            $node->moveTo($cursor);
-            $cursor += $node->scale() - ($node->padding() * 2);
-
-            if ($index === $reordered->count() - 1) {
-                $cursor += $node->padding();
-            }
+        if (! $ghost) {
+            $this->reflow();
         }
-
-        if ($cursor < $this->end()) {
-            $this->scaleDown($this->end() - $cursor);
-        }
-
-        if ($cursor > $this->end()) {
-            $this->scaleUp($cursor - $this->end());
-        }
-
-        $this->nodes = $reordered->values();
 
         return $this;
     }
@@ -222,26 +208,11 @@ abstract class ParentNode extends Node
     {
         $node->setParent($this);
 
-        if (! $ghost) {
-
-            $extraPadding = 0;
-
-            if ($this->nodes->isEmpty()) {
-                $node->moveTo($this->start + 1 + $node->padding());
-            } else {
-                $lastChild = $this->nodes->last();
-
-                if ($lastChild->padding() != $node->padding()) {
-                    $extraPadding = $lastChild->padding();
-                }
-
-                $node->moveTo($lastChild->end() + 1 + $node->padding() + $extraPadding);
-            }
-
-            $this->scaleUp($node->scale() + $extraPadding);
-        }
-
         $this->nodes->push($node);
+
+        if (! $ghost) {
+            $this->reflow();
+        }
 
         return $this;
     }
@@ -257,14 +228,11 @@ abstract class ParentNode extends Node
     {
         if (! $this->hasChild($node)) return $this;
 
-        if (! $ghost) {
-
-            $node->keepEnd();
-
-            $this->scaleDown($node->scale());
-        }
-
         $this->nodes = $this->nodes->reject(fn($n) => $n === $node)->values();
+
+        if (! $ghost) {
+            $this->reflow();
+        }
 
         return $this;
     }
@@ -277,15 +245,48 @@ abstract class ParentNode extends Node
      */
     public function clearChildren(bool $ghost = false): self
     {
-        if (! $ghost) {
-            $distance = abs($this->start() - $this->end()) - 1;
-
-            $this->scaleDown($distance);
-        }
-
         $this->nodes = collect();
 
+        if (! $ghost) {
+            $this->reflow();
+        }
+
         return $this;
+    }
+
+    protected function reflow(): void
+    {
+        $cursor = $this->start();
+
+        if ($this instanceof Section) {
+            $cursor += 1; // account for opening brace
+        }
+
+        foreach ($this->nodes as $index => $node) {
+            if ($index === 0) {
+                $cursor += $node->padding();
+            }
+
+            if ($index > 0) {
+                $previous = $this->nodes[$index - 1];
+                $cursor += max($previous->padding(), $node->padding());
+            }
+
+            $node->moveTo($cursor);
+            $cursor += $node->scale() - ($node->padding() * 2);
+
+            if ($index === $this->nodes->count() - 1) {
+                $cursor += $node->padding();
+            }
+        }
+
+        if ($cursor < $this->end()) {
+            $this->scaleDown($this->end() - $cursor);
+        }
+
+        if ($cursor > $this->end()) {
+            $this->scaleUp($cursor - $this->end());
+        }
     }
 
     /**
