@@ -82,6 +82,11 @@ class File extends ParentNode
         return $this; // maybe in future
     }
 
+    public function remove(): self
+    {
+        return $this; // not available
+    }
+
     public function path(): string
     {
         return '';
