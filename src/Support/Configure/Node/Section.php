@@ -15,7 +15,7 @@ class Section extends ParentNode
 
         foreach ($nodes as $node) {
 
-            if ($node instanceof ArrayBlock) {
+            if ($node instanceof ContextHelper) {
                 $parts = explode('.', $node->key());
                 $current = &$tree;
 

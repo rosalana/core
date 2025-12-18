@@ -2,7 +2,7 @@
 
 namespace Rosalana\Core\Support\Configure;
 
-use Rosalana\Core\Support\Configure\Node\ArrayBlock;
+use Rosalana\Core\Support\Configure\Node\ContextHelper;
 use Rosalana\Core\Support\Configure\Node\File;
 use Rosalana\Core\Support\Configure\Node\RichComment;
 use Rosalana\Core\Support\Configure\Node\Section;
@@ -26,7 +26,7 @@ class Reader
         $parse = collect()
             ->merge(RichComment::parse($content))
             ->merge(Value::parse($content))
-            ->merge(ArrayBlock::parse($content));
+            ->merge(ContextHelper::parse($content));
 
         $sections = Section::wrap($parse);
 

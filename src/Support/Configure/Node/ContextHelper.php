@@ -4,7 +4,7 @@ namespace Rosalana\Core\Support\Configure\Node;
 
 use Illuminate\Support\Collection;
 
-class ArrayBlock extends Node
+class ContextHelper extends Node
 {
     public function __construct(int $start, int $end, array $raw)
     {
@@ -67,7 +67,7 @@ class ArrayBlock extends Node
 
                     $top = array_pop($stack);
 
-                    $blocks->push(ArrayBlock::make(
+                    $blocks->push(ContextHelper::make(
                         start: $top['start'],
                         end: $index,
                         raw: $top['raw'],
