@@ -258,9 +258,14 @@ abstract class ParentNode extends Node
         if (! $this->hasChild($node)) return $this;
 
         if (! $ghost) {
-            $distance = abs($node->start() - $node->end()) + $node->padding();
 
-            $this->scaleDown($distance);
+            if ($this->nodes()->isNotEmpty()) {
+
+                $node->siblingsAfter()
+                    ->each(fn($sibling) => $sibling->before($node));
+            }
+
+            $this->scaleDown($node->scale());
         }
 
         $this->nodes = $this->nodes->reject(fn($n) => $n === $node)->values();
