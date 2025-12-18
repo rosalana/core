@@ -252,16 +252,6 @@ abstract class Node implements NodeInterface
         return false; // not implemented yet
     }
 
-    /**
-     * Ty které nejsou zaindexované
-     * tedy třeba se přesouvají - by pořád měli držet svoji původní start a end
-     * ale měly by mít přesunuté do záporu (aby se to nepletlo)
-     */
-    public function isIndexed(): bool
-    {
-        return $this->start() > 0 && $this->end() > 0;
-    }
-
     public function siblings(): Collection
     {
         if ($this->parent() instanceof ParentNode) {

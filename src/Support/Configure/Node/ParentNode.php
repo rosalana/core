@@ -88,23 +88,6 @@ abstract class ParentNode extends Node
         return $this->nodes;
     }
 
-    protected function reordered(Node|self $a, Node|self $b): Collection
-    {
-        $nodes = $this->nodes->values();
-
-        $i = $nodes->search($a);
-        $j = $nodes->search($b);
-
-        if ($i === false || $j === false) {
-            return collect();
-        }
-
-        $nodes[$i] = $b;
-        $nodes[$j] = $a;
-
-        return $nodes;
-    }
-
     /**
      * Get or create a Section node by key.
      * 
