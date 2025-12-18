@@ -259,11 +259,7 @@ abstract class ParentNode extends Node
 
         if (! $ghost) {
 
-            if ($this->nodes()->isNotEmpty()) {
-
-                $node->siblingsAfter()
-                    ->each(fn($sibling) => $sibling->before($node));
-            }
+            $node->keepEnd();
 
             $this->scaleDown($node->scale());
         }
