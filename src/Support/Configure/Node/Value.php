@@ -139,9 +139,18 @@ class Value extends Node
         return $this;
     }
 
-    public function withComment(string $label): void
+    public function withComment(string $label): self
     {
-        //
+        if ($this->siblingsBefore()->last() instanceof Comment) {
+            $this->siblingsBefore()->last()->remove();
+        }
+
+        $comment = Comment::makeEmpty($label);
+        $this->parent()->addChild($comment);
+
+        $comment->before($this);
+
+        return $this;
     }
 
     public function toArray(): array
