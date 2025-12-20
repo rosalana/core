@@ -93,7 +93,7 @@ class PublishCommand extends Command
 
             Configure::file('rosalana')
                 ->section('.published')
-                ->value($package->name, var_export($package->installedVersion, true))
+                ->value($package->name)->set(var_export($package->installedVersion, true))
                 ->withComment(
                     "Package {$package->name} published on " . now()->toDateTimeString()
                 )
