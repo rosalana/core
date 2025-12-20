@@ -12,7 +12,6 @@ Rosalana Core is the shared foundation for all applications in the Rosalana ecos
 - [Configuration](#configuration)
 - [Features](#features)
   - [CLI](#cli)
-  - [Config Builder](#config-builder)
   - [Package Manager](#package-manager)
   - [Pipelines](#pipelines)
   - [Basecamp Connection](#basecamp-connection)
@@ -77,34 +76,6 @@ The CLI ensures that all Rosalana packages stay compatible with each other and w
 - `rosalana:update` – Update all installed packages to the latest available version for the current ecosystem. Or switch to a different ecosystem version entirely.
 
 > Commands are blocked in production to prevent accidental modifications.
-
-### Config Builder
-
-Rosalana Core comes with a built-in **Config Builder** that allows you to programmatically manage the contents of the `rosalana.php` config file — **without overwriting existing user-defined values.**
-
-This means you can safely publish or update configuration sections multiple times, and the builder will only insert missing keys without removing any of your changes.
-
-The Config Builder also supports **PHP-style comments** (including title + description) that are rendered directly into the file. These help explain the purpose of each section clearly and keep config file human-readable even as it grows.
-
-Every package in the Rosalana ecosystem uses the Config Builder to register its own configuration block. All sections are grouped inside a single rosalana.php file for easy navigation.
-
-```php
-use Rosalana\Core\Support\Config;
-
-// Add or update a config section
-Config::new('basecamp')
-    ->add('secret',"env('ROSALANA_APP_SECRET', 'secret')")
-    ->comment(
-        'Connection settings for Basecamp (central server).',
-        'Basecamp Connection'
-    )
-    ->save();
-
-// Update a published version tag
-Config::get('published')
-    ->set('rosalana/xx', '1.0.0')
-    ->save();
-```
 
 ### Package Manager
 
