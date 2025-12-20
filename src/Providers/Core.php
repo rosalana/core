@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Artisan;
 use Rosalana\Configure\Configure;
 use Rosalana\Core\Console\InternalCommands;
 use Rosalana\Core\Contracts\Package;
-use Rosalana\Core\Support\Config;
 
 class Core implements Package
 {
@@ -14,7 +13,7 @@ class Core implements Package
 
     public function resolvePublished(): bool
     {
-        return file_exists(config_path('rosalana.php'));
+        return Configure::file('rosalana')->exists();
     }
 
     public function publish(): array
