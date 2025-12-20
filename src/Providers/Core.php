@@ -13,7 +13,7 @@ class Core implements Package
 
     public function resolvePublished(): bool
     {
-        return Configure::file('rosalana')->exists();
+        return Configure::fileExists('rosalana');
     }
 
     public function publish(): array
