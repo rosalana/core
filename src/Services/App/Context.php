@@ -9,8 +9,8 @@ use Rosalana\Core\Services\App\ContextStore as Store;
  * @method mixed get(string|array $key, mixed $default = null)
  * @method bool has(string|array $key)
  * @method void forget(string|array $key)
- * @method array all()
- * @method void flush()
+ * @method array receive()
+ * @method void clear()
  */
 class Context
 {
@@ -51,9 +51,9 @@ class Context
     /**
      * Clear all context data for the current App ID.
      */
-    public function clear(): int
+    public function flush(): int
     {
-        return $this->global()->clear();
+        return $this->global()->flush();
     }
 
     /**

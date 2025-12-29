@@ -138,7 +138,7 @@ class ContextStore
     /**
      * Dump the whole scope as a reconstructed document tree.
      */
-    public function list(): array
+    public function receive(): array
     {
         $this->requireScoped();
 
@@ -146,9 +146,9 @@ class ContextStore
     }
 
     /**
-     * Flush the whole scope (all values and its index).
+     * Clear the whole scope (all values and its index).
      */
-    public function flush(): void
+    public function clear(): void
     {
         $this->requireScoped();
 
@@ -246,7 +246,7 @@ class ContextStore
             }
 
             $scoped = self::scoped($scope);
-            $result[$scope] = $scoped->list();
+            $result[$scope] = $scoped->receive();
         }
 
         return $result;
@@ -285,9 +285,9 @@ class ContextStore
     }
 
     /**
-     * Clear all context data for the current App ID.
+     * Flush all context data for the current App ID.
      */
-    public function clear(): int
+    public function flush(): int
     {
         $this->requireGlobal();
 
@@ -296,7 +296,7 @@ class ContextStore
         foreach (array_keys($this->all()) as $scope) {
             $store = self::scoped($scope);
             $deleted += $store->estimatedKeyCount();
-            $store->flush();
+            $store->clear();
         }
 
         $this->redis->del($this->globalIndexKey());
@@ -325,7 +325,7 @@ class ContextStore
             $found = $store->find($pathPattern === '' ? '*' : $pathPattern, $where, $limit);
 
             foreach ($found as $path => $value) {
-                $results[$scope] = $store->list();
+                $results[$scope] = $store->receive();
 
                 if ($limit !== null && count($results) >= $limit) {
                     break 2;
