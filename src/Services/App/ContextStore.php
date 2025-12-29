@@ -70,6 +70,13 @@ class ContextStore
     {
         $this->requireScoped();
 
+        App::hooks()->run('context:update', [
+            'scope' => $this->scope,
+            'path' => $key,
+            'previous' => $this->get($key, null),
+            'current' => $value,
+        ]);
+
         $this->putNode($key, $value, $ttl);
     }
 
@@ -130,6 +137,13 @@ class ContextStore
     {
         $this->requireScoped();
 
+        App::hooks()->run('context:forget', [
+            'scope' => $this->scope,
+            'path' => $key,
+            'previous' => $this->get($key, null),
+            'current' => null,
+        ]);
+
         $this->deleteNode($key);
 
         $this->maybeUnregisterScope();
@@ -151,6 +165,13 @@ class ContextStore
     public function clear(): void
     {
         $this->requireScoped();
+
+        App::hooks()->run('context:clear', [
+            'scope' => $this->scope,
+            'path' => null,
+            'previous' => $this->receive(),
+            'current' => null,
+        ]);
 
         $index = $this->indexKey();
         $keys = $this->redis->sMembers($index) ?: [];
@@ -290,6 +311,13 @@ class ContextStore
     public function flush(): int
     {
         $this->requireGlobal();
+
+        App::hooks()->run('context:flush', [
+            'scope' => null,
+            'path' => null,
+            'previous' => $this->all(),
+            'current' => null,
+        ]);
 
         $deleted = 0;
 
