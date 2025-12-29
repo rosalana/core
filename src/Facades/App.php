@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Facade;
  * Facade for interacting with Rosalana App and its services.
  *
  * @method static string id()
+ * @method static string secret()
  * @method static string key()
  * @method static string slug()
  * @method static string name()

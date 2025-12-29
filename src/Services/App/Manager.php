@@ -21,6 +21,11 @@ class Manager
         return $this->meta->id();
     }
 
+    public function secret(): string
+    {
+        return $this->meta->secret();
+    }
+
     public function key(): string
     {
         return $this->meta->key();

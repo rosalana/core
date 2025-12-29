@@ -9,7 +9,12 @@ class Meta
 {
     public function id(): string
     {
-        return config('rosalana.basecamp.secret', 'app-id');
+        return config('rosalana.basecamp.id', 'app-id');
+    }
+
+    public function secret(): string
+    {
+        return config('rosalana.basecamp.secret', 'app-secret');
     }
 
     public function key(): string
