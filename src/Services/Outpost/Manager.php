@@ -2,8 +2,7 @@
 
 namespace Rosalana\Core\Services\Outpost;
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Event;
+use Rosalana\Core\Facades\App;
 use Rosalana\Core\Facades\Basecamp;
 use Rosalana\Core\Traits\Serviceable;
 
@@ -11,154 +10,137 @@ class Manager
 {
     use Serviceable;
 
-    /**
-     * Connection name for Rosalana Outpost.
-     */
-    protected string $connection;
-
-    /**
-     * Queue name for Rosalana Outpost.
-     */
-    protected string $queue;
-
-    /**
-     * Origin for the Packet.
-     */
     protected string $origin;
 
-    /**
-     * Packet targets
-     */
-    protected array|null $targets = null;
+    protected array $targets = [];
 
-    /**
-     * Packet receivers
-     */
-    protected array|null $receivers = null;
+    protected string|null $correlationId = null;
 
-    /**
-     * Excluded receivers|targets
-     */
     protected array $excepts = [];
+
+    protected string|null $name;
 
     public function __construct()
     {
-        $this->connection = config('rosalana.outpost.connection');
-        $this->queue = config('rosalana.outpost.queue');
-        $this->origin = config('rosalana.basecamp.name');
+        $this->origin = App::slug();
     }
 
-    /**
-     * Specifies targets for the packet to be sent to.
-     * @param string|array|null $apps The app name(s) that should receive the packet
-     * @return self
-     */
-    public function to(string|array|null $apps): self
+    public function worker(): void
     {
-        $this->targets = is_null($apps) ? null : (array) $apps;
-        return $this;
+        (new Worker($this->origin))();
     }
-    /**
-     * Specifies from which apps the packet should be received.
-     *
-     * @param string|array|null $apps The app name(s) that should send the packet
-     * @return self
-     */
-    public function from(string|array|null $apps): self
+
+    public function to(string|array $apps): self
     {
-        $this->receivers = is_null($apps) ? null : (array) $apps;
+        $this->targets = is_array($apps) ? $apps : [$apps];
         return $this;
     }
 
-    /**
-     * Specifies which apps should be excluded from process
-     *
-     * @param string|array|null $apps The app name(s) that should be excluded
-     * @return self
-     */
-    public function except(string|array|null $apps): self
+    public function except(string|array $apps): self
     {
-        $this->excepts = is_null($apps) ? [] : (array) $apps;
+        $this->excepts = is_array($apps) ? $apps : [$apps];
         return $this;
     }
 
-    /**
-     * Send a packet to the target application or all applications specified.
-     * 
-     * @param string $alias The event name/alias for the packet
-     * @param array $payload The data to be sent with the packet
-     * @return void
-     */
-    public function send(string $alias, array $payload = []): void
+    public function broadcast(): self
     {
-        $globalId = config('rosalana.account.identifier', 'rosalana_account_id');
-        $userId = Auth::user()?->$globalId ?? null;
+        $this->targets = ['*'];
+        return $this;
+    }
 
-        $packet = new Packet(
-            alias: $alias,
-            origin: $this->origin,
-            userId: $userId,
-            queue: $this->queue,
-            payload: $payload,
-        );
+    public function responseTo(Message $message): self
+    {
+        $this->correlationId = $message->correlationId;
+        $this->targets = [$message->from];
+        $this->name = $message->name();
 
-        $targets = $this->targets ?? $this->resolveTargetApps();
+        return $this;
+    }
 
-        foreach ($targets as $target) {
-            if ($target === $this->origin) continue;
-
-            $packet->target = $target;
-            dispatch(clone $packet)
-                ->onConnection($this->connection)
-                ->onQueue("{$this->queue}.{$target}");
+    public function request(?string $name = null, array $payload = []): void
+    {
+        if (!is_null($name)) {
+            $this->validateName($name);
+            $this->name = $name;
         }
 
+        $this->send('request', $payload);
+    }
+
+    public function confirm(?string $name = null, array $payload = []): void
+    {
+        if (!is_null($name)) {
+            $this->validateName($name);
+        }
+
+        $this->send('confirmed', $payload);
+    }
+
+    public function fail(?string $name = null, array $payload = []): void
+    {
+        if (!is_null($name)) {
+            $this->validateName($name);
+        }
+
+        $this->send('failed', $payload);
+    }
+
+    public function unreachable(?string $name = null, array $payload = []): void
+    {
+        if (!is_null($name)) {
+            $this->validateName($name);
+        }
+
+        $this->send('unreachable', $payload);
+    }
+
+    protected function send(string $status, array $payload = []): void
+    {
+        if (!empty($this->excepts)) {
+            $this->targets = array_filter(
+                $this->targets,
+                fn($target) => !in_array($target, $this->excepts)
+            );
+
+            if (contains($this->targets, '*')) {
+                array_push($this->targets, ...array_map(fn($app) => '!' . $app, $this->excepts));
+            }
+        }
+
+        if (empty($this->targets)) {
+            throw new \RuntimeException("No target apps specified for Outpost message.");
+        }
+
+        Basecamp::post("/outpost/send", [
+            'from' => $this->origin,
+            'to' => $this->targets,
+            'correlation_id' => $this->correlationId,
+            'payload' => $payload,
+            'namespace' => $this->name . ':' . $status,
+        ]);
+
         $this->reset();
     }
 
-    /**
-     * Register a listener for a specific Outpost event.
-     * This automatically includes the correct prefix based on configuration.
-     */
-    public function receive(string $alias, string|\Closure $listener): void
+    public function reset(): void
     {
-        Event::listen("{$this->queue}.{$alias}", function (Packet $packet) use ($listener) {
-            if (!empty($this->receivers) && !in_array($packet->origin, $this->receivers)) {
-                return;
-            }
-
-            if (in_array($packet->origin, $this->excepts)) {
-                return;
-            }
-
-            if ($packet->origin === $this->origin) {
-                return;
-            }
-
-            is_string($listener) ? app($listener)->handle($packet) : $listener($packet);
-        });
-
-        $this->reset();
-    }
-
-    protected function resolveTargetApps(): array
-    {
-        $response = Basecamp::apps()->all();
-
-        return collect($response->json('data'))
-            ->filter(fn($app) => $app['self'] !== true && !in_array($app['name'], $this->excepts))
-            ->pluck('name')
-            ->toArray();
-    }
-
-    /**
-     * Reset instance to default values.
-     */
-    public function reset(): self
-    {
-        $this->targets = null;
-        $this->receivers = null;
+        $this->targets = [];
+        $this->correlationId = null;
         $this->excepts = [];
-        return $this;
+        $this->name = null;
+    }
+
+    protected function validateName(string $name): void
+    {
+        $fail = false;
+
+        if (empty($name)) $fail = true;
+        if (str_contains($name, ' ')) $fail = true;
+        if (count(explode('.', $name)) !== 2) $fail = true;
+        if (strtolower($name) != $name) $fail = true;
+
+        if ($fail) {
+            throw new \InvalidArgumentException("Invalid Outpost message name: {$name}");
+        }
     }
 }
