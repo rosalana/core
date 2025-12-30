@@ -2,26 +2,24 @@
 
 namespace Rosalana\Core\Services\Outpost;
 
-use Symfony\Contracts\EventDispatcher\Event;
-
 abstract class Listener
 {
     public function handle(Message $message): void
     {
         $status = $message->status();
 
-        event(
-            match ($status) {
-                'request' => $this->request($message),
-                'confirmed' => $this->confirmed($message),
-                'failed' => $this->failed($message),
-                'unreachable' => $this->unreachable($message),
-                default => $this->unreachable($message),
-            }
-        );
+        $job = match ($status) {
+            'request' => $this->request($message),
+            'confirmed' => $this->confirmed($message),
+            'failed' => $this->failed($message),
+            'unreachable' => $this->unreachable($message),
+            default => $this->unreachable($message),
+        };
+
+        dispatch($job);
     }
 
-    abstract public function request(Message $message): Event;
+    abstract public function request(Message $message);
 
     public function confirmed(Message $message)
     {

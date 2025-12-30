@@ -3,8 +3,8 @@
 namespace Rosalana\Core\Services\Outpost;
 
 use Illuminate\Support\Facades\Redis;
-use Rosalana\Core\Events\OutpostMessageReceivedEvent;
 use Rosalana\Core\Facades\App;
+use Rosalana\Core\Jobs\OutpostMessageReceivedJob;
 
 class Worker
 {
@@ -37,7 +37,9 @@ class Worker
             }
 
             foreach ($messages[$this->stream] ?? [] as $id => $payload) {
-                event(new OutpostMessageReceivedEvent($id, $payload));
+                OutpostMessageReceivedJob::dispatch($id, $payload);
+
+                dump('Received Outpost message: ' . $payload['namespace'] ?? $id);
 
                 Redis::connection($this->connection)->xack(
                     $this->stream,

@@ -1,12 +1,12 @@
 <?php
 
-namespace Rosalana\Core\Events;
+namespace Rosalana\Core\Jobs;
 
-use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Foundation\Bus\Dispatchable;
 use Rosalana\Core\Services\Outpost\Message;
 use Rosalana\Core\Services\Outpost\Listener;
 
-class OutpostMessageReceivedEvent
+class OutpostMessageReceivedJob
 {
     use Dispatchable;
 
@@ -19,11 +19,11 @@ class OutpostMessageReceivedEvent
 
     public function handle(): void
     {
-        if ($this->handleViaRegistry()) {
-            return;
-        }
-
-        if ($this->handleViaListener()) {
+        try {
+            if ($this->handleViaRegistry()) return;
+            if ($this->handleViaListener()) return;
+        } catch (\Throwable $e) {
+            $this->message->fail();
             return;
         }
 

@@ -4,9 +4,9 @@ namespace Rosalana\Core\Services\Outpost;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Rosalana\Core\Events\OutpostInlineEvent;
 use Rosalana\Core\Facades\App;
 use Rosalana\Core\Facades\Outpost;
+use Rosalana\Core\Jobs\OutpostInlineJob;
 
 class Message
 {
@@ -24,7 +24,7 @@ class Message
         return new static(
             id: $id,
             namespace: $data['namespace'] ?? '',
-            payload: $data['payload'] ?? [],
+            payload: $data['payload'] ? json_decode($data['payload'], true) : [],
             from: $data['from'] ?? '',
             correlationId: $data['correlation_id'] ?? null,
             timestamp: isset($data['timestamp']) ? (int)$data['timestamp'] : null,
@@ -49,14 +49,14 @@ class Message
     public function listenersClass(): string
     {
         $prefix = App::config('outpost.namespace_prefix', 'App\\Outpost\\');
-        $class = Str::studly(str_replace('.', '\\', $this->name()));
+        $class = implode('\\', array_map(fn($part) => Str::studly($part), explode('.', $this->name())));
 
         return $prefix . $class;
     }
 
-    public function event(\Closure $handle): OutpostInlineEvent
+    public function event(\Closure $handle): OutpostInlineJob
     {
-        return new OutpostInlineEvent($handle, $this);
+        return new OutpostInlineJob($handle, $this);
     }
 
     public function confirm(array $payload = []): void

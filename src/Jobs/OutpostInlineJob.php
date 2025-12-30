@@ -1,16 +1,18 @@
 <?php
 
-namespace Rosalana\Core\Events;
+namespace Rosalana\Core\Jobs;
 
 use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Foundation\Bus\Dispatchable;
 use Rosalana\Core\Services\Outpost\Message;
 
-class OutpostInlineEvent implements ShouldQueue, ShouldBroadcast
+class OutpostInlineJob implements ShouldBroadcast
 {
-    use Dispatchable;
+    use Dispatchable, InteractsWithSockets, Queueable;
 
     protected bool $shouldBroadcast = false;
     protected bool $shouldQueue = false;
