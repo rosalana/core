@@ -6,7 +6,6 @@ use Illuminate\Console\Command;
 use Laravel\Prompts\Concerns\Colors;
 use Rosalana\Configure\Configure;
 use Rosalana\Core\Services\Package;
-use Rosalana\Core\Support\Config;
 
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
