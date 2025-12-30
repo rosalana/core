@@ -60,21 +60,12 @@ class RosalanaCoreServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 \Rosalana\Core\Console\Commands\PublishCommand::class,
-            ]);
-            $this->commands([
                 \Rosalana\Core\Console\Commands\AddCommand::class,
-            ]);
-            $this->commands([
                 \Rosalana\Core\Console\Commands\RemoveCommand::class,
-            ]);
-            $this->commands([
                 \Rosalana\Core\Console\Commands\ListCommand::class,
-            ]);
-            $this->commands([
                 \Rosalana\Core\Console\Commands\UpdateCommand::class,
-            ]);
-            $this->commands([
                 \Rosalana\Core\Console\Commands\RosalanaCommnad::class,
+                \Rosalana\Core\Console\OutpostWorkCommand::class,
             ]);
         }
 
