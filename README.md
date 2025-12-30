@@ -353,35 +353,48 @@ public function handle(Packet $packet)
 
 ### App Context
 
+> [!IMPORTANT]
+> Context storage requires a PHP-Redis connection to work.
+
 The App Context provides a centralized way to store and retrieve app-specific or user-specific data across the application lifecycle. It acts like a smarter cache and is especially useful for avoiding unnecessary Basecamp requests.
+
+It uses Redis as the underlying storage mechanism, ensuring fast access and scalability. It supports structured keys, allowing you to bind data to specific models or entities. Every key count be set with a TTL (time to live) to automatically expire data after a certain period.
 
 #### Accessing Context
 
-Use `App::context()` to work with the local context.
+App Context is accessible via the `App::context()` facade. The whole context is segmented into scopes, with the default scope being `__app`. Default scope is meant for storing application-wide data. For user-specific data, you can use the user scope `user.{id}`.
+
+Scopes can be changed by using the `scope()` method. For accesing app-wide context, you don't need to change the scope.
 
 ```php
-App::context()->get(); // Get full app context
-App::context()->put('app', ['foo' => 'bar']);
+App::context(); // scope: __app
+App::context()->scope('user.1'); // scope: user.1
+App::context()->scope($user); // scope: user.{id}
+App::context()->scope([User::class, 1]); // scope: user.1
 ```
 
-You can also bind data to specific models or structured keys:
+Once you have set the desired scope, you can work with the context data within that scope.
 
 ```php
-App::context()->put($user, ['foo' => 'bar']);
-App::context()->get($user); // ['foo' => 'bar']
-App::context()->get('user.1.foo'); // 'bar'
-App::context()->get([User::class, 1]); // ['foo' => 'bar']
-App::context()->get([User::class, 1, 'foo']); // 'bar'
+$scope->get('foo', 'default'); // Get value with default
+$scope->put('nested.foo', 'bar'); // Set value
+$scope->has('foo'); // Check if key exists
+$scope->receive(); // Get all data in the scope
 ```
 
-If you are not sure about the exact key, you can find data using patterns
+Value can be mixed types, including arrays and objects. Nested keys are supported using dot notation.
+
+It's possible to dump the whole context. Don't set any scope for this.
 
 ```php
-// Find all users with a specific role
+App::context()->all(); // Get full app context
+App::context()->raw(); // Get raw Redis data
+```
+
+From the global view you can also find data using patterns:
+
+```php
 App::context()->find('user.*', ['role' => 'admin']);
-
-// Find the first user with a specific role
-[$key, $user] = App::context()->findFirst('user.*', ['role' => 'admin']);
 ```
 
 #### Forgetting Data
@@ -389,9 +402,9 @@ App::context()->find('user.*', ['role' => 'admin']);
 You can remove context data selectively:
 
 ```php
-App::context()->invalidate('user.1.foo'); // Remove only one attribute
-App::context()->invalidate('user.1'); // Remove entire user context
-App::context()->flush(User::class); // Flush all entries for the User class (not implemented yet)
+$scope->forget('foo'); // Remove only one attribute
+$scope->clear(); // Remove whole scope
+App::context()->flush(); // Remove whole context
 ```
 
 ### App Hooks
@@ -418,21 +431,21 @@ App::hooks()->onContextUpdate(function ($data) {
 
 ```php
 App::hooks()->run('context:update', [
-    'key' => 'context.app',
+    'scope' => 'context.app',
     'path' => 'foo',
-    'value' => 'bar',
+    'current' => 'bar',
     'previous' => null,
 ]);
 ```
 
 ## Available Hooks
-| Hook | Description | Data |
-|------|-------------|------|
-| `context:create` | Triggered when a new context item is created | `key`: Context key path <br> `path`: Created path <br> `value`: Created value |
-| `context:update` | Triggered when the context is updated | `key`: Context key path <br> `path`: Updated path <br> `value`: New value <br> `previous`: Previous value |
-| `context:invalidate` | Triggered when a context item is forgotten | `key`: Context key path <br> `path`: Removed path <br> `previous`: Removed data |
-| `context:flush` | Triggered when the context is flushed for a specific group | `group`: Name of the flushed group |
 
+| Hook             | Description                                 | Data                                                                                                           |
+| ---------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `context:update` | Triggered when the context is updated       | `scope`: Context group <br> `path`: Updated path <br> `current`: Current value <br> `previous`: Previous value |
+| `context:forget` | Triggered when a context item is forgotten  | `scope`: Context group <br> `path`: Updated path <br> `current`: Current value <br> `previous`: Previous value |
+| `context:clear`  | Triggered when specific group is cleared    | `scope`: Context group <br> `path`: Updated path <br> `current`: Current value <br> `previous`: Previous value |
+| `context:flush`  | Triggered when the whole context is flushed | `scope`: Context group <br> `path`: Updated path <br> `current`: Current value <br> `previous`: Previous value |
 
 ## Ecosystem Versioning
 
@@ -461,7 +474,7 @@ Stay tuned — we're actively shaping the foundation of the Rosalana ecosystem.
 
 ## Bugs
 
-- **Outpost**: when sending notification.email should be process ones but has no target app. Its target to basecamp. *Možná hodit jen do lokální queue a zpracovat lokálně. Je fakt, že pokud něco není potřeba posílat do outpostu, tak to nebudeme posílat. Notification fasada by měla tohle rozhodovat. Jestli je potřeba posílat do outpostu nebo jestli jen poslat email nebo jen hodit do session.*
+- **Outpost**: when sending notification.email should be process ones but has no target app. Its target to basecamp. _Možná hodit jen do lokální queue a zpracovat lokálně. Je fakt, že pokud něco není potřeba posílat do outpostu, tak to nebudeme posílat. Notification fasada by měla tohle rozhodovat. Jestli je potřeba posílat do outpostu nebo jestli jen poslat email nebo jen hodit do session._
 
 ## License
 
