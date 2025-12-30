@@ -65,7 +65,7 @@ class RosalanaCoreServiceProvider extends ServiceProvider
                 \Rosalana\Core\Console\Commands\ListCommand::class,
                 \Rosalana\Core\Console\Commands\UpdateCommand::class,
                 \Rosalana\Core\Console\Commands\RosalanaCommnad::class,
-                \Rosalana\Core\Console\OutpostWorkCommand::class,
+                \Rosalana\Core\Console\Commands\OutpostWorkCommand::class,
             ]);
         }
 
