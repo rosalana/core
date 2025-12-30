@@ -2,6 +2,8 @@
 
 namespace Rosalana\Core\Services\Outpost;
 
+use Rosalana\Core\Services\Actions\Action;
+
 abstract class Listener
 {
     public function handle(Message $message): void
@@ -16,7 +18,11 @@ abstract class Listener
             default => $this->unreachable($message),
         };
 
-        dispatch($job);
+        if ($job instanceof Action) {
+            run($job);
+        } else {
+            event($job);
+        }
     }
 
     abstract public function request(Message $message);

@@ -4,9 +4,9 @@ namespace Rosalana\Core\Services\Outpost;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Rosalana\Core\Actions\Outpost\Inline;
 use Rosalana\Core\Facades\App;
 use Rosalana\Core\Facades\Outpost;
-use Rosalana\Core\Jobs\OutpostInlineJob;
 
 class Message
 {
@@ -54,9 +54,9 @@ class Message
         return $prefix . $class;
     }
 
-    public function event(\Closure $handle): OutpostInlineJob
+    public function event(\Closure $handle): Inline
     {
-        return new OutpostInlineJob($handle, $this);
+        return Inline::make($handle, $this);
     }
 
     public function confirm(array $payload = []): void
