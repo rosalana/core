@@ -16,7 +16,7 @@ abstract class Listener
                 'confirmed' => $this->confirmed($message),
                 'failed' => $this->failed($message),
                 'unreachable' => $this->unreachable($message),
-                default => null,
+                default => $this->unreachable($message),
             }
         );
     }
