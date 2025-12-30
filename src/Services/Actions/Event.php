@@ -21,6 +21,8 @@ final class Event implements ShouldBroadcast
         if (method_exists($this->action, 'broadcastOn')) {
             return (array) $this->action->broadcastOn();
         }
+
+        return [];
     }
 
     public function broadcastAs()
@@ -30,6 +32,8 @@ final class Event implements ShouldBroadcast
         if (method_exists($this->action, 'broadcastAs')) {
             return $this->action->broadcastAs();
         }
+
+        return null;
     }
 
     public function broadcastWhen()
@@ -39,5 +43,7 @@ final class Event implements ShouldBroadcast
         if (method_exists($this->action, 'broadcastWhen')) {
             return (bool) $this->action->broadcastWhen();
         }
+
+        return true;
     }
 }

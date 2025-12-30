@@ -10,10 +10,7 @@ final class Listener implements ShouldQueue
     {
         if (method_exists($event->action, 'handle')) {
             $event->action->handle();
-            return;
         }
-
-        throw new \LogicException('Action does not have a handle() method.');
     }
 
     public function shouldQueue(Event $event): bool
