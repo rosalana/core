@@ -51,7 +51,7 @@ class Core implements Package
                             "Configuration for Rosalana Outpost, the global message broker used for asynchronous app-to-app communication. \nAll packets are dispatched to Redis queues using this setup. Each application listens to \nits own dedicated queue based on this prefix.",
                         )
                         ->value('connection', "outpost")
-                        ->value('listeners', "'App\\Outpost\\'")
+                        ->value('listeners', "'App\\\Outpost\\\'")
 
                         ->section('.revizor')
                         ->withComment(
