@@ -3,7 +3,6 @@
 namespace Rosalana\Core\Services\Basecamp;
 
 use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Http;
 use Rosalana\Core\Facades\Pipeline;
 use Rosalana\Core\Services\Basecamp\RequestStrategies\AppStrategy;
 use Rosalana\Core\Services\Basecamp\RequestStrategies\BasecampStrategy;
