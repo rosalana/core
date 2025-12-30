@@ -12,7 +12,7 @@ class TicketManager
      */
     public function find(string $target): ?Ticket
     {
-        $ticket = App::context()->get('ticket.' . $target);
+        $ticket = App::context()->get("tickets.{$target}", null);
 
         if ($ticket) {
             return Ticket::from($ticket);
@@ -26,11 +26,11 @@ class TicketManager
      */
     public function search(int|Ticket $ticketOrId): ?Ticket
     {
-        $list = App::context()->get('tickets.all');
+        $list = App::context()->get('well-known.tickets', []);
 
-        if (!$list) {
+        if (empty($list) || !is_array($list)) {
             $list = Basecamp::tickets()->list()->json('data.tickets');
-            App::context()->put('tickets.all', $list, 86400);
+            App::context()->put('well-known.tickets', $list, 86400);
         }
 
         foreach ($list as $ticket) {
@@ -51,13 +51,13 @@ class TicketManager
             Basecamp::tickets()->create(['target' => $target])->json('data.ticket')
         );
 
-        App::context()->put('ticket.' . $target, $ticket->toString(), $ticket->getTTL());
+        App::context()->put("tickets.{$target}", $ticket->toString(), $ticket->getTTL());
 
         return $ticket;
     }
 
     public function inWallet(string $target): bool
     {
-        return App::context()->has('ticket.' . $target);
+        return App::context()->has("tickets.{$target}");
     }
 }
