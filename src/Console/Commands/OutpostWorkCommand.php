@@ -1,6 +1,6 @@
 <?php
 
-namespace Rosalana\Core\Console;
+namespace Rosalana\Core\Console\Commands;
 
 use Illuminate\Console\Command;
 use Rosalana\Core\Facades\App;
