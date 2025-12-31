@@ -49,6 +49,7 @@ This file will grow over time as you add more Rosalana packages to your applicat
 
 - **basecamp**: Customize the connection to the central server which your application will connect to. More details [below](#basecamp-connection).
 - **outpost**: Defines how your app connects to the **shared queue system**. Used for sending and receiving events across Rosalana applications.
+- **revizor**: Settings for the authorization engine that allows cross-application communication.
 - **published**: Tracks the packages that are currently installed and published in your application. This section is automatically updated when you publish a package. **Do not edit this section manually.**
 
 ## Features
