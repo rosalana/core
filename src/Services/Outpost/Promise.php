@@ -53,7 +53,7 @@ class Promise
     protected function storeCallback(string $status, callable $callback): void
     {
         if ($callback instanceof \Closure) {
-            $callback = new SerializableClosure($callback);
+            $callback = serialize(new SerializableClosure($callback));
         }
 
         App::context()->put($this->key($status), $callback);
@@ -62,6 +62,8 @@ class Promise
     protected function retrieveCallback(): callable|null
     {
         $cb = App::context()->get($this->key($this->message->status()));
+
+        $cb = is_string($cb) ? unserialize($cb) : $cb;
 
         if ($cb instanceof SerializableClosure) {
             return $cb->getClosure();
