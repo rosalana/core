@@ -255,6 +255,23 @@ You can chain `withAuth()` and `withPipeline()` methods on any request to handle
 
 All services registered this way automatically receive access to the underlying `Basecamp\Manager`, which manages headers, base URL, and request logic.
 
+#### Advanced Request Options
+
+You can customize Basecamp requests further by chaining additional methods on the `Basecamp` facade.
+
+```php
+Basecamp::timeout(10); // Set custom timeout (seconds)
+Basecamp::retry(3); // Retry failed requests (times)
+Basecamp::ghost(); // Skip pipeline execution
+Basecamp::version('v2'); // Use specific API version
+
+Basecamp::mock(); // Mock the request (for testing)
+
+Basecamp::fallback(function () {
+    // Custom fallback logic when request fails
+});
+```
+
 #### After Hook
 
 You can attach custom logic to a Basecamp request by using `Basecamp::withPipeline('alias')`. This opens a hook window that other parts of your application can listen to.
@@ -277,79 +294,216 @@ The callback will be executed after the Basecamp request is completed and if the
 
 ### Outpost Connection
 
-> Send and receive **cross-application packets** asynchronously — as if they were local Laravel events. Outpost allows Rosalana applications to communicate over queues without losing simplicity.
+> [!INFORMATION]
+> Send and receive **cross-application messages** asynchronously. Outpost allows Rosalana applications to communicate over queues without losing simplicity.
 
-The **Outpost system** lets you trigger events in other applications using Laravel queues. These packets are then converted back to Laravel events in the receiving application. That way, you can keep using standard `Event::listen(...)` and class-based listeners.
+The **Outpost system** lets you trigger events in other applications. It uses **Redis Streams** as the underlying message bus, allowing applications to send and receive messages asynchronously. It uses Rosalana's action system which acts like Laravel event and listener at one.
 
-Under the hood, Outpost uses Laravel jobs for delivery and Laravel events for receiving — but your application doesn't need to know that.
+#### Outpost Setup
 
-#### Sending Packets
+At this moment, [rosalana/configure](https://github.com/rosalana/configure) package can not modify `config/database.php` to add Redis connection automatically. You need to add it manually. It is required to use connection without prefix.
 
-To send a packet, use the `Outpost::send()` method. You can optionally define which applications should receive the packet using `to()` or exclude some using `except()`.
+#### Message Convention
+
+Outpost messages has a specific structure to ensure compatibility across applications. Each is identified by an namespace alias containing tree parts:
+
+```
+{group}.{action}:{status}
+```
+
+- **group**: The main category of the message (e.g., `user`, `notification`, `order`).
+- **action**: The specific event or action being communicated (e.g., `created`),
+- **status**: represents the state of the message (`request`, `confirmed`, `failed`, `unreachable`).
+
+Namespaces are created automatically by the `Outpost` facade when sending. Just provide the `group.action` part and the status is appended based on the method used.
+
+#### Sending Messages
+
+To send messages between applications, you have to always specify the receiving application(s).
 
 ```php
 use Rosalana\Core\Facades\Outpost;
 
-// Send to all apps (except yourself)
-Outpost::send('user.registered', [
-    'email' => 'john@example.com',
-]);
-
-// Send to a specific app
-Outpost::to('app')->send('user.registered', [...]);
-
-// Send to multiple apps
-Outpost::to(['app1', 'app2'])->send('user.registered', [...]);
-
-// Send to all except specific apps
-Outpost::except('app')->send('user.registered', [...]);
+Outpost::to('app-slug');
+Outpost::to(['app1', 'app2']);
+Outpost::broadcast(); // to all apps except yourself
+Outpost::broadcast()->except('app-slug'); // to all except specific app
 ```
 
-#### Receiving Packets
-
-To listen for incoming packets, use the `Outpost::receive()` method.
-This automatically registers a Laravel event listener with the correct queue prefix (e.g. `outpost.user.registered`) based on your configuration.
+When sending, you can choose to send to a specific app, multiple apps, or broadcast to all apps (except yourself). After defining the target(s), you can send the message.
 
 ```php
-Outpost::receive('user.registered', App\Listeners\UserRegisteredListener::class);
+Outpost::to('app-slug')->request('group.action', [...]);
+Outpost::to('app-slug')->confirm('group.action', [...]);
+Outpost::to('app-slug')->fail('group.action', [...]);
+Outpost::to('app-slug')->unreachable('group.action', [...]);
 ```
 
-You can also filter which apps you want to accept packets from using from() or exclude some using except():
+In a day-to-day usage, you will mostly use the `request()` method to send messages. The other methods are used to respond to incoming messages.
+
+#### Receiving Messages
+
+##### Handling Promises
+
+When you send a message using any of the sending methods (`request()`, `confirm()`, `fail()`, `unreachable()`), you can handle the response using **promises**.
+
+Each of these methods returns an instance of `Rosalana\Core\Services\Outpost\Promise`, which you can use to track the status of the message.
+
+Promise lets you define callbacks for when your message is confirmed, failed, or unreachable.
 
 ```php
-// Only receive from one app
-Outpost::from('app')->receive('user.registered', ...);
+use Rosalana\Core\Services\Outpost\Message;
 
-// Receive from multiple apps
-Outpost::from(['app1', 'app2'])->receive('user.registered', ...);
+$promise = Outpost::to('app-slug')->request('group.action', [...]);
 
-// Receive from all apps except one
-Outpost::except('app')->receive('user.registered', ...);
+$promise->onConfirm(function (Message $message) {
+    // Handle confirmation
+});
+
+$promise->onFail(function (Message $message) {
+    // Handle failure
+});
+
+$promise->onUnreachable(function (Message $message) {
+    // Handle unreachable
+});
 ```
 
-#### Packet Payload
-
-Each listener receives an instance of the original `Rosalana\Core\Services\Outpost\Packet` object, which includes:
+You can manually **reject** the promise if needed:
 
 ```php
-$packet->alias; // e.g. 'user.registered'
-$packet->origin; // the app that sent the packet
-$packet->target; // the app that should receive the packet
-$packet->user(); // the basecamp user|null
-$packet->payload; // data sent in the packet
+$promise->reject();
 ```
 
-You can access payload like this:
+This will clear all the stored promises for the message and prevent any further callbacks from being executed.
+
+Resolving promises is handled automatically by the Outpost worker when responses are received. When a promise is resolved, the corresponding callback is executed with the received `Message` instance.
+
+After resolving, all unused callbacks are cleared and the promise is considered complete.
+
+##### Class-based Listeners
+
+Class-based listeners are a specific way to handle incoming Outpost messages. In configuration, you can define a namespace where your listeners are stored. Outpost will automatically resolve the correct listener class based on the message namespace alias.
+
+For example, if you have a message with the alias `project.link`, Outpost will look for a `\App\Outpost\Project\Link.php` listener class.
+
+There is always one listener per message, which handles all incoming statuses (`request`, `confirmed`, `failed`, `unreachable`).
+
+This class must extend the `Rosalana\Core\Services\Outpost\Listener` class and implement the `request()` method to handle incoming requests.
+
+Other methods (`confirmed()`, `failed()`, `unreachable()`) are optional and can be implemented if you want to handle those statuses specifically.
+
+Each method receives an instance of `Rosalana\Core\Services\Outpost\Mesage`, which contains all relevant information about the incoming message.
+
+You can return an instance of Laravel's `Event` or just run custom logic directly in the method.
+
+You can also return an instance of `Rosalana\Core\Services\Actions\Action` to create a event-listener like behavior in one go.
 
 ```php
-public function handle(Packet $packet)
+
+public function request(Message $message)
 {
-    $email = $packet->payload['email'];
-    $localUser = Accounts::users()->toLocal($packet->user()); // return local user|null
+    return $message->event(function (Message $message) {
+        // Handle the event logic here
+    });
 }
 ```
 
-> **Note:** You can use closures or class-based listeners, just like in Laravel. The Outpost::receive() wrapper ensures compatibility with your queue prefix.
+You may ask. How is this different from just writing the logic directly in the `request()` method?
+
+The `event()` method wraps your logic in an Action, allowing you to leverage the action system's features, such as queuing and broadcasting. This means that your event can be processed asynchronously or broadcasted via WebSockets if needed.
+
+And all of this just by simple function.
+
+```php
+return $message->event(fn (Message $message) => ...)
+    ->queue()
+    ->broadcast();
+```
+
+The broadcasting configuration is handled automatically from the receiving message. But you can override it if needed. Look at the example after receiving message with namespace `project.link:confirmed`.
+
+```php
+$event->broadcast();
+// channel: 'project-link'
+// event: 'project.link.confirmed'
+
+$event->broadcast('custom-channel', 'custom-event');
+```
+
+> [!INFORMATION]
+> Rosalana Actions system will be extended in the future to support more features like delayed execution, retries, and more.
+
+The `Message` class also provides helper methods to help you in your logic.
+
+```php
+public function request(Message $message)
+{
+    // You can quickly respond to the sender
+    $message->confirm([...]);
+    $message->fail([...]);
+    $message->unreachable([...]);
+
+    // Check if the message is from a specific app
+    $message->isFrom('app-slug');
+    $message->payload('key', 'default');
+
+    // Get the promise of the message (for advanced usage)
+    // you can override the promises or reject them
+    $message->promise();
+}
+```
+
+> [!TIP]
+> If you throw an exception inside any of the listener methods, Outpost will automatically send a `failed` response back to the sender.
+
+##### Registering Listeners
+
+> [!IMPORTANT]
+> Listen for incoming messages using the `Outpost::receive()` method. Is not implemented yet. Use other handlers.
+
+#### Custom Services (Predefined API Actions)
+
+For more structured and reusable logic, you can **define your own service** class and register it under a name. This adds a named accessor to the `Outpost` facade, allowing you to call your service methods directly.
+
+```php
+use Rosalana\Core\Services\Outpost\Service;
+use Rosalana\Core\Services\Outpost\Message;
+
+class ProjectService extends Service
+{
+    public function link(string $target, array $payload)
+    {
+        return $this->manager
+            ->to($target)
+            ->request('project.link', $payload)
+            ->onConfirm(function (Message $message) {
+                // Handle confirmation
+            });
+    }
+}
+```
+
+Then, you need to register the service in the service provider.
+
+```php
+use Rosalana\Core\Services\Outpost\Manager;
+
+public function register()
+{
+    $this->app->resolving('rosalana.outpost', function (Manager $manager) {
+        $manager->registerService('project', new ProjectService());
+    });
+}
+```
+
+After that, you can use the service in your application through the Basecamp facade.
+
+```php
+Outpost::project()->link('app-slug', [...]);
+```
+
+All services registered this way automatically receive access to the underlying `Outpost\Manager`, which manages headers, base URL, and request logic.
 
 ### App Context
 
