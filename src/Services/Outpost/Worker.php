@@ -55,8 +55,10 @@ class Worker
                     $via = $action->executedVia;
                 } catch (OutpostException $e) {
                     $message = $e->getOutpostMessage();
+                    $this->logWarning($e);
                     $ok = false;
                 } catch (\Throwable $e) {
+                    $this->logError($e);
                     $ok = false;
                 }
 
@@ -86,6 +88,16 @@ class Worker
         } catch (\Throwable $e) {
             // Group probably already exists
         }
+    }
+
+    protected function logError(\Throwable $e): void
+    {
+        echo "\n" . $this->color("Error: " . $e->getMessage(), 'red') . "\n\n";
+    }
+
+    protected function logWarning(\Throwable $e): void
+    {
+        echo "\n" . $this->color("Exception: " . $e->getMessage(), 'yellow') . "\n\n";
     }
 
     protected function log(?Message $message, string $provider, bool $queued, bool $broadcasted, float $time, bool $ok = true): void
