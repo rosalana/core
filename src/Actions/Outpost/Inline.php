@@ -2,6 +2,7 @@
 
 namespace Rosalana\Core\Actions\Outpost;
 
+use Rosalana\Core\Exceptions\Service\Outpost\OutpostException;
 use Rosalana\Core\Services\Actions\Inline as InlineAction;
 use Rosalana\Core\Services\Outpost\Message;
 
@@ -17,6 +18,11 @@ class Inline extends InlineAction
 
     public function handle(): void
     {
-        ($this->handler())($this->message);
+        try {
+            ($this->handler())($this->message);
+        } catch (\Throwable $e) {
+            $this->message->fail(['error' => $e->getMessage()]);
+            throw new OutpostException($this->message, "Inline action handling failed: " . $e->getMessage());
+        }
     }
 }
