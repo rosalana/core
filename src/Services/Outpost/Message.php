@@ -11,7 +11,7 @@ use Rosalana\Core\Facades\Outpost;
 
 class Message
 {
-    protected array $allowedStatuses = [
+    public const array ALLOWED_STATUSES = [
         'request',
         'confirmed',
         'failed',
@@ -103,7 +103,7 @@ class Message
 
     protected function ensureValid(): void
     {
-        if (! is_string($this->namespace) || ! preg_match('/^[a-z]+\\.[a-z]+:[a-z]+$/', $this->namespace) || ! in_array(explode(':', $this->namespace, 2)[1], $this->allowedStatuses)) {
+        if (! is_string($this->namespace) || ! preg_match('/^[a-z]+\\.[a-z]+:[a-z]+$/', $this->namespace) || ! in_array(explode(':', $this->namespace, 2)[1], static::ALLOWED_STATUSES)) {
             throw new InvalidMessageNamespaceException($this);
         }
     }
