@@ -145,6 +145,21 @@ class Manager
         return $response->json('data.message');
     }
 
+    public function receive(string $namespace, \Closure $callback): void
+    {
+        Registry::register($namespace, $callback);
+    }
+
+    public function receiveSilently(string $namespace, \Closure $callback): void
+    {
+        Registry::registerSilent($namespace, $callback);
+    }
+
+    public function runRegistry(Message $message): bool
+    {
+        return Registry::run($message);
+    }
+
     public function reset(): void
     {
         $this->targets = [];

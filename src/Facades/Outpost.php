@@ -17,6 +17,9 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Rosalana\Core\Services\Outpost\Promise fail(?string $name = null, array $payload = [])
  * @method static \Rosalana\Core\Services\Outpost\Promise unreachable(?string $name = null, array $payload = [])
  * @method static \Rosalana\Core\Services\Outpost\Manager reset()
+ * @method static void receive(string $namespace, \Closure $callback)
+ * @method static void receiveSilently(string $namespace, \Closure $callback)
+ * @method static bool runRegistry(\Rosalana\Core\Services\Outpost\Message $message)
  * 
  * @see \Rosalana\Core\Services\Outpost\Manager
  */
