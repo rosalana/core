@@ -1,9 +1,10 @@
 <?php
 
+use Rosalana\Core\Contracts\Action;
 use Rosalana\Core\Services\Actions\Runner;
 
 if (!function_exists('run')) {
-    function run(object $action): mixed
+    function run(Action $action): mixed
     {
         return Runner::run($action);
     }
