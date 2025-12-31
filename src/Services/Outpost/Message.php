@@ -46,6 +46,11 @@ class Message
         return explode(':', $this->namespace)[0] ?? 'unknown';
     }
 
+    public function isFrom(string $source): bool
+    {
+        return $source === $this->from;
+    }
+
     public function listenersClass(): string
     {
         $prefix = App::config('outpost.namespace_prefix', 'App\\Outpost\\');
