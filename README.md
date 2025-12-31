@@ -294,7 +294,7 @@ The callback will be executed after the Basecamp request is completed and if the
 
 ### Outpost Connection
 
-> [!INFORMATION]
+> [!INFO]
 > Send and receive **cross-application messages** asynchronously. Outpost allows Rosalana applications to communicate over queues without losing simplicity.
 
 The **Outpost system** lets you trigger events in other applications. It uses **Redis Streams** as the underlying message bus, allowing applications to send and receive messages asynchronously. It uses Rosalana's action system which acts like Laravel event and listener at one.
@@ -431,7 +431,7 @@ $event->broadcast();
 $event->broadcast('custom-channel', 'custom-event');
 ```
 
-> [!INFORMATION]
+> [!INFO]
 > Rosalana Actions system will be extended in the future to support more features like delayed execution, retries, and more.
 
 The `Message` class also provides helper methods to help you in your logic.
