@@ -38,12 +38,20 @@ class Worker
 
             foreach ($messages[$this->stream] ?? [] as $id => $payload) {
 
+                $ok = true;
                 $startTime = microtime(true);
-                run(new MessageReceived($id, $payload));
+
+                try {
+                    run(new MessageReceived($id, $payload));
+                } catch (\Throwable $e) {
+                    $ok = false;
+                }
+
                 $executionTime = round((microtime(true) - $startTime) * 1000, 2);
+                $symbol = $ok ? '✓' : '✗';
 
                 echo ('[' . date('Y-m-d H:i:s') . '] ');
-                echo ('Received: ' . ($payload['namespace'] ?? $id) . ' ' . ($payload['from'] ? '(' . $payload['from'] . ')' : '') . ' ............. ~ ' . $executionTime . 'ms' . PHP_EOL);
+                echo ("{$symbol} " . ($payload['namespace'] ?? $id) . ' ' . ($payload['from'] ? '(' . $payload['from'] . ')' : '') . ' ............. ~ ' . $executionTime . 'ms' . PHP_EOL);
 
                 Redis::connection($this->connection)->xack(
                     $this->stream,
