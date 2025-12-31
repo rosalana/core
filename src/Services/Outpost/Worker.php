@@ -38,9 +38,12 @@ class Worker
 
             foreach ($messages[$this->stream] ?? [] as $id => $payload) {
 
+                $startTime = microtime(true);
                 run(new MessageReceived($id, $payload));
+                $executionTime = round((microtime(true) - $startTime) * 1000, 2);
 
-                dump('Received Outpost message: ' . $payload['namespace'] ?? $id);
+                echo ('[' . date('Y-m-d H:i:s') . '] ');
+                echo ('Received: ' . ($payload['namespace'] ?? $id) . ' ' . ($payload['from'] ? '(' . $payload['from'] . ')' : '') . ' ............. ~ ' . $executionTime . 'ms' . PHP_EOL);
 
                 Redis::connection($this->connection)->xack(
                     $this->stream,
