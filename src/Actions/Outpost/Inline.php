@@ -2,10 +2,10 @@
 
 namespace Rosalana\Core\Actions\Outpost;
 
-use Rosalana\Core\Services\Actions\Action;
+use Rosalana\Core\Services\Actions\Inline as InlineAction;
 use Rosalana\Core\Services\Outpost\Message;
 
-class Inline extends Action
+class Inline extends InlineAction
 {
     public function __construct(\Closure $handler, protected Message $message)
     {
