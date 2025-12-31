@@ -10,14 +10,16 @@ final class Queue implements ShouldQueue
 {
     use SerializesModels;
 
-    public function handle(Action $action): void
+    public function __construct(protected Action $action) {}
+
+    public function handle(): void
     {
-        if (method_exists($action, 'handle')) {
-            $action->handle();
+        if (method_exists($this->action, 'handle')) {
+            $this->action->handle();
         }
 
-        if ($action->isBroadcastable()) {
-            broadcast(new Broadcast($action));
+        if ($this->action->isBroadcastable()) {
+            broadcast(new Broadcast($this->action));
         }
     }
 }
