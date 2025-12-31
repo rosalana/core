@@ -74,8 +74,10 @@ class MessageReceived implements Action
             if (method_exists($handler, 'handle') && $handler instanceof Listener) {
                 $action = $handler->handle($this->message);
 
-                $this->executedToQueue = $action->isQueueable();
-                $this->executedToBroadcast = $action->isBroadcastable();
+                if ($action instanceof Action) {
+                    $this->executedToQueue = $action->isQueueable();
+                    $this->executedToBroadcast = $action->isBroadcastable();
+                }
 
                 return true;
             }
