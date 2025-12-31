@@ -5,11 +5,19 @@ namespace Rosalana\Core\Services\Outpost;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Rosalana\Core\Actions\Outpost\Inline;
+use Rosalana\Core\Exceptions\Service\Outpost\InvalidMessageNamespaceException;
 use Rosalana\Core\Facades\App;
 use Rosalana\Core\Facades\Outpost;
 
 class Message
 {
+    protected array $allowedStatuses = [
+        'request',
+        'confirmed',
+        'failed',
+        'unreachable',
+    ];
+
     public function __construct(
         public readonly string $id,
         public readonly string $namespace,
@@ -21,7 +29,7 @@ class Message
 
     public static function make(string $id, array $data): static
     {
-        return new static(
+        $i = new static(
             id: $id,
             namespace: $data['namespace'] ?? '',
             payload: $data['payload'] ? json_decode($data['payload'], true) : [],
@@ -29,6 +37,10 @@ class Message
             correlationId: $data['correlation_id'] ?? null,
             timestamp: isset($data['timestamp']) ? (int)$data['timestamp'] : null,
         );
+
+        $i->ensureValid();
+
+        return $i;
     }
 
     public function payload(string $key, mixed $default = null): mixed
@@ -87,5 +99,12 @@ class Message
     public function unreachable(array $payload = []): void
     {
         Outpost::responseTo($this)->unreachable(payload: $payload);
+    }
+
+    protected function ensureValid(): void
+    {
+        if (! is_string($this->namespace) || ! preg_match('/^[a-z]+\\.[a-z]+:[a-z]+$/', $this->namespace) || ! in_array(explode(':', $this->namespace, 2)[1], $this->allowedStatuses)) {
+            throw new InvalidMessageNamespaceException($this);
+        }
     }
 }
