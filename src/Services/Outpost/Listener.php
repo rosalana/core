@@ -18,6 +18,8 @@ abstract class Listener
             default => $this->unreachable($message),
         };
 
+        if (!$job) return null;
+
         if ($job instanceof Action) {
             run($job);
             return $job;
