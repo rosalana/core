@@ -51,6 +51,11 @@ class Message
         return $source === $this->from;
     }
 
+    public function promise(): Promise|null
+    {
+        return Promise::get($this);
+    }
+
     public function listenersClass(): string
     {
         $prefix = App::config('outpost.namespace_prefix', 'App\\Outpost\\');
@@ -62,6 +67,11 @@ class Message
     public function event(\Closure $handle): Inline
     {
         return Inline::make($handle, $this);
+    }
+
+    public function response()
+    {
+        return Outpost::responseTo($this);
     }
 
     public function confirm(array $payload = []): void

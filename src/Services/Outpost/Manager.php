@@ -2,6 +2,7 @@
 
 namespace Rosalana\Core\Services\Outpost;
 
+use Illuminate\Support\Str;
 use Rosalana\Core\Facades\App;
 use Rosalana\Core\Facades\Basecamp;
 use Rosalana\Core\Traits\Serviceable;
@@ -57,44 +58,64 @@ class Manager
         return $this;
     }
 
-    public function request(?string $name = null, array $payload = []): void
+    public function request(?string $name = null, array $payload = []): Promise
     {
         if (!is_null($name)) {
             $this->validateName($name);
             $this->name = $name;
         }
 
-        $this->send('request', $payload);
+        $message = $this->send('request', $payload);
+
+        return new Promise(Message::make(
+            id: (string) Str::uuid(),
+            data: $message
+        ));
     }
 
-    public function confirm(?string $name = null, array $payload = []): void
+    public function confirm(?string $name = null, array $payload = []): Promise
     {
         if (!is_null($name)) {
             $this->validateName($name);
         }
 
-        $this->send('confirmed', $payload);
+        $message = $this->send('confirmed', $payload);
+
+        return new Promise(Message::make(
+            id: (string) Str::uuid(),
+            data: $message
+        ));
     }
 
-    public function fail(?string $name = null, array $payload = []): void
+    public function fail(?string $name = null, array $payload = []): Promise
     {
         if (!is_null($name)) {
             $this->validateName($name);
         }
 
-        $this->send('failed', $payload);
+        $message = $this->send('failed', $payload);
+
+        return new Promise(Message::make(
+            id: (string) Str::uuid(),
+            data: $message
+        ));
     }
 
-    public function unreachable(?string $name = null, array $payload = []): void
+    public function unreachable(?string $name = null, array $payload = []): Promise
     {
         if (!is_null($name)) {
             $this->validateName($name);
         }
 
-        $this->send('unreachable', $payload);
+        $message = $this->send('unreachable', $payload);
+
+        return new Promise(Message::make(
+            id: (string) Str::uuid(),
+            data: $message
+        ));
     }
 
-    protected function send(string $status, array $payload = []): void
+    protected function send(string $status, array $payload = []): array
     {
         if (!empty($this->excepts)) {
             $this->targets = array_filter(
@@ -111,7 +132,7 @@ class Manager
             throw new \RuntimeException("No target apps specified for Outpost message.");
         }
 
-        Basecamp::post("/outpost/send", [
+        $response = Basecamp::post("/outpost/send", [
             'from' => $this->origin,
             'to' => $this->targets,
             'correlation_id' => $this->correlationId,
@@ -120,6 +141,8 @@ class Manager
         ]);
 
         $this->reset();
+
+        return $response->json('message');
     }
 
     public function reset(): void

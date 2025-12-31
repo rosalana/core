@@ -21,12 +21,25 @@ class MessageReceived implements Action
     public function handle(): void
     {
         try {
+            if ($this->handleViaCorrelation()) return;
             if ($this->handleViaRegistry()) return;
             if ($this->handleViaListener()) return;
         } catch (\Throwable $e) {
             $this->message->fail(['error' => $e->getMessage()]);
             return;
         }
+    }
+
+    protected function handleViaCorrelation(): bool
+    {
+        $promise = $this->message->promise();
+
+        if ($promise) {
+            $promise->resolve();
+            return true;
+        }
+
+        return false;
     }
 
     protected function handleViaRegistry(): bool
