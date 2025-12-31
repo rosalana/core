@@ -9,7 +9,7 @@ final class Event implements ShouldBroadcast
     protected bool $isBroadcastable = false;
 
     public function __construct(
-        public Action $action
+        public object $action
     ) {
         $this->isBroadcastable = $action->isBroadcastable();
     }
