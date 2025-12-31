@@ -2,11 +2,15 @@
 
 namespace Rosalana\Core\Actions\Outpost;
 
+use Rosalana\Core\Contracts\Action;
 use Rosalana\Core\Services\Outpost\Listener;
 use Rosalana\Core\Services\Outpost\Message;
+use Rosalana\Core\Traits\SynchronousExecution;
 
-class MessageReceived
+class MessageReceived implements Action
 {
+    use SynchronousExecution;
+
     protected Message $message;
 
     public function __construct(string $id, array $payload)
