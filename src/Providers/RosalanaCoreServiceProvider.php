@@ -3,8 +3,10 @@
 namespace Rosalana\Core\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Rosalana\Core\Facades\Outpost;
 use Rosalana\Core\Services\Basecamp\AppsService;
 use Rosalana\Core\Services\Basecamp\TicketsService;
+use Rosalana\Core\Services\Outpost\Message;
 
 class RosalanaCoreServiceProvider extends ServiceProvider
 {
@@ -49,6 +51,10 @@ class RosalanaCoreServiceProvider extends ServiceProvider
 
         $this->app->resolving('rosalana.basecamp', function (\Rosalana\Core\Services\Basecamp\Manager $manager) {
             $manager->registerService('tickets', new TicketsService());
+        });
+
+        Outpost::receive('context.refresh:request', function (Message $message) {
+            logger()->info('Received context.refresh request via Outpost from ' . $message->from);
         });
     }
 
