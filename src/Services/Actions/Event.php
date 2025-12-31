@@ -6,17 +6,17 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
 final class Event implements ShouldBroadcast
 {
-    protected bool $shouldBroadcast = false;
+    protected bool $isBroadcastable = false;
 
     public function __construct(
-        public object $action
+        public Action $action
     ) {
-        $this->shouldBroadcast = $action instanceof ShouldBroadcast;
+        $this->isBroadcastable = $action->isBroadcastable();
     }
 
     public function broadcastOn()
     {
-        if (! $this->shouldBroadcast) return [];
+        if (! $this->isBroadcastable) return [];
 
         if (method_exists($this->action, 'broadcastOn')) {
             return (array) $this->action->broadcastOn();
@@ -27,23 +27,12 @@ final class Event implements ShouldBroadcast
 
     public function broadcastAs()
     {
-        if (! $this->shouldBroadcast) return null;
+        if (! $this->isBroadcastable) return null;
 
         if (method_exists($this->action, 'broadcastAs')) {
             return $this->action->broadcastAs();
         }
 
         return null;
-    }
-
-    public function broadcastWhen()
-    {
-        if (! $this->shouldBroadcast) return false;
-
-        if (method_exists($this->action, 'broadcastWhen')) {
-            return (bool) $this->action->broadcastWhen();
-        }
-
-        return true;
     }
 }
