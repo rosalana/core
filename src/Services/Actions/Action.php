@@ -3,13 +3,12 @@
 namespace Rosalana\Core\Services\Actions;
 
 use Illuminate\Broadcasting\Channel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use Rosalana\Core\Contracts\Action as ContractsAction;
 
-class Action implements ShouldBroadcast, ShouldQueue
+class Action implements ContractsAction
 {
-    protected bool $shouldBroadcast = false;
-    protected bool $shouldQueue = false;
+    protected bool $isQueueable = false;
+    protected bool $isBroadcastable = false;
 
     protected array $broadcastOn = [];
     protected ?string $broadcastAs = null;
@@ -30,18 +29,18 @@ class Action implements ShouldBroadcast, ShouldQueue
 
     public function queue(): static
     {
-        $this->shouldQueue = true;
+        $this->isQueueable = true;
         return $this;
     }
 
-    public function shouldQueue(): bool
+    public function isQueueable(): bool
     {
-        return $this->shouldQueue;
+        return $this->isQueueable;
     }
 
     public function broadcast(array|string|null $channels = null, ?string $as = null): static
     {
-        $this->shouldBroadcast = true;
+        $this->isBroadcastable = true;
 
         if ($channels !== null) {
             $this->broadcastOn = is_array($channels) ? $channels : [$channels];
@@ -67,8 +66,8 @@ class Action implements ShouldBroadcast, ShouldQueue
         return $this->broadcastAs;
     }
 
-    public function broadcastWhen(): bool
+    public function isBroadcastable(): bool
     {
-        return $this->shouldBroadcast;
+        return $this->isBroadcastable;
     }
 }
