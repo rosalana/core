@@ -17,6 +17,6 @@ class Inline extends InlineAction
 
     public function handle(): void
     {
-        ($this->handler)($this->message);
+        ($this->handler())($this->message);
     }
 }

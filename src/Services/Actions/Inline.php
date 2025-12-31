@@ -3,6 +3,7 @@
 namespace Rosalana\Core\Services\Actions;
 
 use Illuminate\Broadcasting\Channel;
+use Laravel\SerializableClosure\SerializableClosure;
 use Rosalana\Core\Contracts\Action;
 
 class Inline implements Action
@@ -13,18 +14,27 @@ class Inline implements Action
     protected array $broadcastOn = [];
     protected ?string $broadcastAs = null;
 
+    protected SerializableClosure $handler;
+
     public function __construct(
-        protected \Closure $handler,
-    ) {}
+         \Closure $handler,
+    ) {
+        $this->handler = new SerializableClosure($handler);
+    }
 
     public static function make(...$args): static
     {
         return new static(...$args);
     }
 
+    public function handler()
+    {
+        return $this->handler->getClosure();
+    }
+
     public function handle(): void
     {
-        ($this->handler)();
+        ($this->handler())();
     }
 
     public function queue(): static
