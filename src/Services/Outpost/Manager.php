@@ -142,7 +142,7 @@ class Manager
 
         $this->reset();
 
-        return $response->json('message');
+        return $response->json('data.message');
     }
 
     public function reset(): void
