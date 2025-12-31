@@ -2,7 +2,7 @@
 
 namespace Rosalana\Core\Services\Outpost;
 
-use Rosalana\Core\Services\Actions\Action;
+use Rosalana\Core\Contracts\Action;
 
 abstract class Listener
 {

@@ -5,7 +5,7 @@ namespace Rosalana\Core\Actions\Outpost;
 use Rosalana\Core\Contracts\Action;
 use Rosalana\Core\Services\Outpost\Listener;
 use Rosalana\Core\Services\Outpost\Message;
-use Rosalana\Core\Traits\SynchronousExecution;
+use Rosalana\Core\Traits\Actions\SynchronousExecution;
 
 class MessageReceived implements Action
 {
