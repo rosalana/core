@@ -24,7 +24,7 @@ class MessageReceived implements Action
             if ($this->handleViaRegistry()) return;
             if ($this->handleViaListener()) return;
         } catch (\Throwable $e) {
-            $this->message->fail();
+            $this->message->fail(['error' => $e->getMessage()]);
             return;
         }
     }
