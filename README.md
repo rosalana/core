@@ -617,19 +617,15 @@ The [CLI](#cli) ensures package compatibility and prevents installing mismatched
 
 ## May Show in the Future
 
-- **Event system:** A system to allow packages create and listen to events across the ecosystem.
 - **Plugin infrastructure**
-- **Shared message-bus interfaces**
 - **Realtime WebSocket integration**
 - **Package actions**: Allow packages to define custom actions that can be triggered via CLI.
-- **Rewrite the config builder** support more complex structures.
-- **App2App** use `Revizor::class` to create tickets and update `Basecamp::class` to works with them.
 
 Stay tuned — we're actively shaping the foundation of the Rosalana ecosystem.
 
 ## Bugs
 
-- **Outpost**: when sending notification.email should be process ones but has no target app. Its target to basecamp. _Možná hodit jen do lokální queue a zpracovat lokálně. Je fakt, že pokud něco není potřeba posílat do outpostu, tak to nebudeme posílat. Notification fasada by měla tohle rozhodovat. Jestli je potřeba posílat do outpostu nebo jestli jen poslat email nebo jen hodit do session._
+*It looks like there are no known bugs at the moment.*
 
 ## License
 
