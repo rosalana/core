@@ -4,7 +4,6 @@ namespace Rosalana\Core\Services\Outpost;
 
 use Illuminate\Support\Facades\Redis;
 use Rosalana\Core\Actions\Outpost\MessageReceived;
-use Rosalana\Core\Contracts\Action;
 use Rosalana\Core\Exceptions\Service\Outpost\OutpostException;
 use Rosalana\Core\Facades\App;
 
@@ -89,10 +88,15 @@ class Worker
         }
     }
 
-    protected function log(?Message $message, string $provider, bool $queued, bool $broadcasted, int $time, bool $ok = true): void
+    protected function log(?Message $message, string $provider, bool $queued, bool $broadcasted, float $time, bool $ok = true): void
     {
-        $timestamp = date('Y-m-d H:i:s');
-        $symbol = $ok ? $this->color('✓', 'green') : $this->color('✗', 'red');
+        $timestamp = $ok ? date('Y-m-d H:i:s') : $this->color(date('Y-m-d H:i:s'), 'red');
+
+        $symbol = match (true) {
+            !$ok => $this->color('✗', 'red'),
+            $provider === 'none' => $this->color('!', 'yellow'),
+            default => $this->color('✓', 'green'),
+        };
 
         $namespace = '-';
         $from = '-';
@@ -116,9 +120,19 @@ class Worker
         }
 
         $flags = $flags ? ' → ' . implode(',', $flags) : '';
-        $time =  number_format($time, 2) . "ms";
 
-        echo $this->color(sprintf(
+        switch ($time) {
+            case $time >= 50:
+                $time = $this->color(number_format($time, 2) . 'ms', 'red');
+                break;
+            case $time >= 10:
+                $time = $this->color(number_format($time, 2) . 'ms', 'yellow');
+                break;
+            default:
+                $time = number_format($time, 2) . "ms";
+        }
+
+        echo sprintf(
             "[%s] %s %s (%s) [%s%s] ........ ~ %s\n",
             $timestamp,
             $symbol,
@@ -127,7 +141,7 @@ class Worker
             $via,
             $flags,
             $time
-        ), $ok ? 'none' : 'red');
+        );
     }
 
     protected function styleNamespace(Message $message): string
@@ -145,6 +159,10 @@ class Worker
 
     protected function styleVia(string $provider): string
     {
+        if (str_starts_with($provider, 'failed:')) {
+            return $this->color('failed:', 'red') . $this->styleVia(str_replace('failed:', '', $provider));
+        }
+
         return match ($provider ?? '-') {
             'promise' => $this->color('promise', 'cyan'),
             'listener' => $this->color('listener', 'green'),
