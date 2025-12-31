@@ -8,12 +8,16 @@ class Registry
 
     public static function register(string $namespace, \Closure $callback): void
     {
+        if (! static::validateNamespace($namespace)) return;
+
         $listener = new RegistryListener($callback);
         static::$listeners[$namespace][] = $listener;
     }
 
     public static function registerSilent(string $namespace, \Closure $callback): void
     {
+        if (! static::validateNamespace($namespace)) return;
+
         $listener = new RegistryListener($callback);
         $listener->setSilent(true);
         static::$listeners[$namespace][] = $listener;
@@ -61,5 +65,14 @@ class Registry
         }
 
         return $consumed;
+    }
+
+    protected static function validateNamespace(string $namespace): bool
+    {
+        if (! is_string($namespace) || ! preg_match('/^[a-z]+\\.[a-z]+:[a-z]+$/', $namespace) || ! in_array(explode(':', $namespace, 2)[1], Message::ALLOWED_STATUSES)) {
+            return false;
+        }
+
+        return true;
     }
 }
