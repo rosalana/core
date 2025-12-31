@@ -6,7 +6,7 @@ use Rosalana\Core\Contracts\Action;
 
 abstract class Listener
 {
-    public function handle(Message $message): void
+    public function handle(Message $message): Action|null
     {
         $status = $message->status();
 
@@ -20,9 +20,12 @@ abstract class Listener
 
         if ($job instanceof Action) {
             run($job);
+            return $job;
         } else {
             event($job);
         }
+
+        return null;
     }
 
     abstract public function request(Message $message);
