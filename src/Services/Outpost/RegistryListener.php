@@ -2,6 +2,8 @@
 
 namespace Rosalana\Core\Services\Outpost;
 
+use Rosalana\Core\Contracts\Action;
+
 class RegistryListener
 {
     protected bool $silent = false;
@@ -20,6 +22,10 @@ class RegistryListener
 
     public function handle(Message $message): void
     {
-        ($this->callback)($message);
+        $result = ($this->callback)($message);
+
+        if ($result instanceof Action) {
+            run($result);
+        }
     }
 }
