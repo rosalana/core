@@ -21,7 +21,6 @@ class Inline extends InlineAction
         try {
             ($this->handler())($this->message);
         } catch (\Throwable $e) {
-            $this->message->fail(['error' => $e->getMessage()]);
             throw new OutpostException($this->message, "Inline action handling failed: " . $e->getMessage());
         }
     }
