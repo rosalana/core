@@ -460,8 +460,27 @@ public function request(Message $message)
 
 ##### Registering Listeners
 
-> [!IMPORTANT]
-> Listen for incoming messages using the `Outpost::receive()` method. Is not implemented yet. Use other handlers.
+> [!NOTE]
+> Listen for incoming messages using the `Outpost::receive()` method. Is for advanced usage, when you want to register listeners dynamically.
+
+You can register listeners dynamically using the `Outpost::receive()` method. This is useful when you want to handle messages without creating dedicated listener classes.
+
+You can also register silent listeners that do not interfere with class-based listeners. The action from silent listener will not be considered as handler of the message.
+
+Registering is typically done in the `AppServiceProvider` or a dedicated service provider. You need to provide the full namespace alias (including status) and a callback function that will handle the incoming message.
+
+```php
+public function register()
+{
+    Outpost::receive('group.action:request', function (Message $message) {
+        // Handle incoming request
+    });
+
+    Outpost::receiveSilently('group.action:request', function (Message $message) {
+        // Handle incoming request silently
+    });
+}
+```
 
 #### Custom Services (Predefined API Actions)
 
@@ -625,7 +644,7 @@ Stay tuned — we're actively shaping the foundation of the Rosalana ecosystem.
 
 ## Bugs
 
-*It looks like there are no known bugs at the moment.*
+_It looks like there are no known bugs at the moment._
 
 ## License
 
