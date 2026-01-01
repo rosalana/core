@@ -10,11 +10,12 @@ class Manager
     /** @var Span[] */
     protected array $roots = [];
 
-    public function start(string $name): Span
+    public function start(?string $name = null): Span
     {
         $parent = $this->current();
 
         $span = new Span($name, $parent);
+        $span->start();
 
         if ($parent) {
             $parent->children[] = $span;
@@ -32,10 +33,33 @@ class Manager
         $span = array_pop($this->stack);
 
         if ($span) {
-            $span->end();
+            $span->finish();
         }
 
         return $span;
+    }
+
+    public function finish(): ?Span
+    {
+        if ($this->current()) {
+            $this->end();
+        }
+
+        return $this->roots ? array_shift($this->roots) : null;
+    }
+
+    public function wrap(callable $process, ?string $name = null): mixed
+    {
+        $span = $this->start($name);
+
+        try {
+            return $process();
+        } catch (\Throwable $e) {
+            $span->fail($e);
+            throw $e;
+        } finally {
+            $this->end();
+        }
     }
 
     public function record(mixed $data): void
@@ -45,22 +69,32 @@ class Manager
         }
     }
 
-    public function current(): ?Span
+    public function exception(\Throwable $exception, mixed $data = null): void
+    {
+        if ($span = $this->current()) {
+            $span->fail($exception, $data);
+        }
+    }
+
+    public function phase(string $name): Span
+    {
+        if ($this->current()) {
+            $this->end();
+        }
+
+        return $this->start($name);
+    }
+
+    protected function current(): ?Span
     {
         return end($this->stack) ?: null;
     }
 
-    /**
-     * Vrátí celý strom – použije Worker / Logger / Tracker
-     */
-    public function spans(): array
+    public function getTraces(): array
     {
         return $this->roots;
     }
 
-    /**
-     * Reset mezi requesty / joby / workery
-     */
     public function flush(): void
     {
         $this->stack = [];

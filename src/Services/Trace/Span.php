@@ -5,37 +5,64 @@ namespace Rosalana\Core\Services\Trace;
 class Span
 {
     public string $name;
-    public float $startedAt;
-    public ?float $endedAt = null;
+    public float $start;
+    public ?float $end = null;
 
     public ?Span $parent = null;
     public array $children = [];
     public array $records = [];
 
-    public function __construct(string $name, ?Span $parent = null)
+    public function __construct(?string $name, ?Span $parent = null)
     {
-        $this->name = $name;
+        $this->name = $name ?? 'anonymous';
         $this->parent = $parent;
-        $this->startedAt = microtime(true);
     }
 
-    public function end(): void
+    public function start(): void
     {
-        $this->endedAt = microtime(true);
+        $this->start = microtime(true);
+    }
+
+    public function finish(): void
+    {
+        $this->end = microtime(true);
+    }
+
+    public function record(mixed $data = null): void
+    {
+        $this->records[] = [
+            'type' => 'record',
+            'time' => microtime(true),
+            'data' => $data,
+        ];
+    }
+
+    public function fail(\Throwable $exception, mixed $data = null): void
+    {
+        $this->records[] = [
+            'type' => 'exception',
+            'time' => microtime(true),
+            'exception' => $exception,
+            'data' => $data,
+        ];
     }
 
     public function duration(): ?float
     {
-        return $this->endedAt
-            ? ($this->endedAt - $this->startedAt) * 1000
+        return $this->end
+            ? ($this->end - $this->start) * 1000
             : null;
     }
 
-    public function record(mixed $data): void
+    public function toArray(): array
     {
-        $this->records[] = [
-            'time' => microtime(true),
-            'data' => $data,
+        return [
+            'name' => $this->name,
+            'start' => $this->start,
+            'end' => $this->end,
+            'duration' => $this->duration(),
+            'records' => $this->records,
+            'children' => array_map(fn(Span $child) => $child->toArray(), $this->children),
         ];
     }
 }
