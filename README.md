@@ -472,14 +472,24 @@ Registering is typically done in the `AppServiceProvider` or a dedicated service
 ```php
 public function register()
 {
-    Outpost::receive('group.action:request', function (Message $message) {
+    Outpost::receive('group.action:status', function (Message $message) {
         // Handle incoming request
     });
 
-    Outpost::receiveSilently('group.action:request', function (Message $message) {
+    Outpost::receiveSilently('group.action:status', function (Message $message) {
         // Handle incoming request silently
     });
 }
+```
+
+You are able to use Rosalana Actions inside the callback as well. Just return an action instance.
+
+```php
+Outpost::receive('group.action:status', function (Message $message) {
+    return $message->event(function (Message $message) {
+        // Handle the event logic here
+    })->broadcast();
+});
 ```
 
 #### Custom Services (Predefined API Actions)
