@@ -21,7 +21,7 @@ final class Scope
         if ($this->closed) return;
         $this->closed = true;
 
-        $this->context->end($this->trace);
+        $this->context->endTrace($this->trace);
     }
 
     public function __destruct()
