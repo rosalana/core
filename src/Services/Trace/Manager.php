@@ -10,7 +10,7 @@ class Manager
 
     public function __construct(protected Context $context)
     {
-        $this->enabled = App::config('tracer.runtime_enabled', true);
+        $this->enabled = App::config('tracer.runtime.enabled', true);
     }
 
     public function start(?string $name = null): void
@@ -31,7 +31,15 @@ class Manager
     {
         if (! $this->enabled) return null;
 
-        return $this->context->finish();
+        $trace = $this->context->finish();
+
+        $keys = App::config('tracer.runtime.log', []);
+
+        if ($trace->name() && in_array($trace->name(), $keys, true)) {
+            $trace->log();
+        }
+
+        return $trace;
     }
 
     public function capture(\Closure $process, ?string $name = null): mixed
@@ -50,6 +58,13 @@ class Manager
         $this->context->record($data);
     }
 
+    public function recordWhen(bool $condition, mixed $data = null): void
+    {
+        if (! $this->enabled || ! $condition) return;
+
+        $this->context->record($data);
+    }
+
     public function exception(\Throwable $exception, mixed $data = null): void
     {
         if (! $this->enabled) return;
@@ -60,6 +75,31 @@ class Manager
     public function fail(\Throwable $exception, mixed $data = null): void
     {
         $this->exception($exception, $data);
+    }
+
+    public function decision(mixed $data = null): void
+    {
+        if (! $this->enabled) return;
+
+        $this->context->decision($data);
+    }
+
+    public function decisionWhen(bool $condition, mixed $data = null): void
+    {
+        if (! $this->enabled || ! $condition) return;
+
+        $this->context->decision($data);
+    }
+
+    public function recordOrDecision(bool $isDecision, mixed $data = null): void
+    {
+        if (! $this->enabled) return;
+
+        if ($isDecision) {
+            $this->context->decision($data);
+        } else {
+            $this->context->record($data);
+        }
     }
 
     public function getTraces(): array
