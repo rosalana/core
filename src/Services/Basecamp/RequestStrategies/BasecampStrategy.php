@@ -11,6 +11,11 @@ use Rosalana\Core\Services\Basecamp\Request;
 
 class BasecampStrategy implements RequestStrategy
 {
+    public function getTarget(): string
+    {
+        return 'basecamp';
+    }
+
     public function prepare(Request $request): Request
     {
         $request->url(config('rosalana.basecamp.url'));

@@ -59,6 +59,11 @@ class Request
         return $this->headers;
     }
 
+    public function getTarget(): ?string
+    {
+        return $this->strategy?->getTarget();
+    }
+
     public function strategy(RequestStrategy $strategy): self
     {
         $this->strategy = $strategy;

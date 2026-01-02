@@ -14,6 +14,11 @@ class AppStrategy implements RequestStrategy
 {
     public function __construct(protected string $name) {}
 
+    public function getTarget(): string
+    {
+        return $this->name;
+    }
+
     public function prepare(Request $request): Request
     {
         $request->url($this->findUrl());
