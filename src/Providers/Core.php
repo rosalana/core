@@ -62,6 +62,13 @@ class Core implements Package
                         ->value('signature_ttl', '60')
                         ->value('cache_prefix', "revizor_signatures_")
 
+                        ->section('.tracer')
+                        ->withComment(
+                            'Trace System',
+                            "Configuration for the internal tracing system used for performance monitoring and debugging.",
+                        )
+                        ->value('runtime_enabled', true)
+
                         ->save();
                 }
             ],
