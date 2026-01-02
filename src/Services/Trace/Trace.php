@@ -120,14 +120,42 @@ class Trace
             : null;
     }
 
-    public function filterPhases(\Closure $callback): array
+    public function findPhases(\Closure $callback): array
     {
-        return array_filter($this->phases, $callback);
+        $results = [];
+
+        if ($callback($this)) {
+            $results[] = $this;
+        }
+
+        foreach ($this->phases as $phase) {
+            $results = array_merge(
+                $results,
+                $phase->findPhases($callback)
+            );
+        }
+
+        return $results;
     }
 
-    public function filterRecords(\Closure $callback): array
+    public function findRecords(\Closure $callback): array
     {
-        return array_filter($this->records, $callback);
+        $results = [];
+
+        foreach ($this->records as $record) {
+            if ($callback($record, $this)) {
+                $results[] = $record;
+            }
+        }
+
+        foreach ($this->phases as $phase) {
+            $results = array_merge(
+                $results,
+                $phase->findRecords($callback)
+            );
+        }
+
+        return $results;
     }
 
     public function hasPhases(): bool
