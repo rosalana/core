@@ -46,7 +46,9 @@ class RosalanaCoreServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton('rosalana.trace', function () {
-            return new \Rosalana\Core\Services\Trace\Manager();
+            return new \Rosalana\Core\Services\Trace\Manager(
+                new \Rosalana\Core\Services\Trace\Context(),
+            );
         });
 
         $this->app->resolving('rosalana.basecamp', function (\Rosalana\Core\Services\Basecamp\Manager $manager) {

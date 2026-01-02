@@ -4,100 +4,45 @@ namespace Rosalana\Core\Services\Trace;
 
 class Manager
 {
-    /** @var Span[] */
-    protected array $stack = [];
+    public function __construct(protected Context $context) {}
 
-    /** @var Span[] */
-    protected array $roots = [];
-
-    public function start(?string $name = null): Span
+    public function start(?string $name = null): Scope
     {
-        $parent = $this->current();
-
-        $span = new Span($name, $parent);
-        $span->start();
-
-        if ($parent) {
-            $parent->children[] = $span;
-        } else {
-            $this->roots[] = $span;
-        }
-
-        $this->stack[] = $span;
-
-        return $span;
+        return $this->context->start($name);
     }
 
-    public function end(): ?Span
+    public function phase(string $name): Scope
     {
-        $span = array_pop($this->stack);
-
-        if ($span) {
-            $span->finish();
-        }
-
-        return $span;
+        return $this->context->phase($name);
     }
 
-    public function finish(): ?Span
+    public function finish(): ?Trace
     {
-        if ($this->current()) {
-            $this->end();
-        }
-
-        return $this->roots ? array_shift($this->roots) : null;
+        return $this->context->finish();
     }
 
     public function wrap(callable $process, ?string $name = null): mixed
     {
-        $span = $this->start($name);
-
-        try {
-            return $process();
-        } catch (\Throwable $e) {
-            $span->fail($e);
-            throw $e;
-        } finally {
-            $this->end();
-        }
+        return $this->context->wrap($process, $name);
     }
 
-    public function record(mixed $data): void
+    public function record(mixed $data = null): void
     {
-        if ($span = $this->current()) {
-            $span->record($data);
-        }
+        $this->context->record($data);
     }
 
     public function exception(\Throwable $exception, mixed $data = null): void
     {
-        if ($span = $this->current()) {
-            $span->fail($exception, $data);
-        }
-    }
-
-    public function phase(string $name): Span
-    {
-        if ($this->current()) {
-            $this->end();
-        }
-
-        return $this->start($name);
-    }
-
-    protected function current(): ?Span
-    {
-        return end($this->stack) ?: null;
+        $this->context->exception($exception, $data);
     }
 
     public function getTraces(): array
     {
-        return $this->roots;
+        return $this->context->getTraces();
     }
 
     public function flush(): void
     {
-        $this->stack = [];
-        $this->roots = [];
+        $this->context->flush();
     }
 }
