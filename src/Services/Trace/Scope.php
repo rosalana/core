@@ -13,7 +13,7 @@ final class Scope
 
     public function id(): string
     {
-        return $this->trace->id;
+        return $this->trace->id();
     }
 
     public function close(): void
