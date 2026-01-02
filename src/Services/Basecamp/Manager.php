@@ -4,6 +4,7 @@ namespace Rosalana\Core\Services\Basecamp;
 
 use Illuminate\Http\Client\Response;
 use Rosalana\Core\Facades\Pipeline;
+use Rosalana\Core\Facades\Trace;
 use Rosalana\Core\Services\Basecamp\RequestStrategies\AppStrategy;
 use Rosalana\Core\Services\Basecamp\RequestStrategies\BasecampStrategy;
 use Rosalana\Core\Traits\Serviceable;
@@ -37,7 +38,7 @@ class Manager
             $this->pipeline = $pipeline;
         }
 
-        return $this->request('get', $endpoint, $data);
+        return Trace::capture(fn() => $this->request('get', $endpoint, $data), 'Basecamp:send');
     }
 
     /**
@@ -49,7 +50,7 @@ class Manager
             $this->pipeline = $pipeline;
         }
 
-        return $this->request('post', $endpoint, $data);
+        return Trace::capture(fn() => $this->request('post', $endpoint, $data), 'Basecamp:send');
     }
 
     /**
@@ -61,7 +62,7 @@ class Manager
             $this->pipeline = $pipeline;
         }
 
-        return $this->request('put', $endpoint, $data);
+        return Trace::capture(fn() => $this->request('put', $endpoint, $data), 'Basecamp:send');
     }
 
     /**
@@ -73,7 +74,7 @@ class Manager
             $this->pipeline = $pipeline;
         }
 
-        return $this->request('patch', $endpoint, $data);
+        return Trace::capture(fn() => $this->request('patch', $endpoint, $data), 'Basecamp:send');
     }
 
     /**
@@ -85,7 +86,7 @@ class Manager
             $this->pipeline = $pipeline;
         }
 
-        return $this->request('delete', $endpoint, $data);
+        return Trace::capture(fn() => $this->request('delete', $endpoint, $data), 'Basecamp:send');
     }
 
     /**
@@ -117,6 +118,16 @@ class Manager
                     throw $e;
                 }
             }
+        }
+
+        if (! $this->mocked) {
+            Trace::decision([
+                'method' => $request->getMethod(),
+                'endpoint' => $request->getUrl(),
+                'status' => $response->status(),
+                'target' => $request->getTarget(),
+                'pipeline' => $this->pipeline,
+            ]);
         }
 
         if ($this->pipeline && !$this->ghost) {
