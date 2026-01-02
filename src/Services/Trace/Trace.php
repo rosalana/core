@@ -87,6 +87,24 @@ class Trace
     }
 
     /**
+     * Get the parent trace.
+     */
+    public function parent(): ?Trace
+    {
+        return $this->parent;
+    }
+
+    public function children(): array
+    {
+        return $this->children;
+    }
+
+    public function records(): array
+    {
+        return $this->records;
+    }
+
+    /**
      * Set the parent trace.
      */
     public function setParent(?Trace $parent): void
