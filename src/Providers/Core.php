@@ -67,7 +67,10 @@ class Core implements Package
                             'Trace System',
                             "Configuration for the internal tracing system used for performance monitoring and debugging.",
                         )
-                        ->value('runtime_enabled', true)
+                        ->section('runtime')
+                            ->value('enabled', true)
+                            ->value('log', '[]')
+                        
 
                         ->save();
                 }
