@@ -295,9 +295,7 @@ class Trace
     public function mergeRecords(): Trace
     {
         $clone = $this->cloneEmpty();
-
         $records = $this->records();
-        $this->flushRecords();
 
         $merged = [
             'type' => 'merged',
