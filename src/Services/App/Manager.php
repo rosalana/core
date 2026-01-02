@@ -3,6 +3,7 @@
 namespace Rosalana\Core\Services\App;
 
 use Illuminate\Http\Client\Response;
+use Rosalana\Core\Contracts\Action;
 use Rosalana\Core\Facades\Basecamp;
 
 class Manager
@@ -79,5 +80,10 @@ class Manager
     public function hooks(): Hooks
     {
         return $this->hooks;
+    }
+
+    public function run(Action $action): mixed
+    {
+        return run($action);
     }
 }

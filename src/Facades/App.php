@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Illuminate\Http\Client\Response find(string $name)
  * @method static \Rosalana\Core\Services\App\Context context()
  * @method static \Rosalana\Core\Services\App\Hooks hooks()
+ * @method static mixed run(\Rosalana\Core\Contracts\Action $action)
  *
  * @see \Rosalana\Core\Services\App\Manager
  */
