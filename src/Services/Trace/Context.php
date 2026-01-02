@@ -22,7 +22,7 @@ class Context
         $trace->start();
 
         if ($parent) {
-            $parent->addChild($trace);
+            $parent->addPhase($trace);
         } else {
             $this->roots[] = $trace;
         }
@@ -73,6 +73,13 @@ class Context
     {
         if ($trace = $this->currentTrace()) {
             $trace->fail($exception, $data);
+        }
+    }
+
+    public function decision(mixed $data = null): void
+    {
+        if ($trace = $this->currentTrace()) {
+            $trace->decision($data);
         }
     }
 

@@ -16,7 +16,7 @@ class Trace
 
     protected ?Trace $parent = null;
 
-    protected array $children = [];
+    protected array $phases = [];
 
     protected array $records = [];
 
@@ -70,6 +70,17 @@ class Trace
         ];
     }
 
+    public function decision(mixed $data = null): void
+    {
+        $this->records = array_filter($this->records, fn($record) => $record['type'] !== 'decision');
+
+        $this->records[] = [
+            'type' => 'decision',
+            'timestamp' => microtime(true),
+            'data' => $data,
+        ];
+    }
+
     /**
      * Get the trace ID.
      */
@@ -94,14 +105,229 @@ class Trace
         return $this->parent;
     }
 
-    public function children(): array
+    public function phases(): array
     {
-        return $this->children;
+        return $this->phases;
+    }
+
+    /**
+     * Get the duration of the trace in milliseconds.
+     */
+    public function duration(): ?float
+    {
+        return $this->end
+            ? ($this->end - $this->start) * 1000
+            : null;
+    }
+
+    public function filterPhases(\Closure $callback): array
+    {
+        return array_filter($this->phases, $callback);
+    }
+
+    public function filterRecords(\Closure $callback): array
+    {
+        return array_filter($this->records, $callback);
+    }
+
+    public function hasPhases(): bool
+    {
+        return ! empty($this->phases);
+    }
+
+    protected function hasRecordType(string $type): bool
+    {
+        foreach ($this->records as $record) {
+            if ($record['type'] === $type) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasRecords(): bool
+    {
+        if (! $this->hasPhases() && empty($this->records)) return false;
+
+        if (! empty($this->records)) {
+            return true;
+        }
+
+        foreach ($this->phases() as $phase) {
+            if ($phase->hasRecords()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasDecision(): bool
+    {
+        if ($this->hasRecordType('decision')) {
+            return true;
+        }
+
+        foreach ($this->phases as $child) {
+            if ($child->hasDecision()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasException(): bool
+    {
+        if ($this->hasRecordType('exception')) {
+            return true;
+        }
+
+        foreach ($this->phases as $child) {
+            if ($child->hasException()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function onlyDominantPath(): Trace
+    {
+        if (! $this->hasPhases()) return $this;
+
+        $dominant = null;
+        $max = 0;
+
+        $clone = $this->cloneEmpty();
+
+        foreach ($this->phases() as $phase) {
+            $time = $phase->duration() ?? 0;
+
+            if ($time > $max) {
+                $max = $time;
+                $dominant = $phase;
+            }
+        }
+
+        if ($dominant) {
+            $clone->addPhase($dominant->onlyDominantPath());
+            return $clone;
+        } else {
+            return $this;
+        }
+    }
+
+    public function onlyWithRecords(): ?Trace
+    {
+        if (! $this->hasRecords()) return null;
+
+        $clone = $this->cloneEmpty();
+
+        foreach ($this->phases() as $phase) {
+            $child = $phase->onlyWithRecords();
+
+            if ($child) {
+                $clone->addPhase($child);
+            }
+        }
+
+        return $clone;
+    }
+
+    public function onlyDecisionPath(): ?Trace
+    {
+        if (! $this->hasDecision()) return null;
+
+        $clone = $this->cloneEmpty();
+
+        if ($this->hasRecordType('decision') && ! $this->hasPhases()) {
+            return $clone;
+        }
+
+        $decisions = [];
+
+        foreach ($this->phases() as $phase) {
+            if ($phase->hasDecision()) {
+                $decisions[] = $phase;
+            }
+        }
+
+        if (!empty($decisions)) {
+            foreach ($decisions as $decision) {
+                $clone->addPhase($decision->onlyDecisionPath());
+            }
+
+            return $clone;
+        } else {
+            return null;
+        }
+    }
+
+    public function onlyFailedPath(): ?Trace
+    {
+        if (! $this->hasException()) return null;
+
+        $clone = $this->cloneEmpty();
+
+        if ($this->hasRecordType('exception') && ! $this->hasPhases()) {
+            return $clone;
+        }
+
+        $failed = null;
+
+        foreach ($this->phases() as $phase) {
+            if ($phase->hasException()) {
+                $failed = $phase;
+                break;
+            }
+        }
+
+        if ($failed) {
+            $clone->addPhase($failed->onlyFailedPath());
+            return $clone;
+        } else {
+            return null;
+        }
+    }
+
+    public function log(): void
+    {
+        if ($this->hasException()) {
+            $trace = $this->onlyFailedPath();
+        }
+
+        if ($this->hasDecision()) {
+            $trace = $this->onlyDecisionPath();
+        }
+
+        $trace = $this->onlyDominantPath();
+
+        // log somehow
+        // logger()->info(...);
+    }
+
+    public function cloneEmpty(): Trace
+    {
+        $clone = new Trace($this->name, null);
+        $clone->id = $this->id;
+        $clone->start = $this->start;
+        $clone->end = $this->end;
+
+        $clone->setRecords($this->records);
+
+        return $clone;
     }
 
     public function records(): array
     {
         return $this->records;
+    }
+
+    public function setRecords(array $records): void
+    {
+        $this->records = $records;
     }
 
     /**
@@ -115,19 +341,23 @@ class Trace
     /**
      * Add a child trace.
      */
-    public function addChild(Trace $child): void
+    public function addPhase(Trace $phase): void
     {
-        $this->children[] = $child;
+        if ($phase->parent() !== $this) {
+            $phase->setParent($this);
+        }
+
+        $this->phases[] = $phase;
     }
 
-    /**
-     * Get the duration of the trace in milliseconds.
-     */
-    public function duration(): ?float
+    public function flushPhases(): void
     {
-        return $this->end
-            ? ($this->end - $this->start) * 1000
-            : null;
+        $this->phases = [];
+    }
+
+    public function flushRecords(): void
+    {
+        $this->records = [];
     }
 
     /**
@@ -140,7 +370,7 @@ class Trace
             'name' => $this->name,
             'duration' => $this->duration(),
             'records' => $this->records,
-            'phases' => array_map(fn(Trace $child) => $child->toArray(), $this->children),
+            'phases' => array_map(fn(Trace $phase) => $phase->toArray(), $this->phases),
         ];
     }
 }
