@@ -56,7 +56,14 @@ class Registry
 
         if (static::exists($namespace)) {
             foreach (static::get($namespace) as $listener) {
-                $listener->handle($message);
+
+                try {
+                    $listener->handle($message);
+                } catch (\Throwable $e) {
+                    if (! $listener->isSilent()) {
+                        throw $e;
+                    }
+                }
 
                 if (! $listener->isSilent()) {
                     $consumed = true;
