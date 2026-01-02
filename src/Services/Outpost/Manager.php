@@ -5,6 +5,7 @@ namespace Rosalana\Core\Services\Outpost;
 use Illuminate\Support\Str;
 use Rosalana\Core\Facades\App;
 use Rosalana\Core\Facades\Basecamp;
+use Rosalana\Core\Facades\Trace;
 use Rosalana\Core\Traits\Serviceable;
 
 class Manager
@@ -65,7 +66,7 @@ class Manager
             $this->name = $name;
         }
 
-        $message = $this->send('request', $payload);
+        $message = Trace::capture(fn() => $this->send('request', $payload), 'Outpost:send');
 
         return new Promise(Message::make(
             id: (string) Str::uuid(),
@@ -79,7 +80,7 @@ class Manager
             $this->validateName($name);
         }
 
-        $message = $this->send('confirmed', $payload);
+        $message = Trace::capture(fn() => $this->send('confirmed', $payload), 'Outpost:send');
 
         return new Promise(Message::make(
             id: (string) Str::uuid(),
@@ -93,7 +94,7 @@ class Manager
             $this->validateName($name);
         }
 
-        $message = $this->send('failed', $payload);
+        $message = Trace::capture(fn() => $this->send('failed', $payload), 'Outpost:send');
 
         return new Promise(Message::make(
             id: (string) Str::uuid(),
@@ -107,7 +108,7 @@ class Manager
             $this->validateName($name);
         }
 
-        $message = $this->send('unreachable', $payload);
+        $message = Trace::capture(fn() => $this->send('unreachable', $payload), 'Outpost:send');
 
         return new Promise(Message::make(
             id: (string) Str::uuid(),
@@ -131,6 +132,13 @@ class Manager
         if (empty($this->targets)) {
             throw new \RuntimeException("No target apps specified for Outpost message.");
         }
+
+        Trace::decision([
+            'status' => $status,
+            'name' => $this->name,
+            'targets' => $this->targets,
+            'correlation_id' => $this->correlationId,
+        ]);
 
         $response = Basecamp::post("/outpost/send", [
             'from' => $this->origin,
