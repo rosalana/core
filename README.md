@@ -14,6 +14,7 @@ Rosalana Core is the shared foundation for all applications in the Rosalana ecos
   - [CLI](#cli)
   - [Package Manager](#package-manager)
   - [Pipelines](#pipelines)
+  - [Trace System](#trace-system)
   - [Basecamp Connection](#basecamp-connection)
   - [Outpost Connection](#outpost-connection)
   - [App Context](#app-context)
@@ -161,6 +162,105 @@ Pipeline::resolve('user.login')->run($request);
 ```
 
 > **Note:** The pipeline system can omit Laravel's built-in pipeline in the future.
+
+### Trace System
+
+Rosalana Core includes a **lightweight runtime tracing system** designed to observe and analyze how application logic flows during execution.
+
+#### Creating a Trace
+
+A trace represents a **top-level operation**, such as handling a request, processing a message, or running a worker task.
+
+To start a trace, you use the `Trace::start()` method, providing a name for the operation. This initializes a new trace context.
+
+When your operation is complete, you call the `Trace::finish()` method to mark the end of the trace. This method returns the completed trace data, which you can log or send to a tracing backend for analysis.
+
+```php
+use Rosalana\Core\Facades\Trace;
+
+Trace::start('operation-name');
+
+// Your operation logic here
+
+$trace = Trace::finish();
+dump($trace->toArray());
+```
+
+#### Adding Phases and Records
+
+Inside a trace, you can define multiple phases to represent sub-operations or steps within the main operation. Each phase can have its own name.
+
+Phases help break down complex operations into smaller, manageable parts, making it easier to analyze performance and identify bottlenecks.
+
+You do not need to manually end phases; they are automatically closed when their scope is destroyed. But **always store the returned `Scope` instance in a variable to keep the phase open**.
+
+You are able to close the phase manually by calling the `close()` method on the scope instance, but this is not necessary in most cases.
+
+```php
+$phase = Trace::phase('sub-operation');
+
+// Your sub-operation logic here
+
+$phase->close(); // Optional manual close
+```
+
+During each phase or the main trace, you can add custom records to log specific events or data points.
+
+You can add a record to the current trace using the `Trace::record()` mathod or `Trace::fail()` method for error records.
+
+```php
+Trace::record(mixed $data = null);
+
+Trace::fail(\Throwable $error, mixed $data = null);
+Trace::exception(\Throwable $error, mixed $data = null);
+```
+
+#### Automatic Trace Capture
+
+For convenience, you can wrap your operations in a single method that handles trace creation and completion automatically.
+
+This is useful for quickly adding tracing to existing code without modifying its structure significantly. It also ensures that traces are always properly finished, even if exceptions occur. When an exception is thrown inside the callback, it is caught and recorded as a failure record before rethrowing it.
+
+```php
+use Rosalana\Core\Facades\Trace;
+
+Trace::capture(function () {
+    // Your operation logic here
+}, 'operation.name');
+```
+
+#### Viewing Traces
+
+Each trace can be converted to an array representation using the `toArray()` method. This provides a structured view of the trace data, including phases and records.
+
+```php
+$traceArray = $trace->toArray();
+```
+
+```json
+{
+    "id": "...",
+    "name": "operation-name",
+    "duration": 13.03,
+    "records": [],
+    "phases": [
+        {
+            "id": "...",
+            "name": "sub-operation",
+            "duration": 5.67,
+            "records": [
+                {
+                    "type": "record|exception",
+                    "timestamp": 1696543210.1234,
+                    "exception": {...}, // if type is exception
+                    "data": {...}
+                }
+            ],
+            "phases": []
+        }
+    ]
+}
+```
 
 ### Basecamp Connection
 
