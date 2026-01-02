@@ -6,9 +6,9 @@ class Manager
 {
     public function __construct(protected Context $context) {}
 
-    public function start(?string $name = null): Scope
+    public function start(?string $name = null): void
     {
-        return $this->context->start($name);
+        $this->context->start($name);
     }
 
     public function phase(?string $name = null): Scope
