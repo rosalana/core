@@ -52,7 +52,7 @@ class Trace
     {
         $this->records[] = [
             'type' => 'record',
-            'time' => microtime(true),
+            'timestamp' => microtime(true),
             'data' => $data,
         ];
     }
@@ -64,7 +64,7 @@ class Trace
     {
         $this->records[] = [
             'type' => 'exception',
-            'time' => microtime(true),
+            'timestamp' => microtime(true),
             'exception' => $exception,
             'data' => $data,
         ];
@@ -120,8 +120,6 @@ class Trace
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'start' => $this->start,
-            'end' => $this->end,
             'duration' => $this->duration(),
             'records' => $this->records,
             'phases' => array_map(fn(Trace $child) => $child->toArray(), $this->children),
