@@ -48,7 +48,7 @@ class Context
         return $this->roots[0] ?? null;
     }
 
-    public function wrap(\Closure $process, ?string $name = null): mixed
+    public function capture(\Closure $process, ?string $name = null): mixed
     {
         $scope = $this->phase($name);
 

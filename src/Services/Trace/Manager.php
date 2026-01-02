@@ -21,9 +21,9 @@ class Manager
         return $this->context->finish();
     }
 
-    public function wrap(\Closure $process, ?string $name = null): mixed
+    public function capture(\Closure $process, ?string $name = null): mixed
     {
-        return $this->context->wrap($process, $name);
+        return $this->context->capture($process, $name);
     }
 
     public function record(mixed $data = null): void
