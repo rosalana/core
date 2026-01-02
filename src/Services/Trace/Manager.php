@@ -10,7 +10,7 @@ class Manager
 
     public function __construct(protected Context $context)
     {
-        $this->enabled = App::config('trace.enabled', true);
+        $this->enabled = App::config('tracer.enabled', true);
     }
 
     public function start(?string $name = null): void
