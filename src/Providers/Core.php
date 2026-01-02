@@ -68,7 +68,7 @@ class Core implements Package
                             "Configuration for the internal tracing system used for performance monitoring and debugging.",
                         )
                         ->section('runtime')
-                            ->value('enabled', true)
+                            ->value('enabled', 'true')
                             ->value('log', '[]')
                         
 
