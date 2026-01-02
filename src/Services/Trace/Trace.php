@@ -292,6 +292,40 @@ class Trace
         }
     }
 
+    public function mergeRecords(): Trace
+    {
+        $clone = $this->cloneEmpty();
+
+        $records = $this->records();
+        $this->flushRecords();
+
+        $merged = [
+            'type' => 'merged',
+            'timestamp' => microtime(true),
+            'exception' => null,
+            'data' => null,
+        ];
+
+        foreach ($records as $record) {
+            if ($record['type'] === 'exception') {
+                $merged['exception'] = $record['exception'];
+            }
+
+            if ($record['data'] !== null) {
+                $merged['data'][] = $record['data'];
+            }
+        }
+
+        $clone->records = [$merged];
+
+        foreach ($this->phases() as $phase) {
+            $clone->addPhase($phase->mergeRecords());
+        }
+
+
+        return $clone;
+    }
+
     public function log(): void
     {
         if ($this->hasException()) {
