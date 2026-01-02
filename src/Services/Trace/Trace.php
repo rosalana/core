@@ -360,6 +360,21 @@ class Trace
         $this->records = [];
     }
 
+    public function toTree(): array
+    {
+        $tree = [];
+
+        foreach ($this->phases() as $phase) {
+            $tree[$this->name()][] = $phase->toTree();
+        }
+
+        if (!$this->hasPhases() && $this->parent() !== null) {
+            $tree[$this->name()] = [];
+        }
+
+        return $tree;
+    }
+
     /**
      * Convert the trace to an array representation.
      */
