@@ -51,6 +51,7 @@ This file will grow over time as you add more Rosalana packages to your applicat
 - **basecamp**: Customize the connection to the central server which your application will connect to. More details [below](#basecamp-connection).
 - **outpost**: Defines how your app connects to the **shared queue system**. Used for sending and receiving events across Rosalana applications.
 - **revizor**: Settings for the authorization engine that allows cross-application communication.
+- **tracer**: Configuration for the built-in runtime tracing system. Core package provides the `runtime` section. When `rosalana/tracer` package is installed, additional options will appear.
 - **published**: Tracks the packages that are currently installed and published in your application. This section is automatically updated when you publish a package. **Do not edit this section manually.**
 
 ## Features
@@ -167,34 +168,40 @@ Pipeline::resolve('user.login')->run($request);
 
 Rosalana Core includes a **lightweight runtime tracing system** designed to observe and analyze how application logic flows during execution.
 
+The Trace system is focused on **runtime behavior** but can be also used for performance monitoring and debugging. It is safe to use in production and introduces minimal overhead.
+
+Tracing can be disabled globally via configuration if needed.
+
 #### Creating a Trace
 
-A trace represents a **top-level operation**, such as handling a request, processing a message, or running a worker task.
+A trace represents a **top-level operation**, such as handling a request  or running a worker task.
 
 To start a trace, you use the `Trace::start()` method, providing a name for the operation. This initializes a new trace context.
 
-When your operation is complete, you call the `Trace::finish()` method to mark the end of the trace. This method returns the completed trace data, which you can log or send to a tracing backend for analysis.
+When the operation finishes, call `Trace::finish()` to close the trace and retrieve the final trace object.
 
 ```php
 use Rosalana\Core\Facades\Trace;
 
-Trace::start('operation-name');
+Trace::start('operation.name');
 
 // Your operation logic here
 
 $trace = Trace::finish();
-dump($trace->toArray());
 ```
 
-#### Adding Phases and Records
+> [!TIP]
+> The returned `Trace` object contains the full execution tree and can be inspected, filtered, and **can be auto-logged** if the provided key is configured in `tracer.runtime.log`.
 
-Inside a trace, you can define multiple phases to represent sub-operations or steps within the main operation. Each phase can have its own name.
+#### Phases (Sub-operations)
 
-Phases help break down complex operations into smaller, manageable parts, making it easier to analyze performance and identify bottlenecks.
+Inside a trace, you can create phases to represent meaningful sub-operations or steps in the execution flow.
 
-You do not need to manually end phases; they are automatically closed when their scope is destroyed. But **always store the returned `Scope` instance in a variable to keep the phase open**.
+A phase is started using `Trace::phase()` and returns a `Scope` object.
 
-You are able to close the phase manually by calling the `close()` method on the scope instance, but this is not necessary in most cases.
+> [!IMPORTANT]
+> Always store the returned `Scope` instance in a variable.
+> If it is not stored, the phase will be closed immediately.
 
 ```php
 $phase = Trace::phase('sub-operation');
@@ -204,16 +211,43 @@ $phase = Trace::phase('sub-operation');
 $phase->close(); // Optional manual close
 ```
 
-During each phase or the main trace, you can add custom records to log specific events or data points.
+Phases are automatically closed when their scope is destroyed (for example when leaving the current block or when an exception occurs).
 
-You can add a record to the current trace using the `Trace::record()` mathod or `Trace::fail()` method for error records.
+#### Records, Exeptions and Decisions
+
+During execution, you can attach **records** to the current active trace or phase.
+
+##### Records
 
 ```php
 Trace::record(mixed $data = null);
+Trace::recordWhen(bool $condition, mixed $data = null);
+```
 
+Records are simple data points that represent informational runtime events.
+
+##### Exceptions / Failures
+
+```php
 Trace::fail(\Throwable $error, mixed $data = null);
 Trace::exception(\Throwable $error, mixed $data = null);
 ```
+
+Failure records mark an execution path as failed and are used later for trace filtering.
+
+During each phase or the main trace, you can add custom records to log specific events or data points.
+
+##### Decisions
+
+Decisions are special records that mark **which execution path was chosen**.
+
+```php
+Trace::decision(mixed $data = null);
+Trace::decisionWhen(bool $condition, mixed $data = null);
+Trace::recordOrDecision(bool $isDecision, mixed $data = null);
+```
+
+A phase can contain **only one** decision record. But a trace can have multiple decisions across its phases. Decisions are used to extract the **actual execution path** from complex branching logic.
 
 #### Automatic Trace Capture
 
@@ -229,9 +263,17 @@ Trace::capture(function () {
 }, 'operation.name');
 ```
 
-#### Viewing Traces
+#### Working with Trace Objects
 
-Each trace can be converted to an array representation using the `toArray()` method. This provides a structured view of the trace data, including phases and records.
+The returned Trace object is not just data — it provides powerful helpers to analyze execution flow:
+
+- `hasException()` – Check if the trace contains any exception records.
+- `hasDecision()` – Check if the trace contains any decision records.
+- `onlyDecisionPath()` – Extract a new trace containing only the phases and records that led to decisions.
+- `onlyFailedPath()` – Extract a new trace containing only the phases and records that led to failures.
+- `onlyDominantPath()` - Extract a new trace containing only the dominant execution path (time wise).
+
+You can still export a trace into a serializable structure if needed:
 
 ```php
 $traceArray = $trace->toArray();
@@ -250,7 +292,7 @@ $traceArray = $trace->toArray();
             "duration": 5.67,
             "records": [
                 {
-                    "type": "record|exception",
+                    "type": "record|exception|decision",
                     "timestamp": 1696543210.1234,
                     "exception": {...}, // if type is exception
                     "data": {...}
