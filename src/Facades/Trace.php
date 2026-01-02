@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static mixed wrap(callable $process, ?string $name = null)
  * @method static void record(mixed $data = null)
  * @method static void exception(\Throwable $exception, mixed $data = null)
+ * @method static void fail(\Throwable $exception, mixed $data = null)
  * @method static array<\Rosalana\Core\Services\Trace\Span> getTraces()
  * @method static void flush()
  * 

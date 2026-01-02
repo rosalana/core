@@ -11,7 +11,7 @@ class Manager
         return $this->context->start($name);
     }
 
-    public function phase(string $name): Scope
+    public function phase(?string $name = null): Scope
     {
         return $this->context->phase($name);
     }
@@ -21,7 +21,7 @@ class Manager
         return $this->context->finish();
     }
 
-    public function wrap(callable $process, ?string $name = null): mixed
+    public function wrap(\Closure $process, ?string $name = null): mixed
     {
         return $this->context->wrap($process, $name);
     }
@@ -34,6 +34,11 @@ class Manager
     public function exception(\Throwable $exception, mixed $data = null): void
     {
         $this->context->exception($exception, $data);
+    }
+
+    public function fail(\Throwable $exception, mixed $data = null): void
+    {
+        $this->exception($exception, $data);
     }
 
     public function getTraces(): array
