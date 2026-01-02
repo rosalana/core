@@ -124,7 +124,7 @@ class Trace
             'end' => $this->end,
             'duration' => $this->duration(),
             'records' => $this->records,
-            'children' => array_map(fn(Trace $child) => $child->toArray(), $this->children),
+            'phases' => array_map(fn(Trace $child) => $child->toArray(), $this->children),
         ];
     }
 }
