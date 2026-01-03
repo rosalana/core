@@ -19,15 +19,31 @@ interface LogScheme
      * Format the given trace into log entries.
      * 
      * @param Trace $trace
-     * @return LogEntry[]
+     * @return void
      */
-    public function format(Trace $trace): iterable;
+    public function format(Trace $trace): void;
 
     /**
      * Format exception traces into log entries.
      * 
      * @param Trace $trace
+     * @return void
+     */
+    public function formatException(Trace $trace): void;
+
+    /**
+     * Build data from the formatted trace.
+     * 
+     * @param Trace $trace
      * @return LogEntry[]
      */
-    public function exceptionFormat(Trace $trace): iterable;
+    public function build(Trace $trace): iterable;
+
+    /**
+     * Build data from the formatted exception trace.
+     * 
+     * @param Trace $trace
+     * @return LogEntry[]
+     */
+    public function buildException(Trace $trace): iterable;
 }
