@@ -21,20 +21,20 @@ class LogEntry
     }
 
     public static function make(
-        ?string $service = null,
+        ?string $actor = null,
         ?array $flags = null,
         ?string $message = null,
         ...$nodes,
     ): self {
         $instance = new self($nodes);
 
-        if ($service) {
-            $instance->addActor($service);
+        if ($actor) {
+            $instance->addActor($actor);
         }
 
         if ($flags) {
-            foreach ($flags as $flag) {
-                $instance->addFlag($flag);
+            foreach ($flags as $name => $flag) {
+                $instance->addFlag($name, $flag);
             }
         }
 
@@ -45,6 +45,9 @@ class LogEntry
         return $instance;
     }
 
+    /**
+     * @return LogNode[]
+     */
     public function getNodes(?string $type = null): array
     {
         if (!$type) return $this->nodes;
@@ -75,12 +78,28 @@ class LogEntry
         return $this->getNode(Message::class);
     }
 
+    /**
+     * @return LogNode[]
+     */
     public function getFlags(): array
     {
         return $this->getNodes(Flag::class);
     }
 
-    public function addNode(LogNode $node): void
+    public function getFlag(string $name): ?LogNode
+    {
+        $flags = $this->getFlags();
+
+        foreach ($flags as $flag) {
+            if ($flag->getName() === $name) {
+                return $flag;
+            }
+        }
+
+        return null;
+    }
+
+    public function addNode(LogNode $node): self
     {
         if ($node->isStandAlone()) {
             $this->nodes = array_filter($this->nodes, function ($n) use ($node) {
@@ -90,44 +109,52 @@ class LogEntry
         }
 
         $this->nodes[] = $node;
+
+        return $this;
     }
 
     /**
      * @param LogNode[] $nodes
      */
-    public function addNodes(array $nodes): void
+    public function addNodes(array $nodes): self
     {
         foreach ($nodes as $node) {
             if ($node instanceof LogNode) {
                 $this->addNode($node);
             }
         }
+
+        return $this;
     }
 
-    public function addActor(string $service): void
+    public function addActor(string $service): self
     {
-        $this->addNode(new Actor($service));
+        return $this->addNode(new Actor($service));
     }
 
-    public function addMessage(string $message): void
+    public function addMessage(string $message): self
     {
-        $this->addNode(new Message($message));
+        return $this->addNode(new Message($message));
     }
 
-    public function addFlag(string $flag): void
+    public function addFlag(string $name, string $flag): self
     {
-        $this->addNode(new Flag($flag));
+        return $this->addNode(new Flag($flag, $name));
     }
 
-    public function removeNode(LogNode $node): void
+    public function removeNode(LogNode $node): self
     {
         $this->nodes = array_filter($this->nodes, function ($n) use ($node) {
             return $n !== $node;
         });
+
+        return $this;
     }
 
-    public function flush(): void
+    public function flush(): self
     {
         $this->nodes = [];
+
+        return $this;
     }
 }
