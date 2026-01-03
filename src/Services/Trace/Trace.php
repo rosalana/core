@@ -120,6 +120,31 @@ class Trace
             : null;
     }
 
+    public function getRecordByType(string $type): ?array
+    {
+        foreach ($this->records as $record) {
+            if ($record['type'] === $type) {
+                return $record;
+            }
+        }
+
+        return null;
+    }
+
+    public function getDecision(): ?array
+    {
+        return $this->getRecordByType('decision');
+    }
+
+    public function getException(): ?array
+    {
+        return $this->getRecordByType('exception');
+    }
+
+    /**
+     * Find phases matching the given callback.
+     * @return Trace[]
+     */
     public function findPhases(\Closure $callback): array
     {
         $results = [];
@@ -138,6 +163,10 @@ class Trace
         return $results;
     }
 
+    /**
+     * Find records matching the given callback.
+     * @return array[]
+     */
     public function findRecords(\Closure $callback): array
     {
         $results = [];
@@ -163,7 +192,7 @@ class Trace
         return ! empty($this->phases);
     }
 
-    protected function hasRecordType(string $type): bool
+    public function hasRecordType(string $type): bool
     {
         foreach ($this->records as $record) {
             if ($record['type'] === $type) {
@@ -318,6 +347,27 @@ class Trace
         } else {
             return null;
         }
+    }
+
+    public function onlyDecisionRecords(): array
+    {
+        return $this->findRecords(function ($record) {
+            return $record['type'] === 'decision';
+        });
+    }
+
+    public function onlyExceptionRecords(): array
+    {
+        return $this->findRecords(function ($record) {
+            return $record['type'] === 'exception';
+        });
+    }
+
+    public function onlyDataRecords(): array
+    {
+        return $this->findRecords(function ($record) {
+            return $record['type'] === 'record';
+        });
     }
 
     public function mergeRecords(): Trace
