@@ -11,6 +11,9 @@ class LogEntry
     /** @var LogNode[] */
     protected array $nodes = [];
 
+    protected int $timestamp = 0;
+    protected int $sequence = 0;
+
     public function __construct(array $nodes)
     {
         $nodes = array_filter($nodes, function ($node) {
@@ -148,6 +151,29 @@ class LogEntry
             return $n !== $node;
         });
 
+        return $this;
+    }
+
+    public function getTimestamp(): int
+    {
+        return $this->timestamp;
+    }
+
+    public function setTimestamp(int $timestamp): self
+    {
+        $this->timestamp = $timestamp;
+
+        return $this;
+    }
+
+    public function getSequence(): int
+    {
+        return $this->sequence;
+    }
+
+    public function setSequence(int $sequence): self
+    {
+        $this->sequence = $sequence;
         return $this;
     }
 
