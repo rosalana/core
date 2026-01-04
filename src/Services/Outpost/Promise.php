@@ -3,7 +3,9 @@
 namespace Rosalana\Core\Services\Outpost;
 
 use Laravel\SerializableClosure\SerializableClosure;
+use Rosalana\Core\Contracts\Action;
 use Rosalana\Core\Facades\App;
+use Rosalana\Core\Facades\Trace;
 
 class Promise
 {
@@ -22,7 +24,15 @@ class Promise
 
     public function resolve(): void
     {
-        call_user_func($this->retrieveCallback(), $this->message);
+        Trace::capture(function () {
+            $result = call_user_func($this->retrieveCallback(), $this->message);
+
+            Trace::decision([
+                'handler' => static::class,
+                'queued' => $result instanceof Action ? $result->isQueueable() : false,
+                'broadcasted' => $result instanceof Action ? $result->isBroadcastable() : false,
+            ]);
+        }, 'Outpost:handler:promise');
 
         $this->clearCallbacks();
     }
