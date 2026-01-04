@@ -3,6 +3,7 @@
 namespace Rosalana\Core\Services\Trace;
 
 use Illuminate\Support\Str;
+use Rosalana\Core\Services\Logging\LogRegistry;
 
 class Trace
 {
@@ -16,8 +17,10 @@ class Trace
 
     protected ?Trace $parent = null;
 
+    /** @var Trace[] */
     protected array $phases = [];
 
+    /** @var array[] */
     protected array $records = [];
 
     public function __construct(?string $name, ?Trace $parent = null)
@@ -29,6 +32,8 @@ class Trace
 
     /**
      * Start the trace.
+     * 
+     * @return void
      */
     public function start(): void
     {
@@ -37,6 +42,8 @@ class Trace
 
     /**
      * Finish the trace if not already finished.
+     * 
+     * @return void
      */
     public function finish(): void
     {
@@ -47,6 +54,9 @@ class Trace
 
     /**
      * Record a data point in the trace.
+     * 
+     * @param mixed $data
+     * @return void
      */
     public function record(mixed $data = null): void
     {
@@ -59,6 +69,10 @@ class Trace
 
     /**
      * Record an exception in the trace.
+     * 
+     * @param \Throwable $exception
+     * @param mixed $data
+     * @return void
      */
     public function fail(\Throwable $exception, mixed $data = null): void
     {
@@ -70,6 +84,12 @@ class Trace
         ];
     }
 
+    /**
+     * Record a decision in the trace.
+     * 
+     * @param mixed $data
+     * @return void
+     */
     public function decision(mixed $data = null): void
     {
         $this->records = array_filter($this->records, fn($record) => $record['type'] !== 'decision');
@@ -83,6 +103,8 @@ class Trace
 
     /**
      * Get the trace ID.
+     * 
+     * @return string
      */
     public function id(): string
     {
@@ -91,6 +113,8 @@ class Trace
 
     /**
      * Get the trace name.
+     * 
+     * @return string
      */
     public function name(): string
     {
@@ -99,12 +123,19 @@ class Trace
 
     /**
      * Get the parent trace.
+     * 
+     * @return Trace|null
      */
     public function parent(): ?Trace
     {
         return $this->parent;
     }
 
+    /**
+     * Get the child phases.
+     * 
+     * @return Trace[]
+     */
     public function phases(): array
     {
         return $this->phases;
@@ -112,6 +143,8 @@ class Trace
 
     /**
      * Get the duration of the trace in milliseconds.
+     * 
+     * @return float|null
      */
     public function duration(): ?float
     {
@@ -120,6 +153,32 @@ class Trace
             : null;
     }
 
+    /**
+     * Get the start time of the trace.
+     * 
+     * @return float|null
+     */
+    public function startTime(): ?float
+    {
+        return $this->start;
+    }
+
+    /**
+     * Get the end time of the trace.
+     * 
+     * @return float|null
+     */
+    public function endTime(): ?float
+    {
+        return $this->end;
+    }
+
+    /**
+     * Get a record by its type.
+     * 
+     * @param string $type
+     * @return array|null
+     */
     public function getRecordByType(string $type): ?array
     {
         foreach ($this->records as $record) {
@@ -131,11 +190,21 @@ class Trace
         return null;
     }
 
+    /**
+     * Get the decision record.
+     * 
+     * @return array|null
+     */
     public function getDecision(): ?array
     {
         return $this->getRecordByType('decision');
     }
 
+    /**
+     * Get the exception record.
+     * 
+     * @return array|null
+     */
     public function getException(): ?array
     {
         return $this->getRecordByType('exception');
@@ -143,6 +212,7 @@ class Trace
 
     /**
      * Find phases matching the given callback.
+     * 
      * @return Trace[]
      */
     public function findPhases(\Closure $callback): array
@@ -165,6 +235,7 @@ class Trace
 
     /**
      * Find records matching the given callback.
+     * 
      * @return array[]
      */
     public function findRecords(\Closure $callback): array
@@ -187,11 +258,22 @@ class Trace
         return $results;
     }
 
+    /**
+     * Check if the trace has child phases.
+     * 
+     * @return bool
+     */
     public function hasPhases(): bool
     {
         return ! empty($this->phases);
     }
 
+    /**
+     * Check if the trace has a record of the given type.
+     * 
+     * @param string $type
+     * @return bool
+     */
     public function hasRecordType(string $type): bool
     {
         foreach ($this->records as $record) {
@@ -203,6 +285,11 @@ class Trace
         return false;
     }
 
+    /**
+     * Check if the trace or its phases have any records.
+     * 
+     * @return bool
+     */
     public function hasRecords(): bool
     {
         if (! $this->hasPhases() && empty($this->records)) return false;
@@ -220,6 +307,11 @@ class Trace
         return false;
     }
 
+    /**
+     * Check if the trace or its phases have a decision record.
+     * 
+     * @return bool
+     */
     public function hasDecision(): bool
     {
         if ($this->hasRecordType('decision')) {
@@ -235,6 +327,11 @@ class Trace
         return false;
     }
 
+    /**
+     * Check if the trace or its phases have an exception record.
+     * 
+     * @return bool
+     */
     public function hasException(): bool
     {
         if ($this->hasRecordType('exception')) {
@@ -250,6 +347,11 @@ class Trace
         return false;
     }
 
+    /**
+     * Get the dominant path (the phase with the longest duration).
+     * 
+     * @return Trace
+     */
     public function onlyDominantPath(): Trace
     {
         if (! $this->hasPhases()) return $this;
@@ -276,6 +378,11 @@ class Trace
         }
     }
 
+    /**
+     * Get only phases that have records.
+     * 
+     * @return Trace|null
+     */
     public function onlyWithRecords(): ?Trace
     {
         if (! $this->hasRecords()) return null;
@@ -293,6 +400,11 @@ class Trace
         return $clone;
     }
 
+    /**
+     * Get only phases that have decision records.
+     * 
+     * @return Trace|null
+     */
     public function onlyDecisionPath(): ?Trace
     {
         if (! $this->hasDecision()) return null;
@@ -322,6 +434,11 @@ class Trace
         }
     }
 
+    /**
+     * Get only phases that have exception records.
+     * 
+     * @return Trace|null
+     */
     public function onlyFailedPath(): ?Trace
     {
         if (! $this->hasException()) return null;
@@ -349,6 +466,11 @@ class Trace
         }
     }
 
+    /**
+     * Get only decision records.
+     * 
+     * @return array[]
+     */
     public function onlyDecisionRecords(): array
     {
         return $this->findRecords(function ($record) {
@@ -356,6 +478,11 @@ class Trace
         });
     }
 
+    /**
+     * Get only exception records.
+     * 
+     * @return array[]
+     */
     public function onlyExceptionRecords(): array
     {
         return $this->findRecords(function ($record) {
@@ -363,6 +490,11 @@ class Trace
         });
     }
 
+    /**
+     * Get only data records.
+     * 
+     * @return array[]
+     */
     public function onlyDataRecords(): array
     {
         return $this->findRecords(function ($record) {
@@ -370,6 +502,11 @@ class Trace
         });
     }
 
+    /**
+     * Merge all records into a single trace.
+     * 
+     * @return Trace
+     */
     public function mergeRecords(): Trace
     {
         $clone = $this->cloneEmpty();
@@ -402,22 +539,24 @@ class Trace
         return $clone;
     }
 
-    public function log(): void
+    /**
+     * Log the trace using the specified renderer.
+     * 
+     * @param null|string|class-string<\Rosalana\Core\Services\Logging\LogRenderer> $renderer
+     * @return void
+     */
+    public function log(?string $renderer = null): void
     {
-        if ($this->hasException()) {
-            $trace = $this->onlyFailedPath();
-        }
+        $renderer ??= 'file';
 
-        if ($this->hasDecision()) {
-            $trace = $this->onlyDecisionPath();
-        }
-
-        $trace = $this->onlyDominantPath();
-
-        // log somehow
-        // logger()->info(...);
+        LogRegistry::render($renderer, $this);
     }
 
+    /**
+     * Clone the trace without phases and records.
+     * 
+     * @return Trace
+     */
     public function cloneEmpty(): Trace
     {
         $clone = new Trace($this->name, null);
@@ -430,11 +569,22 @@ class Trace
         return $clone;
     }
 
+    /**
+     * Get all records.
+     * 
+     * @return array[]
+     */
     public function records(): array
     {
         return $this->records;
     }
 
+    /**
+     * Set the records.
+     * 
+     * @param array[] $records
+     * @return void
+     */
     public function setRecords(array $records): void
     {
         $this->records = $records;
@@ -442,6 +592,9 @@ class Trace
 
     /**
      * Set the parent trace.
+     * 
+     * @param Trace|null $parent
+     * @return void
      */
     public function setParent(?Trace $parent): void
     {
@@ -450,6 +603,9 @@ class Trace
 
     /**
      * Add a child trace.
+     * 
+     * @param Trace $phase
+     * @return void
      */
     public function addPhase(Trace $phase): void
     {
@@ -460,16 +616,31 @@ class Trace
         $this->phases[] = $phase;
     }
 
+    /**
+     * Flush all child phases.
+     * 
+     * @return void
+     */
     public function flushPhases(): void
     {
         $this->phases = [];
     }
 
+    /**
+     * Flush all records.
+     * 
+     * @return void
+     */
     public function flushRecords(): void
     {
         $this->records = [];
     }
 
+    /**
+     * Convert the trace to a tree representation.
+     * 
+     * @return array
+     */
     public function toTree(): array
     {
         $tree = [];
@@ -487,6 +658,8 @@ class Trace
 
     /**
      * Convert the trace to an array representation.
+     * 
+     * @return array
      */
     public function toArray(): array
     {
