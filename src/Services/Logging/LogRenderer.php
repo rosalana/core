@@ -7,7 +7,7 @@ use Rosalana\Core\Services\Trace\Trace;
 abstract class LogRenderer
 {
     /**
-     * @var array<string>
+     * @var array<RenderedLogEntry>
      */
     protected array $lines = [];
 
@@ -26,7 +26,7 @@ abstract class LogRenderer
     /**
      * Get rendered lines.
      * 
-     * @return array<string>
+     * @return array<RenderedLogEntry>
      */
     public function lines(): array
     {
@@ -37,11 +37,12 @@ abstract class LogRenderer
      * Add a rendered line.
      * 
      * @param string $line
+     * @param array<string, mixed> $meta
      * @return void
      */
-    public function line(string $line): void
+    public function line(string $line, array $meta = ['status' => 'info']): void
     {
-        $this->lines[] = $line;
+        $this->lines[] = new RenderedLogEntry($line, $meta);
     }
 
     /**
@@ -221,8 +222,8 @@ abstract class LogRenderer
     /**
      * Publish the rendered logs to the desired destination.
      * 
-     * @param array<string> $renderedLogs
+     * @param array<RenderedLogEntry> $rendered
      * @return void
      */
-    abstract public function publish(array $renderedLogs): void;
+    abstract public function publish(array $rendered): void;
 }
