@@ -137,6 +137,40 @@ abstract class LogRenderer
     }
 
     /**
+     * Explain the scheme matching process for the given trace.
+     * 
+     * @param Trace $trace
+     * @return array<int, array{trace: string, pattern: string, scheme: class-string<LogScheme>, score: int, matched: bool}>
+     */
+    public static function explainSchemeMatch(Trace $trace): array
+    {
+        $results = [];
+
+        $i = new static($trace);
+
+        foreach (LogRegistry::getSchemes() as $pattern => $schemeClass) {
+            $score = $i->schemeMatchScore($trace->name(), $pattern);
+
+            $results[] = [
+                'trace' => $trace->name(),
+                'pattern' => $pattern,
+                'scheme' => $schemeClass,
+                'score' => $score,
+                'matched' => false,
+            ];
+        }
+
+
+        usort($results, function ($a, $b) {
+            return $b['score'] <=> $a['score'];
+        });
+
+        $results[0]['matched'] = $results[0]['score'] > 0;
+
+        return $results;
+    }
+
+    /**
      * Calculate the match score between a trace name and a scheme pattern.
      * 
      * @param string $name
