@@ -5,6 +5,7 @@ namespace Rosalana\Core\Services\Logging;
 use Rosalana\Core\Services\Logging\Node\Flag;
 use Rosalana\Core\Services\Logging\Node\Message;
 use Rosalana\Core\Services\Logging\Node\Actor;
+use Rosalana\Core\Services\Logging\Node\Status;
 
 class LogEntry
 {
@@ -23,10 +24,21 @@ class LogEntry
         $this->addNodes($nodes);
     }
 
+    /**
+     * Create a new log entry.
+     * 
+     * @param string|null $actor
+     * @param array|null $flags
+     * @param string|null $message
+     * @param string|null $status available statuses: info, warning, error (default: info)
+     * @param LogNode ...$nodes
+     * @return self
+     */
     public static function make(
         ?string $actor = null,
         ?array $flags = null,
         ?string $message = null,
+        ?string $status = 'info',
         ...$nodes,
     ): self {
         $instance = new self($nodes);
@@ -45,10 +57,18 @@ class LogEntry
             $instance->addMessage($message);
         }
 
+        if ($status) {
+            $instance->addStatus($status);
+        }
+
         return $instance;
     }
 
     /**
+     * Get all nodes of the entry.
+     * 
+     * @param class-string|null $type
+     * 
      * @return LogNode[]
      */
     public function getNodes(?string $type = null): array
@@ -60,6 +80,12 @@ class LogEntry
         });
     }
 
+    /**
+     * Get a single node of the entry.
+     * 
+     * @param class-string $type
+     * @return LogNode|null
+     */
     public function getNode(string $type): ?LogNode
     {
         foreach ($this->nodes as $node) {
@@ -71,17 +97,29 @@ class LogEntry
         return null;
     }
 
+    /**
+     * Get the actor node.
+     * 
+     * @return LogNode|null
+     */
     public function getActor(): ?LogNode
     {
         return $this->getNode(Actor::class);
     }
 
+    /**
+     * Get the message node.
+     * 
+     * @return LogNode|null
+     */
     public function getMessage(): ?LogNode
     {
         return $this->getNode(Message::class);
     }
 
     /**
+     * Get the flag nodes.
+     * 
      * @return LogNode[]
      */
     public function getFlags(): array
@@ -89,6 +127,12 @@ class LogEntry
         return $this->getNodes(Flag::class);
     }
 
+    /**
+     * Get a specific flag node by name.
+     * 
+     * @param string $name
+     * @return LogNode|null
+     */
     public function getFlag(string $name): ?LogNode
     {
         $flags = $this->getFlags();
@@ -102,6 +146,22 @@ class LogEntry
         return null;
     }
 
+    /**
+     * Get the status node.
+     * 
+     * @return LogNode|null
+     */
+    public function getStatus(): ?LogNode
+    {
+        return $this->getNode(Status::class);
+    }
+
+    /**
+     * Add a log node.
+     * 
+     * @param LogNode $node
+     * @return self
+     */
     public function addNode(LogNode $node): self
     {
         if ($node->isStandAlone()) {
@@ -117,6 +177,8 @@ class LogEntry
     }
 
     /**
+     * Add multiple log nodes.
+     * 
      * @param LogNode[] $nodes
      */
     public function addNodes(array $nodes): self
@@ -130,21 +192,57 @@ class LogEntry
         return $this;
     }
 
-    public function addActor(string $service): self
+    /**
+     * Add an actor node.
+     * 
+     * @param string $actor
+     * @return self
+     */
+    public function addActor(string $actor): self
     {
-        return $this->addNode(new Actor($service));
+        return $this->addNode(new Actor($actor));
     }
 
+    /**
+     * Add a message node.
+     * 
+     * @param string $message
+     * @return self
+     */
     public function addMessage(string $message): self
     {
         return $this->addNode(new Message($message));
     }
 
+    /**
+     * Add a flag node.
+     * 
+     * @param string $name
+     * @param string $flag
+     * @return self
+     */
     public function addFlag(string $name, string $flag): self
     {
         return $this->addNode(new Flag($flag, $name));
     }
 
+    /**
+     * Add a status node.
+     * 
+     * @param string $status
+     * @return self
+     */
+    public function addStatus(string $status): self
+    {
+        return $this->addNode(new Status($status));
+    }
+
+    /**
+     * Remove a log node.
+     * 
+     * @param LogNode $node
+     * @return self
+     */
     public function removeNode(LogNode $node): self
     {
         $this->nodes = array_filter($this->nodes, function ($n) use ($node) {
@@ -154,11 +252,22 @@ class LogEntry
         return $this;
     }
 
+    /**
+     * Get the timestamp of the entry.
+     * 
+     * @return int
+     */
     public function getTimestamp(): int
     {
         return $this->timestamp;
     }
 
+    /**
+     * Set the timestamp of the entry.
+     * 
+     * @param int $timestamp
+     * @return self
+     */
     public function setTimestamp(int $timestamp): self
     {
         $this->timestamp = $timestamp;
@@ -166,17 +275,33 @@ class LogEntry
         return $this;
     }
 
+    /**
+     * Get the sequence number of the entry.
+     * 
+     * @return int
+     */
     public function getSequence(): int
     {
         return $this->sequence;
     }
 
+    /**
+     * Set the sequence number of the entry.
+     * 
+     * @param int $sequence
+     * @return self
+     */
     public function setSequence(int $sequence): self
     {
         $this->sequence = $sequence;
         return $this;
     }
 
+    /**
+     * Remove all log nodes.
+     * 
+     * @return self
+     */
     public function flush(): self
     {
         $this->nodes = [];
