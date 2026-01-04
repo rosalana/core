@@ -2,6 +2,9 @@
 
 namespace Rosalana\Core\Services\Outpost;
 
+use Rosalana\Core\Contracts\Action;
+use Rosalana\Core\Facades\Trace;
+
 class Registry
 {
     protected static array $listeners = [];
@@ -55,20 +58,21 @@ class Registry
         $consumed = false;
 
         if (static::exists($namespace)) {
-            foreach (static::get($namespace) as $listener) {
+            Trace::capture(function () use ($namespace, $message, &$consumed) {
+                foreach (static::get($namespace) as $listener) {
+                    try {
+                        $listener->handle($message);
+                    } catch (\Throwable $e) {
+                        if (! $listener->isSilent()) {
+                            throw $e;
+                        }
+                    }
 
-                try {
-                    $listener->handle($message);
-                } catch (\Throwable $e) {
                     if (! $listener->isSilent()) {
-                        throw $e;
+                        $consumed = true;
                     }
                 }
-
-                if (! $listener->isSilent()) {
-                    $consumed = true;
-                }
-            }
+            }, 'Outpost:handler:registry');
         }
 
         return $consumed;
