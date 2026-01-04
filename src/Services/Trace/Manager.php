@@ -43,9 +43,10 @@ class Manager
     /**
      * Finish the current trace.
      * 
+     * @param null|string|class-string<LogRenderer> $logRenderer
      * @return Trace|null
      */
-    public function finish(): ?Trace
+    public function finish(?string $logRenderer = null): ?Trace
     {
         if (! $this->enabled) return null;
 
@@ -54,7 +55,7 @@ class Manager
         $keys = App::config('tracer.runtime.log', []);
 
         if ($trace->name() && in_array($trace->name(), $keys, true)) {
-            $trace->log();
+            $trace->log($logRenderer);
         }
 
         return $trace;

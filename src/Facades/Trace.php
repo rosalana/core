@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @method static void start(string $name, array $context = [])
  * @method static \Rosalana\Core\Services\Trace\Scope phase(string $name)
- * @method static \Rosalana\Core\Services\Trace\Trace finish()
+ * @method static \Rosalana\Core\Services\Trace\Trace finish(null|string|class-string<\Rosalana\Core\Services\Logging\LogRenderer> $logRenderer = null)
  * @method static mixed capture(callable $process, ?string $name = null)
  * @method static void record(mixed $data = null)
  * @method static void recordWhen(bool $condition, mixed $data = null)
