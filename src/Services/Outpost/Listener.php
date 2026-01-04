@@ -3,31 +3,37 @@
 namespace Rosalana\Core\Services\Outpost;
 
 use Rosalana\Core\Contracts\Action;
+use Rosalana\Core\Facades\Trace;
 
 abstract class Listener
 {
-    public function handle(Message $message): Action|null
+    public function handle(Message $message): void
     {
-        $status = $message->status();
+        Trace::capture(function () use ($message) {
+            $status = $message->status();
 
-        $job = match ($status) {
-            'request' => $this->request($message),
-            'confirmed' => $this->confirmed($message),
-            'failed' => $this->failed($message),
-            'unreachable' => $this->unreachable($message),
-            default => $this->unreachable($message),
-        };
+            $job = match ($status) {
+                'request' => $this->request($message),
+                'confirmed' => $this->confirmed($message),
+                'failed' => $this->failed($message),
+                'unreachable' => $this->unreachable($message),
+                default => $this->unreachable($message),
+            };
 
-        if (!$job) return null;
+            if (!$job) return null;
 
-        if ($job instanceof Action) {
-            run($job);
-            return $job;
-        } else {
-            event($job);
-        }
+            if ($job instanceof Action) {
+                $result = run($job);
 
-        return null;
+                Trace::decisionWhen(!!$result, [
+                    'handler' => static::class,
+                    'queued' => $result->isQueueable(),
+                    'broadcasted' => $result->isBroadcastable(),
+                ]);
+            } else {
+                event($job);
+            }
+        }, 'Outpost:handler:listener');
     }
 
     abstract public function request(Message $message);
