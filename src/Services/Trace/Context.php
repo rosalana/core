@@ -55,7 +55,7 @@ class Context
         try {
             return $process();
         } catch (\Throwable $e) {
-            $this->exception($e);
+            $this->exception($e, ['class' => static::class]);
             throw $e;
         } finally {
             $scope->close();
