@@ -11,16 +11,18 @@ abstract class LogRenderer
      */
     protected array $lines = [];
 
-    public function __construct(Trace $trace)
+    public function __construct(protected Trace $trace) {}
+
+    public function process(): void
     {
-        $entries = $this->getEntries($trace);
+        $entries = $this->getEntries($this->trace);
 
         usort($entries, function (LogEntry $a, LogEntry $b) {
             $t = $a->getTimestamp() <=> $b->getTimestamp();
             return $t !== 0 ? $t : ($a->getSequence() <=> $b->getSequence());
         });
 
-        $this->build($trace, $entries);
+        $this->build($this->trace, $entries);
     }
 
     /**

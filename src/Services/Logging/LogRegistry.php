@@ -112,6 +112,7 @@ class LogRegistry
         $renderer = self::getRenderer($nameOrClass);
         if (! $renderer) return;
 
-        new $renderer($trace);
+        $i = new $renderer($trace);
+        $i->process();
     }
 }
