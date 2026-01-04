@@ -15,9 +15,13 @@ use Illuminate\Support\Facades\Facade;
  * @method static void decisionWhen(bool $condition, mixed $data = null)
  * @method static void recordOrDecision(bool $isDecision, mixed $data = null)
  * @method static void exception(\Throwable $exception, mixed $data = null)
- * @method static void fail(\Throwable $exception, mixed $data = null)
  * @method static array<\Rosalana\Core\Services\Trace\Trace> getTraces()
  * @method static void flush()
+ * @method static bool isEnabled()
+ * @method static void registerScheme(string $pattern, class-string<\Rosalana\Core\Services\Logging\LogScheme> $class)
+ * @method static void registerSchemes(array<string, class-string<\Rosalana\Core\Services\Logging\LogScheme>> $schemes)
+ * @method static void registerRenderer(string $name, class-string<\Rosalana\Core\Services\Logging\LogRenderer> $class)
+ * @method static void registerRenderers(array<string, class-string<\Rosalana\Core\Services\Logging\LogRenderer>> $renderers)
  * 
  * @see \Rosalana\Core\Services\Trace\Manager
  */
