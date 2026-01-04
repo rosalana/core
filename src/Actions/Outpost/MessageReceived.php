@@ -4,6 +4,7 @@ namespace Rosalana\Core\Actions\Outpost;
 
 use Rosalana\Core\Contracts\Action;
 use Rosalana\Core\Facades\Outpost;
+use Rosalana\Core\Facades\Trace;
 use Rosalana\Core\Services\Outpost\Listener;
 use Rosalana\Core\Services\Outpost\Message;
 use Rosalana\Core\Traits\Actions\SynchronousExecution;
@@ -14,17 +15,24 @@ class MessageReceived implements Action
 
     protected Message $message;
 
-    public string $executedVia = 'none';
-    public bool $executedToQueue = false;
-    public bool $executedToBroadcast = false;
-
     public function __construct(string $id, array $payload)
     {
-        $this->message = Message::make($id, $payload);
+        $this->message = Trace::capture(function () use ($id, $payload) {
+
+            $message = Message::make($id, $payload);
+
+            Trace::decision([
+                'message' => $message,
+            ]);
+
+            return $message;
+        }, 'Outpost:message');
     }
 
     public function handle(): void
     {
+        $scope = Trace::phase('Outpost:handle');
+
         try {
             if ($this->checkProvider('promise', fn() => $this->handleViaPromise())) return;
             if ($this->checkProvider('registry', fn() => $this->handleViaRegistry())) return;
@@ -60,12 +68,7 @@ class MessageReceived implements Action
             $handler = new ($this->message->listenersClass())();
 
             if (method_exists($handler, 'handle') && $handler instanceof Listener) {
-                $action = $handler->handle($this->message);
-
-                if ($action instanceof Action) {
-                    $this->executedToQueue = $action->isQueueable();
-                    $this->executedToBroadcast = $action->isBroadcastable();
-                }
+                $handler->handle($this->message);
 
                 return true;
             }
@@ -81,16 +84,11 @@ class MessageReceived implements Action
 
     protected function checkProvider(string $provider, \Closure $process): bool
     {
+        Trace::record($provider . ':check');
+
         try {
-            $result = (bool) $process();
-
-            if ($result) {
-                $this->executedVia = $provider;
-            }
-
-            return $result;
+            return (bool) $process();
         } catch (\Throwable $e) {
-            $this->executedVia = 'failed:' . $provider;
             throw $e;
         }
     }
