@@ -3,6 +3,7 @@
 namespace Rosalana\Core\Services\Outpost;
 
 use Rosalana\Core\Contracts\Action;
+use Rosalana\Core\Facades\Trace;
 
 class RegistryListener
 {
@@ -22,10 +23,24 @@ class RegistryListener
 
     public function handle(Message $message): void
     {
-        $result = ($this->callback)($message);
+        Trace::capture(function () use ($message) {
 
-        if ($result instanceof Action) {
-            run($result);
-        }
+            Trace::record([
+                'silent' => $this->isSilent(),
+            ]);
+
+            $result = ($this->callback)($message);
+
+            if ($result instanceof Action) {
+                run($result);
+            }
+
+            Trace::decision([
+                'handler' => static::class,
+                'queued' => $result instanceof Action ? $result->isQueueable() : false,
+                'broadcasted' => $result instanceof Action ? $result->isBroadcastable() : false,
+                'silent' => $this->isSilent(),
+            ]);
+        }, 'Outpost:handler:registry:listener');
     }
 }
