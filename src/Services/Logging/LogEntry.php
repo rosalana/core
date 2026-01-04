@@ -6,11 +6,14 @@ use Rosalana\Core\Services\Logging\Node\Flag;
 use Rosalana\Core\Services\Logging\Node\Message;
 use Rosalana\Core\Services\Logging\Node\Actor;
 use Rosalana\Core\Services\Logging\Node\Status;
+use Rosalana\Core\Services\Trace\Trace;
 
 class LogEntry
 {
     /** @var LogNode[] */
     protected array $nodes = [];
+
+    protected Trace $trace;
 
     protected int $timestamp = 0;
     protected int $sequence = 0;
@@ -30,7 +33,7 @@ class LogEntry
      * @param string|null $actor
      * @param array|null $flags
      * @param string|null $message
-     * @param string|null $status available statuses: info, warning, error (default: info)
+     * @param string|null $status available statuses: info, warning, error, debug (default: info)
      * @param LogNode ...$nodes
      * @return self
      */
@@ -62,6 +65,11 @@ class LogEntry
         }
 
         return $instance;
+    }
+
+    public function trace(): Trace
+    {
+        return $this->trace;
     }
 
     /**
@@ -272,6 +280,12 @@ class LogEntry
     {
         $this->timestamp = $timestamp;
 
+        return $this;
+    }
+
+    public function setTrace(Trace $trace): self
+    {
+        $this->trace = $trace;
         return $this;
     }
 
