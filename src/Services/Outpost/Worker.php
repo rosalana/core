@@ -4,7 +4,6 @@ namespace Rosalana\Core\Services\Outpost;
 
 use Illuminate\Support\Facades\Redis;
 use Rosalana\Core\Actions\Outpost\MessageReceived;
-use Rosalana\Core\Exceptions\Service\Outpost\OutpostException;
 use Rosalana\Core\Facades\App;
 use Rosalana\Core\Facades\Trace;
 
