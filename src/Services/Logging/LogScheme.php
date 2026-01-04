@@ -99,7 +99,7 @@ abstract class LogScheme implements LogSchemeInterface
         $record = $this->trace()->getException();
         $exception = $record['exception'];
 
-        $this->entry(
+        $entry = $this->entry(
             actor: 'exception',
             flags: [
                 'file' => $exception->getFile(),
@@ -108,5 +108,9 @@ abstract class LogScheme implements LogSchemeInterface
             message: $exception->getMessage(),
             status: 'error',
         )->setTimestamp($record['timestamp']);
+
+        if ($record['data']['class'] ?? false) {
+            $entry->addFlag('class', $record['data']['class']);
+        }
     }
 }
