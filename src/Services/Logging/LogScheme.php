@@ -32,6 +32,7 @@ abstract class LogScheme implements LogSchemeInterface
      * @param string|null $actor
      * @param array|null $flags
      * @param string|null $message
+     * @param string|null $status available statuses: info, warning, error (default: info)
      * @param LogNode ...$nodes
      * @return LogEntry
      */
@@ -39,6 +40,7 @@ abstract class LogScheme implements LogSchemeInterface
         ?string $actor = null,
         ?array $flags = null,
         ?string $message = null,
+        ?string $status = 'info',
         LogNode ...$nodes
     ): LogEntry {
         $entry = LogEntry::make($actor, $flags, $message, ...$nodes);
@@ -103,6 +105,7 @@ abstract class LogScheme implements LogSchemeInterface
                 'line' => (string) $exception->getLine(),
             ],
             message: $exception->getMessage(),
+            status: 'error',
         )->setTimestamp($record['timestamp']);
     }
 }
