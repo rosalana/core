@@ -7,41 +7,94 @@ use Rosalana\Core\Services\Trace\Trace;
 
 abstract class LogScheme implements LogSchemeInterface
 {
+    /**
+     * @var LogEntry[]
+     */
     protected array $entries = [];
 
-    protected function entries(): iterable
+    protected int $sequence = 0;
+
+    public function __construct(protected Trace $trace) {}
+
+    /**
+     * Get all built log entries.
+     * 
+     * @return LogEntry[]
+     */
+    protected function entries(): array
     {
         return $this->entries;
     }
 
-    protected function entry(...$arg): LogEntry
-    {
-        $entry = new LogEntry($arg);
+    /**
+     * Create and add a log entry.
+     * 
+     * @param string|null $actor
+     * @param array|null $flags
+     * @param string|null $message
+     * @param LogNode ...$nodes
+     * @return LogEntry
+     */
+    protected function entry(
+        ?string $actor = null,
+        ?array $flags = null,
+        ?string $message = null,
+        LogNode ...$nodes
+    ): LogEntry {
+        $entry = LogEntry::make($actor, $flags, $message, ...$nodes);
+        $entry->setTimestamp($this->trace->startTime());
+        $entry->setSequence($this->sequence++);
 
         $this->entries[] = $entry;
 
         return $entry;
     }
 
-    public function build(Trace $trace): iterable
-    {
-        $this->entries = []; // reset per call
-        $this->format($trace);
 
-        return $this->entries();
+    /**
+     * Get the trace instance.
+     * 
+     * @return Trace
+     */
+    protected function trace(): Trace
+    {
+        return $this->trace;
     }
 
-    public function buildException(Trace $trace): iterable
+    /**
+     * Build log entries.
+     * 
+     * @return LogEntry[]
+     */
+    public function build(): array
     {
         $this->entries = [];
-        $this->formatException($trace);
+        $this->sequence = 0;
+        
+        $this->format();
 
         return $this->entries();
     }
 
-    public function formatException(Trace $trace): void
+    /**
+     * Build exception log entries.
+     * 
+     * @return LogEntry[]
+     */
+    public function buildException(): array
     {
-        $exception = $trace->getException()['exception'];
+        $this->entries = [];
+        $this->sequence = 0;
+
+        $this->formatException();
+
+        return $this->entries();
+    }
+
+    public function formatException(): void
+    {
+        $record = $this->trace()->getException();
+        $exception = $record['exception'];
 
         $this->entry(
             actor: 'exception',
@@ -50,6 +103,6 @@ abstract class LogScheme implements LogSchemeInterface
                 'line' => (string) $exception->getLine(),
             ],
             message: $exception->getMessage(),
-        );
+        )->setTimestamp($record['timestamp']);
     }
 }
