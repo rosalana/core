@@ -43,9 +43,10 @@ abstract class LogScheme implements LogSchemeInterface
         ?string $status = 'info',
         LogNode ...$nodes
     ): LogEntry {
-        $entry = LogEntry::make($actor, $flags, $message, ...$nodes);
+        $entry = LogEntry::make($actor, $flags, $message, $status, ...$nodes);
         $entry->setTimestamp($this->trace->startTime());
         $entry->setSequence($this->sequence++);
+        $entry->setTrace($this->trace);
 
         $this->entries[] = $entry;
 
@@ -72,7 +73,7 @@ abstract class LogScheme implements LogSchemeInterface
     {
         $this->entries = [];
         $this->sequence = 0;
-        
+
         $this->format();
 
         return $this->entries();
