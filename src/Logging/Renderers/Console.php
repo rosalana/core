@@ -26,6 +26,16 @@ class Console extends LogRenderer
         }
     }
 
+    protected function renderSystem(Trace $trace, array $logs): bool
+    {
+        if ($trace->name() === '__disabled') {
+            $this->line('[Logger]' . ' Tracing is disabled.', ['status' => 'error']);
+            return true;
+        }
+
+        return false;
+    }
+
     protected function color(string $text, string $color): string
     {
         $c = fn(string $code) => "\033[{$code}m";

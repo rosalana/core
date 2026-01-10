@@ -43,11 +43,13 @@ class Manager
     /**
      * Finish the current trace.
      * 
-     * @return Trace|null
+     * @return Trace
      */
-    public function finish(): ?Trace
+    public function finish(): Trace
     {
-        if (! $this->enabled) return null;
+        if (! $this->enabled) {
+            return new Trace('__disabled');
+        }
 
         $trace = $this->context->finish();
 

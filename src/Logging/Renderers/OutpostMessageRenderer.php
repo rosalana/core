@@ -11,6 +11,10 @@ class OutpostMessageRenderer extends Console
     {
         $timestamp = date('Y-m-d H:i:s');
 
+        if ($this->renderSystem($trace, $logs)) {
+            return;
+        }
+
         $mainEntry = $this->findMainEntry($logs);
         $hasErrors = $this->hasErrors($logs);
 

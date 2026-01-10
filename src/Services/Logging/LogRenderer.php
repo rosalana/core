@@ -2,6 +2,7 @@
 
 namespace Rosalana\Core\Services\Logging;
 
+use Rosalana\Core\Facades\Trace as FacadesTrace;
 use Rosalana\Core\Services\Trace\Trace;
 
 abstract class LogRenderer
@@ -15,7 +16,11 @@ abstract class LogRenderer
 
     public function process(): void
     {
-        $entries = $this->getEntries($this->trace);
+        if (!FacadesTrace::isEnabled()) {
+            $entries = [LogEntry::make(action: 'Logger', message: 'Tracing is disabled.', timestamp: time(), status: 'error')];
+        } else {
+            $entries = $this->getEntries($this->trace);
+        }
 
         usort($entries, function (LogEntry $a, LogEntry $b) {
             $t = $a->getTimestamp() <=> $b->getTimestamp();
