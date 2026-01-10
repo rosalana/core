@@ -3,6 +3,8 @@
 namespace Rosalana\Core\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Routing\Router;
 use Rosalana\Core\Facades\Outpost;
 use Rosalana\Core\Facades\Trace;
 use Rosalana\Core\Logging\Schemes\BasecampSendScheme;
@@ -12,6 +14,8 @@ use Rosalana\Core\Logging\Schemes\OutpostSendScheme;
 use Rosalana\Core\Services\Basecamp\AppsService;
 use Rosalana\Core\Services\Basecamp\TicketsService;
 use Rosalana\Core\Services\Outpost\Message;
+use Rosalana\Core\Http\Middleware\ForceJson;
+use Rosalana\Core\Http\Middleware\RevizorCheckTicket;
 
 class RosalanaCoreServiceProvider extends ServiceProvider
 {
@@ -20,6 +24,9 @@ class RosalanaCoreServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        // Register exception handling
+        $this->registerExceptionHandling();
+
         // Merge default balíčkový config s configem hostitelské aplikace
         $this->mergeConfigFrom(__DIR__ . '/../../config/rosalana.php', 'rosalana');
 
@@ -81,6 +88,12 @@ class RosalanaCoreServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // Register middleware
+        $this->registerMiddleware();
+
+        // Register internal routes
+        $this->registerRoutes();
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 \Rosalana\Core\Console\Commands\PublishCommand::class,
@@ -93,9 +106,74 @@ class RosalanaCoreServiceProvider extends ServiceProvider
             ]);
         }
 
-        // Publikování configu, pokud chceš, aby si ho uživatel mohl zkopírovat
+        // Publish configuration file
         $this->publishes([
             __DIR__ . '/../../config/rosalana.php' => config_path('rosalana.php'),
         ], 'rosalana-config');
+
+        // Publish internal routes file
+        $this->publishes([
+            __DIR__ . '/../../routes/internal.php' => base_path('routes/rosalana-internal.php'),
+        ], 'rosalana-routes');
+    }
+
+    /**
+     * Register middleware aliases
+     */
+    protected function registerMiddleware(): void
+    {
+        $router = $this->app->make(Router::class);
+
+        $router->aliasMiddleware('rosalana.force-json', ForceJson::class);
+        $router->aliasMiddleware('revitor.ticket', RevizorCheckTicket::class);
+    }
+
+    /**
+     * Register internal API routes
+     */
+    protected function registerRoutes(): void
+    {
+        Route::middleware(['rosalana.force-json', 'rosalana.revizor'])
+            ->prefix('internal')
+            ->group(function () {
+                $this->loadRoutesFrom(__DIR__ . '/../../routes/internal.php');
+            });
+    }
+
+    /**
+     * Register automatic exception handling for API routes
+     */
+    protected function registerExceptionHandling(): void
+    {
+        $this->app->extend(
+            \Illuminate\Contracts\Debug\ExceptionHandler::class,
+            function ($handler, $app) {
+                return new class($app, $handler) extends \Illuminate\Foundation\Exceptions\Handler {
+                    protected $originalHandler;
+
+                    public function __construct($app, $originalHandler)
+                    {
+                        parent::__construct($app);
+                        $this->originalHandler = $originalHandler;
+                    }
+
+                    public function render($request, \Throwable $e)
+                    {
+                        // Check if this is an internal route
+                        if ($request->is('internal/*')) {
+                            return \Rosalana\Core\Exceptions\Handler::convertExceptionToApiResponse($e);
+                        }
+
+                        // Otherwise delegate to the original handler
+                        return $this->originalHandler->render($request, $e);
+                    }
+
+                    public function report(\Throwable $e)
+                    {
+                        return $this->originalHandler->report($e);
+                    }
+                };
+            }
+        );
     }
 }
