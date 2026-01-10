@@ -2,26 +2,25 @@
 
 namespace Rosalana\Core\Services\Outpost;
 
-use Rosalana\Core\Contracts\Action;
 use Rosalana\Core\Facades\Trace;
 
 class Registry
 {
     protected static array $listeners = [];
 
-    public static function register(string $namespace, \Closure $callback): void
+    public static function register(string $namespace, \Closure $callback, string $name = 'unnamed'): void
     {
         if (! static::validateNamespace($namespace)) return;
 
-        $listener = new RegistryListener($callback);
+        $listener = new RegistryListener($callback, $name);
         static::$listeners[$namespace][] = $listener;
     }
 
-    public static function registerSilent(string $namespace, \Closure $callback): void
+    public static function registerSilent(string $namespace, \Closure $callback, string $name = 'unnamed'): void
     {
         if (! static::validateNamespace($namespace)) return;
 
-        $listener = new RegistryListener($callback);
+        $listener = new RegistryListener($callback, $name);
         $listener->setSilent(true);
         static::$listeners[$namespace][] = $listener;
     }

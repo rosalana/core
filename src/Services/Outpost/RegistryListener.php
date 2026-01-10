@@ -9,7 +9,7 @@ class RegistryListener
 {
     protected bool $silent = false;
 
-    public function __construct(protected \Closure $callback) {}
+    public function __construct(protected \Closure $callback, protected string $name = 'unnamed') {}
 
     public function setSilent(bool $silent = true): void
     {
@@ -36,7 +36,7 @@ class RegistryListener
             }
 
             Trace::decision([
-                'handler' => 'Resolved from Outpost Registry',
+                'handler' => 'Resolved `' . $this->name . '` from registry',
                 'queued' => $result instanceof Action ? $result->isQueueable() : false,
                 'broadcasted' => $result instanceof Action ? $result->isBroadcastable() : false,
                 'silent' => $this->isSilent(),

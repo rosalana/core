@@ -153,14 +153,14 @@ class Manager
         return $response->json('data.message');
     }
 
-    public function receive(string $namespace, \Closure $callback): void
+    public function receive(string $namespace, \Closure $callback, string $name = 'unknown'): void
     {
-        Registry::register($namespace, $callback);
+        Registry::register($namespace, $callback, $name);
     }
 
-    public function receiveSilently(string $namespace, \Closure $callback): void
+    public function receiveSilently(string $namespace, \Closure $callback, string $name = 'unknown'): void
     {
-        Registry::registerSilent($namespace, $callback);
+        Registry::registerSilent($namespace, $callback, $name);
     }
 
     public function runRegistry(Message $message): bool
