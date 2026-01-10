@@ -7,7 +7,7 @@ class BasecampSendScheme extends LogScheme
     public function format(): void
     {
         $record = $this->trace()->getDecision();
-        $decision = $record['decision'];
+        $decision = $record['data'];
 
         $entry = $this->entry(status: 'info');
 

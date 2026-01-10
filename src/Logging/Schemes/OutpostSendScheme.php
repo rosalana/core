@@ -9,7 +9,7 @@ class OutpostSendScheme extends LogScheme
     public function format(): void
     {
         $record = $this->trace()->getDecision();
-        $decisiton = $record['decision'];
+        $decisiton = $record['data'];
 
         $entry = $this->entry(status: 'info');
 
