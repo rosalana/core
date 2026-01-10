@@ -17,7 +17,6 @@ class OutpostHandlerScheme extends LogScheme
 
                 $entry = $this->entry(status: 'info');
                 $entry->addActor($name);
-                $entry->setTimestamp($phase->startTime());
 
                 $entry->addFlag('silent', $silent);
                 $entry->addFlag('queue', false);
@@ -47,6 +46,18 @@ class OutpostHandlerScheme extends LogScheme
 
             $entry->addMessage($record['data']['handler']);
         }
+    }
+
+    public function formatException(): void
+    {
+        $name = $this->getHandlerName($this->trace());
+        $exception = $this->trace()->getException()['exception'];
+
+        $entry = $this->entry(status: 'error');
+        $entry->addActor($name);
+        $entry->addFlag('queue', false);
+        $entry->addFlag('broadcast', false);
+        $entry->addMessage($exception->getMessage());
     }
 
     private function getHandlerName(Trace $trace): string
