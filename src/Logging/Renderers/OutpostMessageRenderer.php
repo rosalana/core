@@ -89,12 +89,11 @@ class OutpostMessageRenderer extends Console
             $silentText = $silent ? $this->color(' (silent)', 'gray') : '';
 
             if ($status === 'error') {
-                $file = $entry->getFlag('file')?->value ?? '';
                 $this->line(sprintf(
                     " ↪  [%s%s]: %s",
                     $this->styleVia('failed:' . $actor) . $silentText,
                     '',
-                    str_replace(base_path(), '', $file)
+                    $this->color(str_replace(base_path(), '', $message), 'red')
                 ));
             } else {
                 $this->line(sprintf(

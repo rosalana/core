@@ -26,12 +26,12 @@ class OutpostHandlerScheme extends LogScheme
                 if ($decision = $phase->getRecordByType('decision')) {
                     $entry->addFlag('queue', $decision['data']['queued'] ?? false);
                     $entry->addFlag('broadcast', $decision['data']['broadcast'] ?? false);
-                    $entry->addMessage($decision['data']['handler'] . $decision['timestamp']);
+                    $entry->addMessage($decision['data']['handler']);
                 }
 
                 if ($exception = $phase->getRecordByType('exception')) {
                     $entry->addStatus('error');
-                    $entry->addMessage($exception['exception']->getMessage(). $exception['timestamp']);
+                    $entry->addMessage($exception['exception']->getMessage());
                 }
             }
         } else {
@@ -45,7 +45,7 @@ class OutpostHandlerScheme extends LogScheme
             $entry->addFlag('queue', $record['data']['queued'] ?? false);
             $entry->addFlag('broadcast', $record['data']['broadcast'] ?? false);
 
-            $entry->addMessage($record['data']['handler'] . $record['timestamp']);
+            $entry->addMessage($record['data']['handler']);
         }
     }
 
