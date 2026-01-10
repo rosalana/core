@@ -191,7 +191,7 @@ $trace = Trace::finish();
 ```
 
 > [!TIP]
-> The returned `Trace` object contains the full execution tree and can be inspected, filtered, and **can be auto-logged** if the provided key is configured in `tracer.runtime.log`.
+> The returned `Trace` object contains the full execution tree and can be inspected or filtered.
 
 #### Phases (Sub-operations)
 
@@ -303,6 +303,64 @@ $traceArray = $trace->toArray();
     ]
 }
 ```
+
+#### Logging Traces
+You can log the final trace (or any sub-trace) using the built-in log renderers. 
+
+```php
+Trace::finish()->log('console');
+```
+
+By default, Rosalana Core provides `console` and `file` log renderers.
+
+You can put custom renderer class and place it in the `log` function parameter.
+
+```php
+Trace::finish()->log(MyCustomRenderer::class);
+```
+
+Renderers must extend the `Rosalana\Core\Services\Logging\LogRenderer` class and implement the `render(Trace $trace, array $logs): void` method.
+
+Before you can render logs, you need to define **log schemes** for every trace you want to log. A log scheme defines **how to interpret the trace structure** and convert it into log entries.
+
+You can define multiple log schemes. Each scheme extends the `Rosalana\Core\Services\Logging\LogScheme` class and implements the `format(): void` method.
+
+> [!NOTE]
+> Exceptions are formatted automatically unless you override the `formatException()` method.
+
+```php
+public function format(): void
+{
+    $trace = $this->trace(); // original trace
+    $this->entry(status: 'info')
+        ->addActor('system')
+        ->addMessage('Operation started');
+}
+```
+
+Schemes get resolved automatically based on the trace name. You need to register your scheme in a service provider. You can user **wildcard string** to match multiple traces.
+
+```php
+Trace::registerSchemes([
+    'operation.*' => OperationLogScheme::class,
+    'operation.{create|update}' => OperationDetailLogScheme::class,
+]);
+```
+The more specific wildcard match takes precedence. So `operation.create` will match `operation.{create|update}` scheme before `operation.*`.
+
+In renderer you can extend the `console` or `file` renderer to reuse their logic and just add your custom behavior.
+
+Use `$this->line(string $line)` to output a line in console or file.
+
+```php
+public function render(Trace $trace, array $logs): void
+{
+    $this->line('--- Custom Trace Log Start ---');
+}
+```
+
+> [!IMPORTANT]
+> Log engine is very experimental at this moment and probably will get simplified in the future or completely rewritten. We know there is a need for custom logging in Rosalana ecosystem, but we are still figuring out the best approach without overcomplicating things.
 
 ### Basecamp Connection
 
