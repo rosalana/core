@@ -38,7 +38,7 @@ class OutpostMessageRenderer extends Console
         ));
 
         $this->renderHandlers($logs);
-        $this->renderSend($logs);
+        $this->renderService($logs);
 
         $this->separator();
     }
@@ -107,62 +107,74 @@ class OutpostMessageRenderer extends Console
         }
     }
 
-    protected function renderSend(array $logs): void
+    protected function renderService(array $logs): void
     {
-        $outpostSend = null;
-        $basecampSend = null;
-
-        foreach ($logs as $entry) {
+        $serviceEntries = array_filter($logs, function ($entry) {
             $actor = $entry->getActor()?->value;
+            return str_starts_with($actor ?? '', 'Service:');
+        });
+
+        foreach ($serviceEntries as $entry) {
+            $actor = $entry->getActor()?->value;
+            $message = $entry->getMessage()?->value ?? '';
+            $status = $entry->getStatus()?->value ?? 'info';
+
             if ($actor === 'Service:Outpost') {
-                $outpostSend = $entry;
-            }
-            if ($actor === 'Service:Basecamp') {
-                $basecampSend = $entry;
-            }
-        }
+                $targets = $this->formatTargets($entry);
 
-        if ($outpostSend) {
-            $message = $outpostSend->getMessage()?->value ?? '';
-            $targets = $this->formatTargets($outpostSend);
-
-            $parts = explode(':', $message);
-            $name = $parts[0] ?? 'unknown';
-            $status = strtoupper($parts[1] ?? 'SEND');
-
-            $this->line(sprintf(
-                " ↪  [%s%s]: %s",
-                $this->styleVia('OUTPOST:' . $status),
-                $targets ? ' → ' . $targets : '',
-                $name
-            ));
-        }
-
-        if ($basecampSend) {
-            $message = $basecampSend->getMessage()?->value ?? '';
-            $status = $basecampSend->getStatus()?->value ?? 'info';
-
-            $parts = explode(' ', $message);
-            $method = strtoupper($parts[0] ?? 'REQUEST');
-            $endpoint = $parts[1] ?? '-';
-
-            $target = $basecampSend->getFlag('target')?->value ?? '';
-
-            if ($status === 'error') {
-                $this->line(sprintf(
-                    " ↪  [%s]: %s",
-                    $this->styleVia('failed:BASECAMP:' . $method),
-                    $this->color($message, 'red')
-                ));
-            } else {
                 $this->line(sprintf(
                     " ↪  [%s%s]: %s",
-                    $this->styleVia('BASECAMP:' . $method),
-                    $target ? ' → ' . $target : '',
-                    $endpoint
+                    $this->styleVia($actor),
+                    $targets ? ' → ' . $targets : '',
+                    $this->styleNamespace($message)
+                ));
+            } elseif ($actor === 'Service:Basecamp') {
+                $target = $entry->getFlag('target')?->value ?? '';
+                $parts = explode(' ', $message);
+                $method = $parts[0] ?? '';
+                $endpoint = $parts[1] ?? $message;
+                $httpStatus = $parts[2] ?? null;
+
+                if ($status === 'error') {
+                    $this->line(sprintf(
+                        " ↪  [%s]: %s",
+                        $this->styleVia('failed:' . $actor),
+                        $this->color($message, 'red')
+                    ));
+                } else {
+                    $formattedMessage = $method . ' ' . $endpoint;
+                    if ($httpStatus) {
+                        $formattedMessage .= ' ' . $this->formatHttpStatus($httpStatus);
+                    }
+
+                    $this->line(sprintf(
+                        " ↪  [%s%s]: %s",
+                        $this->styleVia($actor),
+                        $target ? ' → ' . $target : '',
+                        $formattedMessage
+                    ));
+                }
+            } else {
+                $this->line(sprintf(
+                    " ↪  [%s]: %s",
+                    $this->styleVia($actor),
+                    $message
                 ));
             }
         }
+    }
+
+    protected function formatHttpStatus(string $status): string
+    {
+        $code = (int) ltrim($status, ':');
+
+        return match (true) {
+            $code >= 200 && $code < 300 => $this->color($code, 'green'),
+            $code >= 300 && $code < 400 => $this->color($code, 'blue'),
+            $code >= 400 && $code < 500 => $this->color($code, 'yellow'),
+            $code >= 500 => $this->color($code, 'red'),
+            default => $code,
+        };
     }
 
     protected function formatTargets(LogEntry $entry): string
@@ -176,12 +188,29 @@ class OutpostMessageRenderer extends Console
         return implode(', ', $targets);
     }
 
-    protected function styleNamespace(LogEntry $entry): string
+    protected function styleNamespace(LogEntry|string $entry): string
     {
-        $message = $entry->getMessage()?->value ?? 'unknown';
-        $result = $message;
+        $message = $entry instanceof LogEntry
+            ? ($entry->getMessage()?->value ?? 'unknown')
+            : $entry;
 
-        return $this->color($result, 'cyan');
+        if (str_contains($message, ':')) {
+            $parts = explode(':', $message, 2);
+            $namespace = $parts[0];
+            $status = $parts[1];
+
+            $coloredStatus = match (strtolower($status)) {
+                'request'      => $this->color($status, 'blue'),
+                'confirmed'    => $this->color($status, 'green'),
+                'failed'       => $this->color($status, 'red'),
+                'unreachable'  => $this->color($status, 'yellow'),
+                default        => $status,
+            };
+
+            return $namespace . ':' . $coloredStatus;
+        }
+
+        return $message;
     }
 
     protected function styleVia(string $provider): string

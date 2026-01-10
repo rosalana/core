@@ -18,7 +18,7 @@ class BasecampSendScheme extends LogScheme
 
         $entry->addFlag('target', $decision['target']);
 
-        $entry->addMessage(strtoupper($decision['method']) . ' ' . $decision['endpoint'] . ':' . $decision['status']);
+        $entry->addMessage(strtoupper($decision['method']) . ' ' . $decision['endpoint'] . ' :' . $decision['status']);
     }
 
     public function formatException(): void
