@@ -36,7 +36,7 @@ class RegistryListener
             }
 
             Trace::decision([
-                'handler' => static::class,
+                'handler' => 'Resolved from Outpost Registry',
                 'queued' => $result instanceof Action ? $result->isQueueable() : false,
                 'broadcasted' => $result instanceof Action ? $result->isBroadcastable() : false,
                 'silent' => $this->isSilent(),

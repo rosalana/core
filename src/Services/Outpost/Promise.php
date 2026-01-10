@@ -28,7 +28,7 @@ class Promise
             $result = call_user_func($this->retrieveCallback(), $this->message);
 
             Trace::decision([
-                'handler' => static::class,
+                'handler' => "Resolved from {$this->message->correlationId} promise",
                 'queued' => $result instanceof Action ? $result->isQueueable() : false,
                 'broadcasted' => $result instanceof Action ? $result->isBroadcastable() : false,
             ]);

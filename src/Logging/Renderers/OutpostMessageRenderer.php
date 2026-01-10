@@ -115,11 +115,11 @@ class OutpostMessageRenderer extends Console
         });
 
         foreach ($serviceEntries as $entry) {
-            $actor = $entry->getActor()?->value;
+            $actor = explode(':', $entry->getActor()?->value)[1];
             $message = $entry->getMessage()?->value ?? '';
             $status = $entry->getStatus()?->value ?? 'info';
 
-            if ($actor === 'Service:Outpost') {
+            if ($actor === 'Outpost') {
                 $targets = $this->formatTargets($entry);
 
                 $this->line(sprintf(
@@ -128,7 +128,7 @@ class OutpostMessageRenderer extends Console
                     $targets ? ' → ' . $targets : '',
                     $this->styleNamespace($message)
                 ));
-            } elseif ($actor === 'Service:Basecamp') {
+            } elseif ($actor === 'Basecamp') {
                 $target = $entry->getFlag('target')?->value ?? '';
                 $parts = explode(' ', $message);
                 $method = $parts[0] ?? '';
