@@ -68,9 +68,18 @@ class Core implements Package
                             "Configuration for the internal tracing system used for performance monitoring and debugging.",
                         )
                         ->section('runtime')
-                            ->value('enabled', 'true')
+                        ->value('enabled', 'true')
 
                         ->save();
+                }
+            ],
+            'routes' => [
+                'label' => 'Publish App Internal Routes',
+                'run' => function () {
+                    Artisan::call('vendor:publish', [
+                        '--provider' => "Rosalana\Core\Providers\RosalanaCoreServiceProvider",
+                        '--tag' => "rosalana-routes"
+                    ]);
                 }
             ],
             'env' => [
