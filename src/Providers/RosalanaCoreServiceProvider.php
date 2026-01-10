@@ -6,7 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Rosalana\Core\Facades\Outpost;
 use Rosalana\Core\Facades\Trace;
 use Rosalana\Core\Logging\Schemes\OutpostHandlerScheme;
-use Rosalana\Core\Logging\Schemes\OutpostReceiveScheme;
+use Rosalana\Core\Logging\Schemes\OutpostMessageScheme;
 use Rosalana\Core\Logging\Schemes\OutpostSendScheme;
 use Rosalana\Core\Services\Basecamp\AppsService;
 use Rosalana\Core\Services\Basecamp\TicketsService;
@@ -71,8 +71,8 @@ class RosalanaCoreServiceProvider extends ServiceProvider
         Trace::registerSchemes([
             'Outpost:send' => OutpostSendScheme::class,
             'Basecamp:send' => BasecampSendScheme::class,
-            'Outpost:receive' => OutpostReceiveScheme::class,
-            'Outpost:handler:*' => OutpostHandlerScheme::class,
+            'Outpost:message' => OutpostMessageScheme::class,
+            'Outpost:handler:{listener|registry|promise}' => OutpostHandlerScheme::class,
         ]);
     }
 
