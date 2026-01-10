@@ -47,11 +47,8 @@ class Worker
                     // dont crash the worker
                 }
 
-                $trace = Trace::finish();
+                Trace::finish()->log('console');
                 Trace::flush();
-
-                $trace->log('console');
-
 
                 Redis::connection($this->connection)->xack(
                     $this->stream,
