@@ -231,6 +231,10 @@ class LogEntry
      */
     public function addFlag(string $name, string $flag): self
     {
+        if ($existing = $this->getFlag($name)) {
+            $this->removeNode($existing);
+        }
+
         return $this->addNode(new Flag($flag, $name));
     }
 
