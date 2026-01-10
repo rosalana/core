@@ -36,7 +36,7 @@ class RegistryListener
             }
 
             Trace::decision([
-                'handler' => 'Resolved `' . $this->name . '` from registry',
+                'handler' => 'Resolved `' . $this->name . '`',
                 'queued' => $result instanceof Action ? $result->isQueueable() : false,
                 'broadcasted' => $result instanceof Action ? $result->isBroadcastable() : false,
                 'silent' => $this->isSilent(),

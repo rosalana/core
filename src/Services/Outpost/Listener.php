@@ -26,7 +26,7 @@ abstract class Listener
                 $result = run($job);
 
                 Trace::decisionWhen(!!$result, [
-                    'handler' => static::class,
+                    'handler' => 'Resolved `' . static::class . '`',
                     'queued' => $result->isQueueable(),
                     'broadcasted' => $result->isBroadcastable(),
                 ]);
