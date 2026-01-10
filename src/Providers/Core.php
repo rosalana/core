@@ -69,8 +69,6 @@ class Core implements Package
                         )
                         ->section('runtime')
                             ->value('enabled', 'true')
-                            ->value('log', '[]')
-                        
 
                         ->save();
                 }
