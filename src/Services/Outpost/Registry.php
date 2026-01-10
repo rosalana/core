@@ -56,15 +56,16 @@ class Registry
         $namespace = $message->namespace;
 
         $consumed = false;
+        $shouldThrow = false;
 
         if (static::exists($namespace)) {
-            Trace::capture(function () use ($namespace, $message, &$consumed) {
+            Trace::capture(function () use ($namespace, $message, &$consumed, &$shouldThrow) {
                 foreach (static::get($namespace) as $listener) {
                     try {
                         $listener->handle($message);
                     } catch (\Throwable $e) {
                         if (! $listener->isSilent()) {
-                            throw $e;
+                            $shouldThrow = true;
                         }
                     }
 
@@ -73,6 +74,10 @@ class Registry
                     }
                 }
             }, 'Outpost:handler:registry');
+        }
+
+        if ($shouldThrow) {
+            throw new \Rosalana\Core\Exceptions\Service\Outpost\OutpostException($message, "One or more registry listeners for '{$namespace}' failed.");
         }
 
         return $consumed;
