@@ -5,12 +5,12 @@ namespace Rosalana\Core\Providers;
 use Illuminate\Support\ServiceProvider;
 use Rosalana\Core\Facades\Outpost;
 use Rosalana\Core\Facades\Trace;
+use Rosalana\Core\Logging\Schemes\BasecampSendScheme;
 use Rosalana\Core\Logging\Schemes\OutpostHandlerScheme;
 use Rosalana\Core\Logging\Schemes\OutpostMessageScheme;
 use Rosalana\Core\Logging\Schemes\OutpostSendScheme;
 use Rosalana\Core\Services\Basecamp\AppsService;
 use Rosalana\Core\Services\Basecamp\TicketsService;
-use Rosalana\Core\Services\Logging\BasecampSendScheme;
 use Rosalana\Core\Services\Outpost\Message;
 
 class RosalanaCoreServiceProvider extends ServiceProvider

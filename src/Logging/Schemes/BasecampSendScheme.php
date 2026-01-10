@@ -1,6 +1,8 @@
 <?php
 
-namespace Rosalana\Core\Services\Logging;
+namespace Rosalana\Core\Logging\Schemes;
+
+use Rosalana\Core\Services\Logging\LogScheme;
 
 class BasecampSendScheme extends LogScheme
 {
