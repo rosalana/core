@@ -36,7 +36,7 @@ class Request
 
     public function __construct()
     {
-        $this->headers['Orgin'] = config('app.url');
+        $this->headers['Origin'] = config('app.url');
     }
 
     public function getMethod(): string
