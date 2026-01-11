@@ -6,6 +6,7 @@ use Rosalana\Core\Services\Actions\Runner;
 use Rosalana\Core\Http\Responses\SuccessResponse;
 use Rosalana\Core\Http\Responses\ErrorResponse;
 use Rosalana\Core\Enums\ApiErrorType;
+use Rosalana\Core\Support\WildcardString;
 
 if (!function_exists('run')) {
     function run(Action $action): mixed
@@ -18,6 +19,13 @@ if (!function_exists('action')) {
     function action(\Closure $callback): Action
     {
         return Inline::make($callback);
+    }
+}
+
+if (!function_exists('wildcard')) {
+    function wildcard(string $wildcard): WildcardString
+    {
+        return new WildcardString($wildcard);
     }
 }
 
