@@ -1,10 +1,9 @@
 <?php
 
-namespace Rosalana\Core\Services\Basecamp;
+namespace Rosalana\Core\Services\Basecamp\Services;
 
-/**
- *  Zatím jen blueprint pro tickets service
- */
+use Rosalana\Core\Services\Basecamp\Service;
+
 class TicketsService extends Service
 {
     public function list()

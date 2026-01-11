@@ -1,6 +1,8 @@
 <?php
 
-namespace Rosalana\Core\Services\Basecamp;
+namespace Rosalana\Core\Services\Basecamp\Services;
+
+use Rosalana\Core\Services\Basecamp\Service;
 
 class AppsService extends Service
 {
