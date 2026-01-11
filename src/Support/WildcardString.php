@@ -5,7 +5,7 @@ namespace Rosalana\Core\Support;
 final class WildcardString
 {
     private const MAX_SCORE = 100_000;
-    
+
     private const STAR_PENALTY = 25;
 
     /**
@@ -14,6 +14,31 @@ final class WildcardString
      * @param string $wildcard may include wildcards (*) and variants ({opt1|opt2})
      */
     public function __construct(protected string $wildcard) {}
+
+    /**
+     * Resolve self for the given string from the provided wildcards. 
+     * 
+     * @param string $string
+     * @param array<string> $wildcards
+     * @return self|null
+     */
+    public static function resolve(string $string, array $wildcards): ?self
+    {
+        $best = null;
+        $bestScore = 0;
+
+        foreach ($wildcards as $wc) {
+            $wildcard = new self($wc);
+            $score = $wildcard->score($string);
+
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $best = $wildcard;
+            }
+        }
+
+        return $best;
+    }
 
     /**
      * Get the wildcard string.
