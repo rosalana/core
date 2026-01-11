@@ -4,6 +4,7 @@ namespace Rosalana\Core\Services\Logging;
 
 use Rosalana\Core\Facades\Trace as FacadesTrace;
 use Rosalana\Core\Services\Trace\Trace;
+use Rosalana\Core\Support\WildcardString;
 
 abstract class LogRenderer
 {
@@ -122,133 +123,19 @@ abstract class LogRenderer
      */
     private function matchScheme(Trace $trace): ?LogScheme
     {
-        $scheme = null;
-        $maxScore = 0;
-
-        foreach (LogRegistry::getSchemes() as $name => $schemeClass) {
-            $score = $this->schemeMatchScore($trace->name(), $name);
-
-            if ($score > $maxScore) {
-                $maxScore = $score;
-                $scheme = $schemeClass;
-            }
-        }
-
-        if ($scheme) {
-            return new $scheme($trace);
-        }
-
-        return null;
-    }
-
-    /**
-     * Explain the scheme matching process for the given trace.
-     * 
-     * @param Trace $trace
-     * @return array<int, array{trace: string, pattern: string, scheme: class-string<LogScheme>, score: int, matched: bool}>
-     */
-    public static function explainSchemeMatch(Trace $trace): array
-    {
-        $results = [];
-
-        $i = new static($trace);
+        $best = null;
+        $bestScore = 0;
 
         foreach (LogRegistry::getSchemes() as $pattern => $schemeClass) {
-            $score = $i->schemeMatchScore($trace->name(), $pattern);
+            $score = wildcard($pattern)->score($trace->name());
 
-            $results[] = [
-                'trace' => $trace->name(),
-                'pattern' => $pattern,
-                'scheme' => $schemeClass,
-                'score' => $score,
-                'matched' => false,
-            ];
-        }
-
-
-        usort($results, function ($a, $b) {
-            return $b['score'] <=> $a['score'];
-        });
-
-        $results[0]['matched'] = $results[0]['score'] > 0;
-
-        return $results;
-    }
-
-    /**
-     * Calculate the match score between a trace name and a scheme pattern.
-     * 
-     * @param string $name
-     * @param string $pattern may include wildcards (*) and variants ({opt1|opt2})
-     * @return int score (0 = no match, higher is better)
-     */
-    private function schemeMatchScore(string $name, string $pattern): int
-    {
-        if ($pattern === '*') return 1;
-
-        $variants = $this->generateVariants($pattern);
-
-        $matching = [];
-        foreach ($variants as $v) {
-            if (fnmatch($v, $name, FNM_NOESCAPE)) {
-                $matching[] = $v;
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $best = $schemeClass;
             }
         }
 
-        if (empty($matching)) return 0;
-
-        $variantCount = max(1, count($variants));
-
-        $bestStars = PHP_INT_MAX;
-        $bestLiteralLen = 0;
-
-        foreach ($matching as $v) {
-            $stars = substr_count($v, '*');
-            $literalLen = strlen(str_replace('*', '', $v));
-
-            if ($stars < $bestStars) {
-                $bestStars = $stars;
-                $bestLiteralLen = $literalLen;
-            } elseif ($stars === $bestStars && $literalLen > $bestLiteralLen) {
-                $bestLiteralLen = $literalLen;
-            }
-        }
-
-        $score = intdiv(100000, $variantCount);
-        $score = intdiv($score, 1 + ($bestStars * $bestStars * 25));
-        $score += $bestLiteralLen;
-
-        return min(100000, max(1, $score));
-    }
-
-    /**
-     * Generate all pattern variants by expanding {opt1|opt2} constructs.
-     * 
-     * @param string $pattern
-     * @return array<string>
-     */
-    private function generateVariants(string $pattern): array
-    {
-        if (!preg_match('/\{([^}]+)\}/', $pattern, $m, PREG_OFFSET_CAPTURE)) {
-            return [$pattern];
-        }
-
-        $full = $m[0][0];
-        $pos  = $m[0][1];
-        $len  = strlen($full);
-        $opts = explode('|', $m[1][0]);
-
-        $out = [];
-
-        foreach ($opts as $opt) {
-            $next = substr_replace($pattern, $opt, $pos, $len);
-
-            foreach (self::generateVariants($next) as $v) {
-                $out[] = $v;
-            }
-        }
-
-        return array_values(array_unique($out));
+        return $best ? new $best($trace) : null;
     }
 
     /**
