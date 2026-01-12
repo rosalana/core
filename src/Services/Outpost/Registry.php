@@ -3,7 +3,6 @@
 namespace Rosalana\Core\Services\Outpost;
 
 use Rosalana\Core\Facades\Trace;
-use Rosalana\Core\Support\WildcardString;
 
 class Registry
 {
@@ -28,11 +27,7 @@ class Registry
 
     public static function get(string $namespace): array
     {
-        if ($match = WildcardString::resolve($namespace, array_keys(static::$listeners))) {
-            return static::$listeners[$match] ?? [];
-        } else {
-            return [];
-        }
+        return matches($namespace)->resolve(static::$listeners) ?? [];
     }
 
     public static function exists(string $namespace): bool

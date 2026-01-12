@@ -123,19 +123,9 @@ abstract class LogRenderer
      */
     private function matchScheme(Trace $trace): ?LogScheme
     {
-        $best = null;
-        $bestScore = 0;
+        $scheme = matches($trace->name())->resolve(LogRegistry::getSchemes());
 
-        foreach (LogRegistry::getSchemes() as $pattern => $schemeClass) {
-            $score = wildcard($pattern)->score($trace->name());
-
-            if ($score > $bestScore) {
-                $bestScore = $score;
-                $best = $schemeClass;
-            }
-        }
-
-        return $best ? new $best($trace) : null;
+        return $scheme ? new $scheme($trace) : null;
     }
 
     /**
