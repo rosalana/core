@@ -23,6 +23,12 @@ if (!function_exists('action')) {
 }
 
 if (!function_exists('matches')) {
+    /**
+     * Matches a string against wildcards.
+     * 
+     * @param string $value
+     * @return WildcardMatch
+     */
     function matches(string $value): WildcardMatch
     {
         return new WildcardMatch($value);

@@ -53,7 +53,7 @@ final class WildcardMatch
         $max = 0;
 
         foreach ($wildcards as $wildcard) {
-            $score = $this->calculate($wildcard);
+            $score = $this->score($wildcard);
 
             if ($score > $max) {
                 $max = $score;
@@ -95,7 +95,7 @@ final class WildcardMatch
         $results = [];
 
         foreach ($wildcards as $wildcard) {
-            $score = $this->calculate($wildcard);
+            $score = $this->score($wildcard);
 
             if ($score > 0) {
                 $results[$wildcard] = $score;
