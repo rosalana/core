@@ -162,13 +162,13 @@ All internal routes are protected by the `RevizorCheckTicket` middleware. This m
 
 ```json
 {
-    "status": "error",
-    "message": "Validation failed.",
-    "code": 422,
-    "type": "VALIDATION",
-    "errors": {
-        "email": ["The email field is required."]
-    }
+  "status": "error",
+  "message": "Validation failed.",
+  "code": 422,
+  "type": "VALIDATION",
+  "errors": {
+    "email": ["The email field is required."]
+  }
 }
 ```
 
@@ -354,63 +354,83 @@ $traceArray = $trace->toArray();
 
 #### Logging Traces
 
-You can log the final trace (or any sub-trace) using the built-in log renderers.
+You can log the final trace (or any sub-trace) using the built-in log targets.
 
 ```php
 Trace::finish()->log('console');
 ```
 
-By default, Rosalana Core provides `console` and `file` log renderers.
+By default, Rosalana Core provides `console` and `file` log targets.
 
-You can put custom renderer class and place it in the `log` function parameter.
+You can put custom target class and place it in the `log` function parameter.
 
 ```php
-Trace::finish()->log(MyCustomRenderer::class);
+Trace::finish()->log(MyCustomTarget::class);
 ```
 
-Renderers must extend the `Rosalana\Core\Services\Logging\LogRenderer` class and implement the `render(Trace $trace, array $logs): void` method.
+Targets are **abstract classes** that define **where to send the rendered logs**. Your custom target must extend the `Rosalana\Core\Services\Trace\Rendering\Target` class and implement the `publish(array $lines): void` method.
 
-Before you can render logs, you need to define **log schemes** for every trace you want to log. A log scheme defines **how to interpret the trace structure** and convert it into log entries.
+Logs are created per-trace and per-target. The render options are defined in **final class** extending the coresponding target. You can imagine renderers as implementation of the target logic.
 
-You can define multiple log schemes. Each scheme extends the `Rosalana\Core\Services\Logging\LogScheme` class and implements the `format(): void` method.
+If you want to send logs to `console`, you can extend the `Rosalana\Core\Trace\Target\Console` class and implement the `render(Trace $trace)` method. You build the log token by token using the `token(string $text)` method. Each target provides helpers to build the log.
 
 > [!NOTE]
-> Exceptions are formatted automatically unless you override the `formatException()` method.
+> Exceptions are rendered automatically unless you override the `renderException()` method.
 
 ```php
-public function format(): void
+final class OperationConsole extends Console
 {
-    $trace = $this->trace(); // original trace
-    $this->entry(status: 'info')
-        ->addActor('system')
-        ->addMessage('Operation started');
+    public function render(Trace $trace): void
+    {
+        $this->time($trace->startTime());
+        $this->space(); // add space
+        $this->token(" --- Operation Trace Log --- ", 'red'); // red token
+
+        $this->newLine(); // move to new line
+
+        $this->token("Operation: {$trace->name()}");
+        $this->space();
+        $this->dot(5); // add 5 dots
+        $this->space();
+        $this->arrow('right'); // add arrow pointing right
+        $this->space();
+        $this->duration($trace->duration());
+
+              -------- ↓ RESULT ↓ ---------
+
+        [12:34:56.789] --- Operation Trace Log ---
+        Operation: operation.name ..... → 13.03ms
+
+    }
 }
 ```
 
-Schemes get resolved automatically based on the trace name. You need to register your scheme in a service provider. You can user **wildcard string** to match multiple traces.
+For each target you need to register the implementation for each trace name or pattern. When logging, the traces will resolve the correct target automatically. When no match is found, trace will be skipped.
 
 ```php
-Trace::registerSchemes([
-    'operation.*' => OperationLogScheme::class,
-    'operation.{create|update}' => OperationDetailLogScheme::class,
+Trace::register([
+    'operation.*' => [
+        OperationConsole::class,
+        OperationFile::class,
+        OperationCustom::class,
+    ],
+    'operation.{create|update}' => [OperationDetailConsole::class],
 ]);
 ```
 
 The more specific wildcard match takes precedence. So `operation.create` will match `operation.{create|update}` scheme before `operation.*`.
 
-In renderer you can extend the `console` or `file` renderer to reuse their logic and just add your custom behavior.
-
-Use `$this->line(string $line)` to output a line in console or file.
+Your custom **abstract target** can also be registered globally if used often.
 
 ```php
-public function render(Trace $trace, array $logs): void
-{
-    $this->line('--- Custom Trace Log Start ---');
-}
+Trace::targetAlias('custom', Custom::class);
 ```
 
-> [!IMPORTANT]
-> Log engine is very experimental at this moment and probably will get simplified in the future or completely rewritten. We know there is a need for custom logging in Rosalana ecosystem, but we are still figuring out the best approach without overcomplicating things.
+Then you can use the alias when logging.
+
+```php
+Trace::finish()->log('custom');
+```
 
 ### Basecamp Connection
 
