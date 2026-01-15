@@ -6,6 +6,7 @@ use Rosalana\Core\Services\Trace\Trace;
 
 abstract class Target
 {
+    /** @var array<int, array<string>> */
     protected array $lines = [];
 
     public function __construct(protected Trace $trace) {}
@@ -26,9 +27,9 @@ abstract class Target
      * @param string $value
      * @return void
      */
-    public function token(string $value): void
+    public function token(string $value = ''): void
     {
-        $this->getCurrentLine()[] = ['value' => $value];
+        $this->getCurrentLine()[] = $value;
     }
 
     /**
