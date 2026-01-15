@@ -33,6 +33,25 @@ abstract class Target
     }
 
     /**
+     * Inject a class render into the current rendering.
+     * 
+     * Count be possible to not use Trace and process this on self::build.
+     * This would just make placeholder and replace them after building.
+     * 
+     * @param string $class class to be injected
+     * @param Trace $trace trace for the injected render
+     * @return void
+     */
+    public function inject(string $class, Trace $trace): void
+    {
+        $impl = new $class($trace);
+        $this->lines = array_merge(
+            $this->lines,
+            $impl->buildWithoutPublish()
+        );
+    }
+
+    /**
      * Get the current line.
      * 
      * @return array
@@ -66,6 +85,24 @@ abstract class Target
         }
 
         $this->lines = [];
+    }
+
+    public function buildWithoutPublish(): array
+    {
+        try {
+            if ($this->trace->hasRecordType('exception')) {
+                $this->buildExceptionRender();
+            } else {
+                $this->buildRender();
+            }
+        } catch (\Throwable $e) {
+            // dont fail rendering
+        }
+
+        $result = $this->lines;
+        $this->lines = [];
+
+        return $result;
     }
 
     /**
