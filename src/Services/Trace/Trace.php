@@ -3,7 +3,7 @@
 namespace Rosalana\Core\Services\Trace;
 
 use Illuminate\Support\Str;
-use Rosalana\Core\Services\Logging\LogRegistry;
+use Rosalana\Core\Services\Trace\Rendering\Registry;
 
 class Trace
 {
@@ -542,14 +542,14 @@ class Trace
     /**
      * Log the trace using the specified renderer.
      * 
-     * @param null|string|class-string<\Rosalana\Core\Services\Logging\LogRenderer> $renderer
+     * @param null|string|class-string<\Rosalana\Core\Services\Trace\Rendering\Target> $target
      * @return void
      */
-    public function log(?string $renderer = null): void
+    public function log(?string $target = null): void
     {
-        $renderer ??= 'file';
+        $target ??= 'file';
 
-        LogRegistry::render($renderer, $this);
+        Registry::render($target, $this);
     }
 
     /**

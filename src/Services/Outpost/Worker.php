@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Redis;
 use Rosalana\Core\Actions\Outpost\MessageReceived;
 use Rosalana\Core\Facades\App;
 use Rosalana\Core\Facades\Trace;
-use Rosalana\Core\Logging\Renderers\OutpostMessageRenderer;
 
 class Worker
 {
@@ -48,7 +47,7 @@ class Worker
                     // dont crash the worker
                 }
 
-                Trace::finish()->log(OutpostMessageRenderer::class);
+                Trace::finish()->log('console');
                 Trace::flush();
 
                 Redis::connection($this->connection)->xack(

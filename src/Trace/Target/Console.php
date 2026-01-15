@@ -11,7 +11,9 @@ abstract class Console extends Target
 
     public function publish(array $lines): void
     {
-        throw new \Exception('Not implemented');
+        foreach ($lines as $line) {
+            echo implode('', $line) . PHP_EOL;
+        }
     }
 
     public function renderException(Trace $trace): void
@@ -19,14 +21,17 @@ abstract class Console extends Target
         $record = $trace->getException();
         $exception = $record['exception'];
 
-        $this->token('[' . date('H:i:s', $record['timestamp']) . ']', 'gray');
+        $this->time($record['timestamp']);
         $this->token('Exception:', 'red');
         $this->token(get_class($exception), 'red');
+
         $this->newLine();
         $this->token($exception->getMessage());
+        
         $this->newLine();
         $this->token('in', 'gray');
         $this->token($exception->getFile() . ':' . $exception->getLine(), 'cyan');
+
         $this->newLine();
     }
 
@@ -53,6 +58,24 @@ abstract class Console extends Target
             $time >= 10 => $this->token(number_format($time, 2) . 'ms', 'yellow'),
             default => $this->token(number_format($time, 2) . 'ms'),
         };
+    }
+
+    protected function memory(int $bytes): void
+    {
+        if ($bytes >= 1073741824) {
+            $this->token(number_format($bytes / 1073741824, 2) . ' GB');
+        } elseif ($bytes >= 1048576) {
+            $this->token(number_format($bytes / 1048576, 2) . ' MB');
+        } elseif ($bytes >= 1024) {
+            $this->token(number_format($bytes / 1024, 2) . ' KB');
+        } else {
+            $this->token($bytes . ' B');
+        }
+    }
+
+    protected function time(?int $timestamp = null): void
+    {
+        $this->token('[' . date('H:i:s', $timestamp) . ']', 'gray');
     }
 
     private function color(string $text, string $color): string
