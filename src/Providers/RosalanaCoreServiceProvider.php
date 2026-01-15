@@ -75,11 +75,11 @@ class RosalanaCoreServiceProvider extends ServiceProvider
             logger()->info('Received context.refresh request via Outpost from ' . $message->from);
         });
 
-        Trace::registerSchemes([
-            'Outpost:send' => OutpostSendScheme::class,
-            'Basecamp:send' => BasecampSendScheme::class,
-            'Outpost:message' => OutpostMessageScheme::class,
-            'Outpost:handler:{listener|registry|promise}' => OutpostHandlerScheme::class,
+        Trace::register([
+            'Outpost:send' => [],
+            'Basecamp:send' => [],
+            'Outpost:message' => [],
+            'Outpost:handler:{listener|registry|promise}' => [],
         ]);
     }
 

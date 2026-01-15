@@ -18,10 +18,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static array<\Rosalana\Core\Services\Trace\Trace> getTraces()
  * @method static void flush()
  * @method static bool isEnabled()
- * @method static void registerScheme(string $pattern, class-string<\Rosalana\Core\Services\Logging\LogScheme> $class)
- * @method static void registerSchemes(array<string, class-string<\Rosalana\Core\Services\Logging\LogScheme>> $schemes)
- * @method static void registerRenderer(string $name, class-string<\Rosalana\Core\Services\Logging\LogRenderer> $class)
- * @method static void registerRenderers(array<string, class-string<\Rosalana\Core\Services\Logging\LogRenderer>> $renderers)
+ * @method static void targetAlias(string $alias, class-string<\Rosalana\Core\Services\Trace\Rendering\Target> $class)
+ * @method static void register(array<string, array<class-string<\Rosalana\Core\Services\Trace\Rendering\Target>>> $schemes)
  * 
  * @see \Rosalana\Core\Services\Trace\Manager
  */

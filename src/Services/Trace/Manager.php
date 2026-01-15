@@ -3,7 +3,7 @@
 namespace Rosalana\Core\Services\Trace;
 
 use Rosalana\Core\Facades\App;
-use Rosalana\Core\Services\Logging\LogRegistry;
+use Rosalana\Core\Services\Trace\Rendering\Registry;
 
 class Manager
 {
@@ -193,48 +193,25 @@ class Manager
     }
 
     /**
-     * Register log schemes.
+     * Register a log scheme per target.
      * 
-     * @param string $pattern may include wildcards (*) and variants ({opt1|opt2})
-     * @param class-string<\Rosalana\Core\Services\Logging\LogScheme> $class
+     * @param array<string, array<class-string<\Rosalana\Core\Services\Trace\Rendering\Target>>> $schemes
      * @return void
      */
-    public function registerScheme(string $pattern, string $class): void
+    public function register(array $schemes): void
     {
-        LogRegistry::registerScheme($pattern, $class);
+        Registry::register($schemes);
     }
 
     /**
-     * Register Log Schemes.
+     * Register a target alias.
      * 
-     * @param array<string, class-string<\Rosalana\Core\Services\Logging\LogScheme>> $schemes
+     * @param string $alias
+     * @param class-string<\Rosalana\Core\Services\Trace\Rendering\Target> $class
      * @return void
      */
-    public function registerSchemes(array $schemes): void
+    public function targetAlias(string $alias, string $class): void
     {
-        LogRegistry::registerSchemes($schemes);
-    }
-
-    /**
-     * Register a log renderer.
-     * 
-     * @param string $name
-     * @param class-string<LogRenderer> $class
-     * @return void
-     */
-    public function registerRenderer(string $name, string $class): void
-    {
-        LogRegistry::registerRenderer($name, $class);
-    }
-
-    /**
-     * Register Log Renderers.
-     * 
-     * @param array<string, class-string<\Rosalana\Core\Services\Logging\LogRenderer>> $renderers
-     * @return void
-     */
-    public function registerRenderers(array $renderers): void
-    {
-        LogRegistry::registerRenderers($renderers);
+        Registry::targetAlias($alias, $class);
     }
 }
