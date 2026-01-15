@@ -7,15 +7,15 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Routing\Router;
 use Rosalana\Core\Facades\Outpost;
 use Rosalana\Core\Facades\Trace;
-use Rosalana\Core\Logging\Schemes\BasecampSendScheme;
-use Rosalana\Core\Logging\Schemes\OutpostHandlerScheme;
-use Rosalana\Core\Logging\Schemes\OutpostMessageScheme;
-use Rosalana\Core\Logging\Schemes\OutpostSendScheme;
 use Rosalana\Core\Services\Basecamp\Services\AppsService;
 use Rosalana\Core\Services\Basecamp\Services\TicketsService;
 use Rosalana\Core\Services\Outpost\Message;
 use Rosalana\Core\Http\Middleware\ForceJson;
 use Rosalana\Core\Http\Middleware\RevizorCheckTicket;
+use Rosalana\Core\Trace\Render\BasecampSendConsole;
+use Rosalana\Core\Trace\Render\OutpostHandlerConsole;
+use Rosalana\Core\Trace\Render\OutpostMessageConsole;
+use Rosalana\Core\Trace\Render\OutpostSendConsole;
 
 class RosalanaCoreServiceProvider extends ServiceProvider
 {
@@ -76,10 +76,10 @@ class RosalanaCoreServiceProvider extends ServiceProvider
         });
 
         Trace::register([
-            'Outpost:send' => [],
-            'Basecamp:send' => [],
-            'Outpost:message' => [],
-            'Outpost:handler:{listener|registry|promise}' => [],
+            'Outpost:send' => [OutpostSendConsole::class],
+            'Basecamp:send' => [BasecampSendConsole::class],
+            'Outpost:message' => [OutpostMessageConsole::class],
+            'Outpost:handler:{listener|registry|promise}' => [OutpostHandlerConsole::class],
         ]);
     }
 
