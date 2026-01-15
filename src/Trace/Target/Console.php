@@ -22,14 +22,16 @@ abstract class Console extends Target
         $exception = $record['exception'];
 
         $this->time($record['timestamp']);
-        $this->token('Exception:', 'red');
+        $this->space();
+        $this->token('Exception: ', 'red');
         $this->token(get_class($exception), 'red');
 
         $this->newLine();
         $this->token($exception->getMessage());
-        
+
         $this->newLine();
         $this->token('in', 'gray');
+        $this->space();
         $this->token($exception->getFile() . ':' . $exception->getLine(), 'cyan');
 
         $this->newLine();
@@ -42,6 +44,16 @@ abstract class Console extends Target
         }
 
         parent::token($value);
+    }
+
+    protected function space(int $count = 1): void
+    {
+        $this->token(str_repeat(' ', $count));
+    }
+
+    protected function dot(int $count = 1): void
+    {
+        $this->token(str_repeat('.', $count));
     }
 
     protected function separator(): void
@@ -76,6 +88,74 @@ abstract class Console extends Target
     protected function time(?int $timestamp = null): void
     {
         $this->token('[' . date('H:i:s', $timestamp) . ']', 'gray');
+    }
+
+    protected function httpStatus(int $status): void
+    {
+        match (true) {
+            $status >= 200 && $status < 300 => $this->token($status, 'green'),
+            $status >= 300 && $status < 400 => $this->token($status, 'blue'),
+            $status >= 400 && $status < 500 => $this->token($status, 'yellow'),
+            $status >= 500 => $this->token($status, 'red'),
+            default => $this->token($status, 'gray'),
+        };
+    }
+
+    protected function httpMethod(string $method): void
+    {
+        match (strtoupper($method)) {
+            'GET' => $this->token('GET', 'green'),
+            'POST' => $this->token('POST', 'green'),
+            'PUT' => $this->token('PUT', 'cyan'),
+            'PATCH' => $this->token('PATCH', 'cyan'),
+            'DELETE' => $this->token('DELETE', 'yellow'),
+            'OPTIONS' => $this->token('OPTIONS', 'gray'),
+            default => $this->token($method, 'gray'),
+        };
+    }
+
+    protected function outpostMethod(string $method): void
+    {
+        match (strtolower($method)) {
+            'request' => $this->color($method, 'blue'),
+            'confirmed' => $this->color($method, 'green'),
+            'failed' => $this->color($method, 'red'),
+            'unreachable' => $this->color($method, 'yellow'),
+            default => $method,
+        };
+    }
+
+    protected function arrow(string $direction = 'right'): void
+    {
+        match ($direction) {
+            'right' => $this->token('→'),
+            'r' => $this->token('→'),
+            'left' => $this->token('←'),
+            'l' => $this->token('←'),
+            'up' => $this->token('↑'),
+            'u' => $this->token('↑'),
+            'down' => $this->token('↓'),
+            'd' => $this->token('↓'),
+            'right-up' => $this->token('↗'),
+            'ru' => $this->token('↗'),
+            'right-down' => $this->token('↘'),
+            'rd' => $this->token('↘'),
+            'left-up' => $this->token('↖'),
+            'lu' => $this->token('↖'),
+            'left-down' => $this->token('↙'),
+            'ld' => $this->token('↙'),
+            'right-left' => $this->token('↔'),
+            'rl' => $this->token('↔'),
+            'up-down' => $this->token('↕'),
+            'ud' => $this->token('↕'),
+            'none' => $this->token('•'),
+            'n' => $this->token('•'),
+            'down-right' => $this->token('↪'),
+            'dr' => $this->token('↪'),
+            'down-left' => $this->token('↩'),
+            'dl' => $this->token('↩'),
+            default => $this->token('→'),
+        };
     }
 
     private function color(string $text, string $color): string
