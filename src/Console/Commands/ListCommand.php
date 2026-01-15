@@ -4,12 +4,10 @@ namespace Rosalana\Core\Console\Commands;
 
 use Illuminate\Console\Command;
 use Laravel\Prompts\Concerns\Colors;
-use Rosalana\Core\Console\InternalCommands;
 use Rosalana\Core\Services\Package;
 
 class ListCommand extends Command
 {
-    use InternalCommands;
     use Colors;
     /**
      * The name and signature of the console command.

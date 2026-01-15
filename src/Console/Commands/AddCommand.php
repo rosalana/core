@@ -10,7 +10,6 @@ use Rosalana\Core\Support\Config;
 
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\text;
 
 class AddCommand extends Command
 {
