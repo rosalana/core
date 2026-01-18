@@ -23,7 +23,7 @@ class Message
         public readonly string $namespace,
         public readonly array $payload,
         public readonly string $from,
-        public readonly ?string $correlationId = null,
+        public ?string $correlationId = null,
         public readonly ?int $timestamp = null,
     ) {}
 

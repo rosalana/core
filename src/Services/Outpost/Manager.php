@@ -140,6 +140,14 @@ class Manager
             'correlation_id' => $this->correlationId,
         ]);
 
+        $message = Message::make(id: (string) Str::uuid(), data: [
+            'from' => $this->origin,
+            'to' => $this->targets,
+            'correlation_id' => $this->correlationId,
+            'payload' => $payload,
+            'namespace' => $this->name . ':' . $status,
+        ]);
+
         $response = Basecamp::post("/outpost/send", [
             'from' => $this->origin,
             'to' => $this->targets,
@@ -148,7 +156,9 @@ class Manager
             'namespace' => $this->name . ':' . $status,
         ]);
 
-        App::hooks()->run('outpost:send', $response);
+        $message->correlationId = $response->json('data.message.correlation_id');
+
+        App::hooks()->run('outpost:send', $message);
 
         $this->reset();
 
