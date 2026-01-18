@@ -34,7 +34,7 @@ class MessageReceived implements Action
     {
         $scope = Trace::phase('Outpost:handle');
 
-        App::hooks()->run('outpost:received', $this->message);
+        App::hooks()->run('outpost:received', ['message' => $this->message]);
 
         try {
             if ($this->checkProvider('promise', fn() => $this->handleViaPromise())) return;

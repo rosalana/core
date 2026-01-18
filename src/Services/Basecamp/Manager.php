@@ -130,7 +130,7 @@ class Manager
                 'pipeline' => $this->pipeline,
             ]);
 
-            App::hooks()->run('basecamp:send', $request, $response);
+            App::hooks()->run('basecamp:send', ['request' => $request, 'response' => $response]);
         }
 
         if ($this->pipeline && !$this->ghost) {

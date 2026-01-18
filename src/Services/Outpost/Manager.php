@@ -158,7 +158,7 @@ class Manager
 
         $message->correlationId = $response->json('data.message.correlation_id');
 
-        App::hooks()->run('outpost:send', $message);
+        App::hooks()->run('outpost:send', ['message' => $message]);
 
         $this->reset();
 
