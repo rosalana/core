@@ -32,7 +32,7 @@ class RegistryListener
 
     public function isWilcard(): bool
     {
-        return matches($this->name)->isWildcard();
+        return matches($this->registeredAs)->isWildcard();
     }
 
     public function handle(Message $message): void
