@@ -57,9 +57,11 @@ final class BasecampSendConsole extends Console
         $this->token(get_class($exception), 'red');
         $this->newLine();
         $this->arrow('dr');
+        $this->space();
         $this->token($exception->getMessage(), 'red');
         $this->newLine();
         $this->arrow('dr');
+        $this->space();
         $this->token('in', 'gray');
         $this->space();
         $this->token($exception->getFile() . ':' . $exception->getLine(), 'gray');
