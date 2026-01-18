@@ -81,6 +81,94 @@ class ContextStore
     }
 
     /**
+     * Increment a numeric value in the current scope. Initializes to zero if not present.
+     */
+    public function increment(string $key, int $by = 1): void
+    {
+        $this->requireScoped();
+
+        $current = $this->get($key, 0);
+
+        if (!is_int($current) && !is_float($current)) {
+            $current = 0;
+        }
+
+        $newValue = $current + $by;
+        $this->put($key, $newValue);
+    }
+
+    /**
+     * Decrement a numeric value in the current scope. Initializes to zero if not present.
+     */
+    public function decrement(string $key, int $by = 1): void
+    {
+        $this->registerScope();
+
+        $current = $this->get($key, 0);
+
+        if (!is_int($current) && !is_float($current)) {
+            $current = 0;
+        }
+
+        $newValue = $current - $by;
+        $this->put($key, $newValue);
+    }
+
+    /**
+     * Append a value to an array in the current scope. Initializes to empty array if not present.
+     */
+    public function push(string $key, mixed $value): void
+    {
+        $this->requireScoped();
+
+        $current = $this->get($key, []);
+
+        if (!is_array($current)) {
+            $current = [];
+        }
+
+        array_push($current, $value);
+
+        $this->put($key, $current);
+    }
+
+    /**
+     * Prepend a value to an array in the current scope. Initializes to empty array if not present.
+     */
+    public function shift(string $key, mixed $value): void
+    {
+        $this->requireScoped();
+
+        $current = $this->get($key, []);
+
+        if (!is_array($current)) {
+            $current = [];
+        }
+
+        array_unshift($current, $value);
+
+        $this->put($key, $current);
+    }
+
+    /**
+     * Remove the last value from an array in the current scope.
+     */
+    public function pop(string $key): void
+    {
+        $this->requireScoped();
+
+        $current = $this->get($key, []);
+
+        if (!is_array($current) || empty($current)) {
+            return;
+        }
+
+        $popped = array_pop($current);
+
+        $this->put($key, $current);
+    }
+
+    /**
      * Get a value from the current scope. Returns scalar leaf if present, otherwise reconstructs a subtree.
      */
     public function get(string $key, mixed $default = null): mixed

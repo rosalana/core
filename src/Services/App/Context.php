@@ -6,6 +6,11 @@ use Rosalana\Core\Services\App\ContextStore as Store;
 
 /**
  * @method void put(string|array $key, mixed $value, ?int $ttl = null)
+ * @method void increment(string|array $key, int $by = 1)
+ * @method void decrement(string|array $key, int $by = 1)
+ * @method void push(string $key, mixed $value)
+ * @method mixed shift(string $key)
+ * @method mixed pop(string $key)
  * @method mixed get(string|array $key, mixed $default = null)
  * @method bool has(string|array $key)
  * @method void forget(string|array $key)
