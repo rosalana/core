@@ -148,6 +148,8 @@ class Manager
             'namespace' => $this->name . ':' . $status,
         ]);
 
+        App::hooks()->run('outpost:send', $response);
+
         $this->reset();
 
         return $response->json('data.message');

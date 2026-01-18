@@ -3,6 +3,7 @@
 namespace Rosalana\Core\Services\Basecamp;
 
 use Illuminate\Http\Client\Response;
+use Rosalana\Core\Facades\App;
 use Rosalana\Core\Facades\Pipeline;
 use Rosalana\Core\Facades\Trace;
 use Rosalana\Core\Services\Basecamp\RequestStrategies\AppStrategy;
@@ -128,6 +129,8 @@ class Manager
                 'target' => $request->getTarget(),
                 'pipeline' => $this->pipeline,
             ]);
+
+            App::hooks()->run('basecamp:send', $request, $response);
         }
 
         if ($this->pipeline && !$this->ghost) {

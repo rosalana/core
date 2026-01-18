@@ -3,6 +3,7 @@
 namespace Rosalana\Core\Actions\Outpost;
 
 use Rosalana\Core\Contracts\Action;
+use Rosalana\Core\Facades\App;
 use Rosalana\Core\Facades\Outpost;
 use Rosalana\Core\Facades\Trace;
 use Rosalana\Core\Services\Outpost\Listener;
@@ -32,6 +33,8 @@ class MessageReceived implements Action
     public function handle(): void
     {
         $scope = Trace::phase('Outpost:handle');
+
+        App::hooks()->run('outpost:received', $this->message);
 
         try {
             if ($this->checkProvider('promise', fn() => $this->handleViaPromise())) return;
