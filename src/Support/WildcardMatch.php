@@ -11,6 +11,22 @@ final class WildcardMatch
     public function __construct(protected string $value) {}
 
     /**
+     * Check if the current value is a wildcard.
+     */
+    public function isWildcard(): bool
+    {
+        return str_contains($this->value, '*') || preg_match('/\{([^}]+)\}/', $this->value) === 1;
+    }
+
+    /**
+     * Check if the current value is a literal (non-wildcard).
+     */
+    public function isLiteral(): bool
+    {
+        return !$this->isWildcard();
+    }
+
+    /**
      * Get current value.
      * 
      * @return string
@@ -64,7 +80,6 @@ final class WildcardMatch
         return $best;
     }
 
-
     /**
      * Use array_keys as wildcards and return the best array_value
      *
@@ -73,6 +88,17 @@ final class WildcardMatch
     public function resolve(array $options): mixed
     {
         return $options[$this->best(array_keys($options))] ?? null;
+    }
+
+    /**
+     * Use array_keys as wildcards and return all matching array_values ordered by score
+     */
+    public function resolveAll(array $options): array
+    {
+        return array_map(
+            fn($wildcard) => $options[$wildcard] ?? null,
+            $this->matching(array_keys($options))
+        );
     }
 
     /**

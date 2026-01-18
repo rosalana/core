@@ -762,6 +762,9 @@ Outpost::receive('group.action:status', function (Message $message) {
 });
 ```
 
+> [!TIP]
+> You can use `wildcards` in the namespace alias when registering listeners. This allows you to create more generic handlers that can respond to multiple message types.
+
 #### Custom Services (Predefined API Actions)
 
 For more structured and reusable logic, you can **define your own service** class and register it under a name. This adds a named accessor to the `Outpost` facade, allowing you to call your service methods directly.

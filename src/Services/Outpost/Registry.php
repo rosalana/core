@@ -10,16 +10,13 @@ class Registry
 
     public static function register(string $namespace, \Closure $callback, string $name = 'unnamed'): void
     {
-        if (! static::validateNamespace($namespace)) return;
-
         $listener = new RegistryListener($callback, $name);
+
         static::$listeners[$namespace][] = $listener;
     }
 
     public static function registerSilent(string $namespace, \Closure $callback, string $name = 'unnamed'): void
     {
-        if (! static::validateNamespace($namespace)) return;
-
         $listener = new RegistryListener($callback, $name);
         $listener->setSilent(true);
         static::$listeners[$namespace][] = $listener;
@@ -27,7 +24,15 @@ class Registry
 
     public static function get(string $namespace): array
     {
-        return matches($namespace)->resolve(static::$listeners) ?? [];
+        $listeners = [];
+
+        $matching = matches($namespace)->matching(array_keys(static::$listeners));
+
+        foreach ($matching as $match) {
+            $listeners = array_merge($listeners, static::$listeners[$match]);
+        }
+
+        return $listeners;
     }
 
     public static function exists(string $namespace): bool
@@ -80,14 +85,5 @@ class Registry
         }
 
         return $consumed;
-    }
-
-    protected static function validateNamespace(string $namespace): bool
-    {
-        if (! is_string($namespace) || ! preg_match('/^[a-z]+\\.[a-z]+:[a-z]+$/', $namespace) || ! in_array(explode(':', $namespace, 2)[1], Message::ALLOWED_STATUSES)) {
-            return false;
-        }
-
-        return true;
     }
 }

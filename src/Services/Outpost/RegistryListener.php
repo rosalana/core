@@ -21,12 +21,18 @@ class RegistryListener
         return $this->silent;
     }
 
+    public function isWilcard(): bool
+    {
+        return matches($this->name)->isWildcard();
+    }
+
     public function handle(Message $message): void
     {
         Trace::capture(function () use ($message) {
 
             Trace::record([
                 'silent' => $this->isSilent(),
+                'wildcard' => $this->isWilcard(),
             ]);
 
             $result = ($this->callback)($message);
@@ -40,6 +46,7 @@ class RegistryListener
                 'queued' => $result instanceof Action ? $result->isQueueable() : false,
                 'broadcasted' => $result instanceof Action ? $result->isBroadcastable() : false,
                 'silent' => $this->isSilent(),
+                'wildcard' => $this->isWilcard(),
             ]);
         }, 'Outpost:handler:registry:listener');
     }

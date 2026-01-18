@@ -14,6 +14,7 @@ final class OutpostHandlerConsole extends Console
         if ($name === 'registry') {
             foreach ($trace->phases() as $i => $phase) {
                 $silent = $phase->findRecords(fn($r) => $r['data']['silent'] ?? false)[0]['data']['silent'] ?? false;
+                $wildcard = $phase->findRecords(fn($r) => $r['data']['wildcard'] ?? false)[0]['data']['wildcard'] ?? false;
 
                 if ($exception = $phase->getRecordByType('exception')) {
 
@@ -21,7 +22,8 @@ final class OutpostHandlerConsole extends Console
                         trace: $phase,
                         name: $name,
                         exception: $exception['exception'],
-                        silent: $silent
+                        silent: $silent,
+                        wildcard: $wildcard
                     );
                 } elseif ($decision = $phase->getRecordByType('decision')) {
                     $this->formatHandler(
@@ -30,7 +32,8 @@ final class OutpostHandlerConsole extends Console
                         handler: $decision['data']['handler'],
                         broadcast: $decision['data']['broadcast'] ?? false,
                         queue: $decision['data']['queued'] ?? false,
-                        silent: $silent
+                        silent: $silent,
+                        wildcard: $wildcard
                     );
                 }
 
@@ -42,6 +45,7 @@ final class OutpostHandlerConsole extends Console
             $record = $trace->getDecision();
 
             $silent = $trace->findRecords(fn($r) => $r['data']['silent'] ?? false)[0]['data']['silent'] ?? false;
+            $wildcard = $trace->findRecords(fn($r) => $r['data']['wildcard'] ?? false)[0]['data']['wildcard'] ?? false;
 
             $this->formatHandler(
                 trace: $trace,
@@ -49,7 +53,8 @@ final class OutpostHandlerConsole extends Console
                 handler: $record['data']['handler'],
                 broadcast: $record['data']['broadcast'] ?? false,
                 queue: $record['data']['queued'] ?? false,
-                silent: $silent
+                silent: $silent,
+                wildcard: $wildcard
             );
         }
     }
@@ -60,16 +65,18 @@ final class OutpostHandlerConsole extends Console
         $exception = $trace->getException()['exception'];
 
         $silent = $trace->findRecords(fn($r) => $r['data']['silent'] ?? false)[0]['data']['silent'] ?? false;
+        $wildcard = $trace->findRecords(fn($r) => $r['data']['wildcard'] ?? false)[0]['data']['wildcard'] ?? false;
 
         $this->formatHandlerException(
             trace: $trace,
             name: $name,
             exception: $exception,
-            silent: $silent
+            silent: $silent,
+            wildcard: $wildcard
         );
     }
 
-    private function formatHandler(Trace $trace, string $name, string $handler, bool $broadcast = false, bool $queue = false, bool $silent = false): void
+    private function formatHandler(Trace $trace, string $name, string $handler, bool $broadcast = false, bool $queue = false, bool $silent = false, bool $wildcard = false): void
     {
         $this->time($trace->startTime());
         $this->space();
@@ -82,6 +89,11 @@ final class OutpostHandlerConsole extends Console
 
         if ($silent) {
             $this->token('(silent)', 'gray');
+            $this->space();
+        }
+
+        if ($wildcard) {
+            $this->token('(wildcard)', 'gray');
             $this->space();
         }
 
@@ -101,7 +113,7 @@ final class OutpostHandlerConsole extends Console
         $this->token($handler);
     }
 
-    private function formatHandlerException(Trace $trace, string $name, \Throwable $exception, bool $silent = false): void
+    private function formatHandlerException(Trace $trace, string $name, \Throwable $exception, bool $silent = false, bool $wildcard = false): void
     {
         $this->time($trace->startTime());
         $this->space();
@@ -115,6 +127,11 @@ final class OutpostHandlerConsole extends Console
 
         if ($silent) {
             $this->token('(silent)', 'gray');
+            $this->space();
+        }
+
+        if ($wildcard) {
+            $this->token('(wildcard)', 'gray');
             $this->space();
         }
 
