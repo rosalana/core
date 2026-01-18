@@ -29,8 +29,10 @@ final class BasecampSendConsole extends Console
         $this->space();
 
         $this->token($decisiton['endpoint']);
-        $this->token(':');
+        $this->space();
+        $this->token('(');
         $this->httpStatus($decisiton['status']);
+        $this->token(')');
 
         $this->space();
         $this->dot(5);

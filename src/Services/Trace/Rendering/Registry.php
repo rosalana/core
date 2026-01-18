@@ -127,9 +127,9 @@ class Registry
         $impls = matches($trace->name())->resolve(static::schemes());
 
         if ($impls) {
-            $impl = reset(array_filter($impls, function ($impl) use ($abstractTarget) {
+            $impl = array_filter($impls, function ($impl) use ($abstractTarget) {
                 return is_subclass_of($impl, $abstractTarget);
-            }));
+            })[array_key_first($impls)] ?? null;
 
             return $impl ? new $impl($trace) : null;
         }

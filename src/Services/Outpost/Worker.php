@@ -48,6 +48,7 @@ class Worker
                 }
 
                 Trace::finish()->log('console');
+                echo PHP_EOL;
                 Trace::flush();
 
                 Redis::connection($this->connection)->xack(

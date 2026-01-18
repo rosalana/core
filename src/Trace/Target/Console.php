@@ -117,10 +117,10 @@ abstract class Console extends Target
     protected function outpostMethod(string $method): void
     {
         match (strtolower($method)) {
-            'request' => $this->color($method, 'blue'),
-            'confirmed' => $this->color($method, 'green'),
-            'failed' => $this->color($method, 'red'),
-            'unreachable' => $this->color($method, 'yellow'),
+            'request' => $this->token($method, 'blue'),
+            'confirmed' => $this->token($method, 'green'),
+            'failed' => $this->token($method, 'red'),
+            'unreachable' => $this->token($method, 'yellow'),
             default => $method,
         };
     }

@@ -12,7 +12,7 @@ final class OutpostHandlerConsole extends Console
         $name = $this->getHandlerName($trace);
 
         if ($name === 'registry') {
-            foreach ($trace->phases() as $phase) {
+            foreach ($trace->phases() as $i => $phase) {
                 $silent = $phase->findRecords(fn($r) => $r['data']['silent'] ?? false)[0]['data']['silent'] ?? false;
 
                 if ($exception = $phase->getRecordByType('exception')) {
@@ -32,6 +32,10 @@ final class OutpostHandlerConsole extends Console
                         queue: $decision['data']['queued'] ?? false,
                         silent: $silent
                     );
+                }
+
+                if ($i < count($trace->phases()) - 1) {
+                    $this->newLine();
                 }
             }
         } else {
@@ -71,9 +75,7 @@ final class OutpostHandlerConsole extends Console
         $this->space();
 
         $this->token('Outpost', 'cyan');
-        $this->space();
-        $this->arrow('r');
-        $this->space();
+        $this->token(':');
         $this->token($name);
 
         $this->space();
@@ -106,9 +108,7 @@ final class OutpostHandlerConsole extends Console
 
         $this->token('failed:', 'red');
         $this->token('Outpost', 'cyan');
-        $this->space();
-        $this->arrow('r');
-        $this->space();
+        $this->token(':');
         $this->token($name);
 
         $this->space();
@@ -119,6 +119,13 @@ final class OutpostHandlerConsole extends Console
         }
 
         $this->token($exception->getMessage(), 'red');
+
+        $this->newLine();
+        $this->arrow('dr');
+        $this->space();
+        $this->token('in', 'gray');
+        $this->space();
+        $this->token($exception->getFile() . ':' . $exception->getLine(), 'gray');
     }
 
     private function getHandlerName(Trace $trace): string
