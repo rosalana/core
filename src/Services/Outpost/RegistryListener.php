@@ -9,7 +9,16 @@ class RegistryListener
 {
     protected bool $silent = false;
 
-    public function __construct(protected \Closure $callback, protected string $name = 'unnamed') {}
+    public function __construct(protected string $registeredAs, protected \Closure $callback, protected string $name = 'unnamed') {}
+
+    public function name(): string
+    {
+        if ($this->isWilcard()) {
+            return "{$this->name}  ({$this->registeredAs})";
+        }
+
+        return $this->name;
+    }
 
     public function setSilent(bool $silent = true): void
     {
@@ -42,7 +51,7 @@ class RegistryListener
             }
 
             Trace::decision([
-                'handler' => 'Resolved `' . $this->name . '`',
+                'handler' => 'Resolved `' . $this->name() . '`',
                 'queued' => $result instanceof Action ? $result->isQueueable() : false,
                 'broadcasted' => $result instanceof Action ? $result->isBroadcastable() : false,
                 'silent' => $this->isSilent(),

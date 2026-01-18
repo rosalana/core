@@ -10,14 +10,13 @@ class Registry
 
     public static function register(string $namespace, \Closure $callback, string $name = 'unnamed'): void
     {
-        $listener = new RegistryListener($callback, $name);
-
+        $listener = new RegistryListener($namespace, $callback, $name);
         static::$listeners[$namespace][] = $listener;
     }
 
     public static function registerSilent(string $namespace, \Closure $callback, string $name = 'unnamed'): void
     {
-        $listener = new RegistryListener($callback, $name);
+        $listener = new RegistryListener($namespace, $callback, $name);
         $listener->setSilent(true);
         static::$listeners[$namespace][] = $listener;
     }
