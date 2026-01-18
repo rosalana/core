@@ -906,7 +906,6 @@ App::hooks()->run('context:update', [
 | `basecamp:send`  | Triggered when the request is made | `request`: `\Rosalana\Core\Services\Basecamp\Request` <br> `response`: `\Illuminate\Http\Client\Response`
 | `outpost:send`  | Triggered when the message is send | `message`: `\Rosalana\Core\Services\Outpost\Message`
 | `outpost:receive`  | Triggered when the message is received | `message`: `\Rosalana\Core\Services\Outpost\Message`
-| `internal:verify`  | Triggered when the internal route is verified | `request`: `\Illuminate\Http\Request`
 
 ## Ecosystem Versioning
 

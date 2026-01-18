@@ -124,8 +124,10 @@ class RosalanaCoreServiceProvider extends ServiceProvider
     {
         $router = $this->app->make(Router::class);
 
-        $router->aliasMiddleware('rosalana.force-json', ForceJson::class);
-        $router->aliasMiddleware('revitor.ticket', RevizorCheckTicket::class);
+        $router->middlewareGroup('internal', [
+            ForceJson::class,
+            RevizorCheckTicket::class,
+        ]);
     }
 
     /**
@@ -133,7 +135,7 @@ class RosalanaCoreServiceProvider extends ServiceProvider
      */
     protected function registerRoutes(): void
     {
-        Route::middleware(['rosalana.force-json', 'rosalana.revizor'])
+        Route::middleware('internal')
             ->prefix('internal')
             ->group(function () {
                 $this->loadRoutesFrom(__DIR__ . '/../../routes/internal.php');

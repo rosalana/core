@@ -23,6 +23,7 @@ class Message
         public readonly string $namespace,
         public readonly array $payload,
         public readonly string $from,
+        public readonly string|array $to,
         public ?string $correlationId = null,
         public readonly ?int $timestamp = null,
     ) {}
@@ -34,6 +35,7 @@ class Message
             namespace: $data['namespace'] ?? '',
             payload: $data['payload'] ? json_decode($data['payload'], true) : [],
             from: $data['from'] ?? '',
+            to: $data['to'] ?? '',
             correlationId: $data['correlation_id'] ?? null,
             timestamp: isset($data['timestamp']) ? (int)$data['timestamp'] : null,
         );
@@ -106,5 +108,18 @@ class Message
         if (! is_string($this->namespace) || ! preg_match('/^[a-z]+\\.[a-z]+:[a-z]+$/', $this->namespace) || ! in_array(explode(':', $this->namespace, 2)[1], static::ALLOWED_STATUSES)) {
             throw new InvalidMessageNamespaceException($this);
         }
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'namespace' => $this->namespace,
+            'payload' => json_encode($this->payload),
+            'from' => $this->from,
+            'to' => $this->to,
+            'correlation_id' => $this->correlationId,
+            'timestamp' => $this->timestamp,
+        ];
     }
 }
