@@ -5,6 +5,10 @@ namespace Rosalana\Core\Services\App;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
+use Rosalana\Core\Events\ContextCleared;
+use Rosalana\Core\Events\ContextFlushed;
+use Rosalana\Core\Events\ContextForgotten;
+use Rosalana\Core\Events\ContextUpdated;
 use Rosalana\Core\Facades\App;
 
 class ContextStore
@@ -70,12 +74,12 @@ class ContextStore
     {
         $this->requireScoped();
 
-        App::hooks()->run('context:update', [
-            'scope' => $this->scope,
-            'path' => $key,
-            'previous' => $this->get($key, null),
-            'current' => $value,
-        ]);
+        event(new ContextUpdated(
+            scope: $this->scope,
+            path: $key,
+            previous: $this->get($key, null),
+            current: $value,
+        ));
 
         $this->putNode($key, $value, $ttl);
     }
@@ -225,12 +229,11 @@ class ContextStore
     {
         $this->requireScoped();
 
-        App::hooks()->run('context:forget', [
-            'scope' => $this->scope,
-            'path' => $key,
-            'previous' => $this->get($key, null),
-            'current' => null,
-        ]);
+        event(new ContextForgotten(
+            scope: $this->scope,
+            path: $key,
+            previous: $this->get($key, null),
+        ));
 
         $this->deleteNode($key);
 
@@ -254,12 +257,10 @@ class ContextStore
     {
         $this->requireScoped();
 
-        App::hooks()->run('context:clear', [
-            'scope' => $this->scope,
-            'path' => null,
-            'previous' => $this->receive(),
-            'current' => null,
-        ]);
+        event(new ContextCleared(
+            scope: $this->scope,
+            previous: $this->receive(),
+        ));
 
         $index = $this->indexKey();
         $keys = $this->redis->sMembers($index) ?: [];
@@ -400,12 +401,9 @@ class ContextStore
     {
         $this->requireGlobal();
 
-        App::hooks()->run('context:flush', [
-            'scope' => null,
-            'path' => null,
-            'previous' => $this->all(),
-            'current' => null,
-        ]);
+        event(new ContextFlushed(
+            previous: $this->all(),
+        ));
 
         $deleted = 0;
 
