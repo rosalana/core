@@ -3,7 +3,7 @@
 namespace Rosalana\Core\Actions\Outpost;
 
 use Rosalana\Core\Contracts\Action;
-use Rosalana\Core\Facades\App;
+use Rosalana\Core\Events\OutpostMessageReceived as OutpostMessageReceivedEvent;
 use Rosalana\Core\Facades\Outpost;
 use Rosalana\Core\Facades\Trace;
 use Rosalana\Core\Services\Outpost\Listener;
@@ -34,7 +34,7 @@ class MessageReceived implements Action
     {
         $scope = Trace::phase('Outpost:handle');
 
-        App::hooks()->run('outpost:received', ['message' => $this->message]);
+        event(new OutpostMessageReceivedEvent($this->message));
 
         try {
             if ($this->checkProvider('promise', fn() => $this->handleViaPromise())) return;

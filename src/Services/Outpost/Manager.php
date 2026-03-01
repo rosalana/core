@@ -3,6 +3,7 @@
 namespace Rosalana\Core\Services\Outpost;
 
 use Illuminate\Support\Str;
+use Rosalana\Core\Events\OutpostMessageSent;
 use Rosalana\Core\Facades\App;
 use Rosalana\Core\Facades\Basecamp;
 use Rosalana\Core\Facades\Trace;
@@ -158,7 +159,7 @@ class Manager
 
         $message->correlationId = $response->json('data.message.correlation_id');
 
-        App::hooks()->run('outpost:send', ['message' => $message]);
+        event(new OutpostMessageSent($message));
 
         $this->reset();
 
