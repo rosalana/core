@@ -14,13 +14,11 @@ Rosalana Core is the shared foundation for all applications in the Rosalana ecos
   - [CLI](#cli)
   - [Package Manager](#package-manager)
   - [Internal API](#internal-api)
-  - [Pipelines](#pipelines)
   - [Trace System](#trace-system)
   - [Basecamp Connection](#basecamp-connection)
   - [Outpost Connection](#outpost-connection)
   - [App Context](#app-context)
-  - [App Hooks](#app-hooks)
-- [Available Hooks](#available-hooks)
+  - [Events](#events)
 - [Ecosystem Versioning](#ecosystem-versioning)
 - [May Show in the Future](#may-show-in-the-future)
 - [License](#license)
@@ -175,42 +173,6 @@ All internal routes are protected by the `RevizorCheckTicket` middleware. This m
 > All responses return HTTP 200 status. Actual success/failure is determined by `status` field.
 
 For convenience, responses are returned using `ok()` and `error()` helpers with chainable methods (e.g. `error()->unauthorized()`).
-
-### Pipelines
-
-The Rosalana Core includes a simple **pipeline system** that wraps around the Laravel pipeline. This allows packages to define and extend actions that should happen after certain events - like making a request to the Basecamp server.
-
-Instead of handling logic inline, packages can define named pipelines and allow other packages to contribute additional logic to them **— without creating tight dependencies.**
-
-> This makes cross-package coordination easy and flexible. Without the need to repeat the same actions in multiple packages.
-
-Each pipeline is identified by a string alias. A package can register a pipeline and define what should happen when the pipeline is executed.
-
-```php
-use Rosalana\Core\Facades\Pipeline;
-
-Pipeline::resolve('user.login')->extend(MyLoginHandler::class);
-```
-
-Other packages can extend the same pipeline without knowing if the original package is present or not.  
-**Don't forget to return `$next($response)` to continue the pipeline execution.**  
-If you omit the `return`, the pipeline will stop and the final result will be `null`.
-
-```php
-use Rosalana\Core\Facades\Pipeline;
-
-Pipeline::extendIfExists('user.login', fn ($response, $next) => /* do something */);
-```
-
-Pipelines are executed automatically in some cases, like when a request is made to the Basecamp server. You can also trigger them manually.
-
-```php
-use Rosalana\Core\Facades\Pipeline;
-
-Pipeline::resolve('user.login')->run($request);
-```
-
-> **Note:** The pipeline system can omit Laravel's built-in pipeline in the future.
 
 ### Trace System
 
@@ -448,7 +410,6 @@ The `Basecamp` facade gives you access to generic HTTP methods like `get()`, `po
 $response = Basecamp::get('/users/1');
 
 $response = Basecamp::withAuth()
-    ->withPipeline('user.login')
     ->post('/login', $credentials);
 ```
 
@@ -464,7 +425,7 @@ $response = Basecamp::to('app-name')
     ->post('/projects', $payload);
 ```
 
-The Basecamp client will automatically resolve the correct URL for the application and redirect the request to that app's API instead of the Basecamp server. All relevant headers — including authorization and pipeline identifiers — are forwarded automatically.
+The Basecamp client will automatically resolve the correct URL for the application and redirect the request to that app's API instead of the Basecamp server. All relevant headers — including authorization — are forwarded automatically.
 
 You can also combine the `to()` method with named services, though you must ensure the API structure is the same across all applications.
 
@@ -496,7 +457,6 @@ class UsersService extends Service
     {
         return $this->manager
             ->withAuth()
-            ->withPipeline('user.login')
             ->get('users');
     }
 }
@@ -522,7 +482,7 @@ Basecamp::users()->get(1);
 Basecamp::users()->login(['email' => 'a@a.com', 'password' => '...']);
 ```
 
-You can chain `withAuth()` and `withPipeline()` methods on any request to handle authentication or trigger post-response pipelines.
+You can chain `withAuth()` on any request to handle authentication.
 
 All services registered this way automatically receive access to the underlying `Basecamp\Manager`, which manages headers, base URL, and request logic.
 
@@ -533,35 +493,38 @@ You can customize Basecamp requests further by chaining additional methods on th
 ```php
 Basecamp::timeout(10); // Set custom timeout (seconds)
 Basecamp::retry(3); // Retry failed requests (times)
-Basecamp::ghost(); // Skip pipeline execution
+Basecamp::ghost(); // Skip onSuccess callback
 Basecamp::version('v2'); // Use specific API version
 
 Basecamp::mock(); // Mock the request (for testing)
-
-Basecamp::fallback(function () {
-    // Custom fallback logic when request fails
-});
 ```
 
-#### After Hook
+#### Callbacks
 
-You can attach custom logic to a Basecamp request by using `Basecamp::withPipeline('alias')`. This opens a hook window that other parts of your application can listen to.
-
-To register a callback for a specific hook, use `Basecamp::after()` — typically inside your `AppServiceProvider`:
+You can register `onSuccess` and `onFail` callbacks to handle request results inline.
 
 ```php
-use Illuminate\Http\Client\Response;
-use Rosalana\Core\Facades\Basecamp;
-
-public function register()
-{
-    Basecamp::after('user.login', function (Response $response) {
-        // Handle post-login logic
-    });
-}
+Basecamp::to('app-b')
+    ->withAuth()
+    ->onSuccess(fn ($response) => event(new UserSynced($response)))
+    ->onFail(fn ($e) => logger()->error('Sync failed', ['error' => $e->getMessage()]))
+    ->get('/users');
 ```
 
-The callback will be executed after the Basecamp request is completed and if the request was explicitly marked with the `withPipeline()` method.
+- **`onSuccess`** is called after a successful response. Use `ghost()` to skip it.
+- **`onFail`** is called when the request fails and the fallback (if any) didn't recover it. When `onFail` is provided, the exception is caught and a fake response is returned instead of throwing.
+
+#### Fallback
+
+You can register a `fallback` callback to attempt recovery when a request fails.
+
+```php
+Basecamp::fallback(function (\Exception $e) {
+    return SomeResponse; // Return a Response instance to recover
+})->get('/users');
+```
+
+The fallback is tried first. If it returns a `Response` instance, that response is used. If it returns something else, a fake response is generated. If the fallback itself throws, it falls through to `onFail` (if registered) or re-throws the original exception.
 
 ### Outpost Connection
 
@@ -864,48 +827,45 @@ $scope->clear(); // Remove whole scope
 App::context()->flush(); // Remove whole context
 ```
 
-### App Hooks
+### Events
 
-Hooks let you register listeners that react to events across your application. Under the hood, this uses the Pipeline system.
+Rosalana Core uses **standard Laravel events** for cross-package communication. Each event is a simple data class dispatched via Laravel's `event()` helper. Other packages can listen to these events using Laravel's `Event::listen()` — either in a service provider or via a listener class.
 
-#### Registering Hook
+#### Cross-Package Listening
+
+Since other Rosalana packages may only depend on `rosalana/core`, they can listen to events from other packages using the FQCN string — no import or dependency required:
 
 ```php
-App::hooks()->on('context:update', function ($data) {
-    // Run custom logic after context is updated
+// In rosalana/roles — without dependency on rosalana/accounts
+Event::listen('Rosalana\\Accounts\\Events\\UserLoggedIn', function ($event) {
+    // React to user login
 });
 ```
 
-You can also use camel-case helpers
+#### Available Events
+
+| Event | Dispatched When | Properties |
+| ----- | --------------- | ---------- |
+| `ContextUpdated` | Context value is set | `scope`, `path`, `previous`, `current` |
+| `ContextForgotten` | Context value is removed | `scope`, `path`, `previous` |
+| `ContextCleared` | Entire scope is cleared | `scope`, `previous` |
+| `ContextFlushed` | All context data is flushed | `previous` |
+| `BasecampRequestSent` | Basecamp HTTP request completes | `request`, `response` |
+| `OutpostMessageSent` | Outpost message is sent | `message` |
+| `OutpostMessageReceived` | Outpost message is received | `message` |
+
+All events are in the `Rosalana\Core\Events` namespace.
+
+#### Listening to Events
 
 ```php
-App::hooks()->onContextUpdate(function ($data) {
-    // works like above
+use Rosalana\Core\Events\ContextUpdated;
+use Illuminate\Support\Facades\Event;
+
+Event::listen(ContextUpdated::class, function (ContextUpdated $event) {
+    logger("Context updated: {$event->path} in scope {$event->scope}");
 });
 ```
-
-#### Triggering a Hook
-
-```php
-App::hooks()->run('context:update', [
-    'scope' => 'context.app',
-    'path' => 'foo',
-    'current' => 'bar',
-    'previous' => null,
-]);
-```
-
-## Available Hooks
-
-| Hook             | Description                                 | Data                                                                                                           |
-| ---------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `context:update` | Triggered when the context is updated       | `scope`: Context group <br> `path`: Updated path <br> `current`: Current value <br> `previous`: Previous value |
-| `context:forget` | Triggered when a context item is forgotten  | `scope`: Context group <br> `path`: Updated path <br> `current`: Current value <br> `previous`: Previous value |
-| `context:clear`  | Triggered when specific group is cleared    | `scope`: Context group <br> `path`: Updated path <br> `current`: Current value <br> `previous`: Previous value |
-| `context:flush`  | Triggered when the whole context is flushed | `scope`: Context group <br> `path`: Updated path <br> `current`: Current value <br> `previous`: Previous value |
-| `basecamp:send`  | Triggered when the request is made | `request`: `\Rosalana\Core\Services\Basecamp\Request` <br> `response`: `\Illuminate\Http\Client\Response`
-| `outpost:send`  | Triggered when the message is send | `message`: `\Rosalana\Core\Services\Outpost\Message`
-| `outpost:receive`  | Triggered when the message is received | `message`: `\Rosalana\Core\Services\Outpost\Message`
 
 ## Ecosystem Versioning
 
