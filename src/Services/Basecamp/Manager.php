@@ -4,7 +4,6 @@ namespace Rosalana\Core\Services\Basecamp;
 
 use Illuminate\Http\Client\Response;
 use Rosalana\Core\Events\BasecampRequestSent;
-use Rosalana\Core\Facades\Pipeline;
 use Rosalana\Core\Facades\Trace;
 use Rosalana\Core\Services\Basecamp\RequestStrategies\AppStrategy;
 use Rosalana\Core\Services\Basecamp\RequestStrategies\BasecampStrategy;
@@ -16,13 +15,15 @@ class Manager
 
     protected Request $request;
 
-    protected ?string $pipeline = null;
-
     protected bool $mocked = false;
 
     protected bool $ghost = false;
 
     protected \Closure|null $fallback = null;
+
+    protected \Closure|null $onSuccess = null;
+
+    protected \Closure|null $onFail = null;
 
     public function __construct()
     {
@@ -33,60 +34,40 @@ class Manager
     /**
      * General method for making GET requests.
      */
-    public function get(string $endpoint, array $data = [], ?string $pipeline = null)
+    public function get(string $endpoint, array $data = [])
     {
-        if ($pipeline) {
-            $this->pipeline = $pipeline;
-        }
-
         return Trace::capture(fn() => $this->request('get', $endpoint, $data), 'Basecamp:send');
     }
 
     /**
      * General method for making POST requests.
      */
-    public function post(string $endpoint, array $data = [], ?string $pipeline = null)
+    public function post(string $endpoint, array $data = [])
     {
-        if ($pipeline) {
-            $this->pipeline = $pipeline;
-        }
-
         return Trace::capture(fn() => $this->request('post', $endpoint, $data), 'Basecamp:send');
     }
 
     /**
      * General method for making PUT requests.
      */
-    public function put(string $endpoint, array $data = [], ?string $pipeline = null)
+    public function put(string $endpoint, array $data = [])
     {
-        if ($pipeline) {
-            $this->pipeline = $pipeline;
-        }
-
         return Trace::capture(fn() => $this->request('put', $endpoint, $data), 'Basecamp:send');
     }
 
     /**
      * General method for making PATCH requests.
      */
-    public function patch(string $endpoint, array $data = [], ?string $pipeline = null)
+    public function patch(string $endpoint, array $data = [])
     {
-        if ($pipeline) {
-            $this->pipeline = $pipeline;
-        }
-
         return Trace::capture(fn() => $this->request('patch', $endpoint, $data), 'Basecamp:send');
     }
 
     /**
      * General method for making DELETE requests.
      */
-    public function delete(string $endpoint, array $data = [], ?string $pipeline = null)
+    public function delete(string $endpoint, array $data = [])
     {
-        if ($pipeline) {
-            $this->pipeline = $pipeline;
-        }
-
         return Trace::capture(fn() => $this->request('delete', $endpoint, $data), 'Basecamp:send');
     }
 
@@ -103,21 +84,24 @@ class Manager
                 $response = $request->send($endpoint, $data);
             } catch (\Exception $e) {
                 if ($this->fallback) {
-                    $callback = $this->fallback;
-                    $fallbackResponse = $callback($e);
-                    if ($fallbackResponse instanceof Response) {
-                        return $fallbackResponse;
-                    } else {
-                        return $this->request->fake([
-                            'status' => 'ok',
-                            'data' => [
-                                'message' => 'This is a fallback response due to an exception: ' . $e->getMessage(),
-                            ],
-                        ]);
+                    try {
+                        $fallbackResult = ($this->fallback)($e);
+
+                        return $fallbackResult instanceof Response
+                            ? $fallbackResult
+                            : $this->fakeResponse($e);
+                    } catch (\Throwable) {
+                        // fallback failed, fall through to onFail
                     }
-                } else {
-                    throw $e;
                 }
+
+                if ($this->onFail) {
+                    ($this->onFail)($e);
+
+                    return $this->fakeResponse($e);
+                }
+
+                throw $e;
             }
         }
 
@@ -127,14 +111,14 @@ class Manager
                 'endpoint' => $request->getUrl(),
                 'status' => $response->status(),
                 'target' => $request->getTarget(),
-                'pipeline' => $this->pipeline,
+                'pipeline' => '', // remove later
             ]);
 
             event(new BasecampRequestSent($request, $response));
         }
 
-        if ($this->pipeline && !$this->ghost) {
-            Pipeline::resolve($this->pipeline)->run($response);
+        if ($this->onSuccess && ! $this->ghost) {
+            ($this->onSuccess)($response);
         }
 
         return $response;
@@ -150,7 +134,7 @@ class Manager
     }
 
     /**
-     * Ghost the request (skip pipelines).
+     * Ghost the request (skip onSuccess callback).
      */
     public function ghost(): self
     {
@@ -173,16 +157,6 @@ class Manager
     public function retry(int $times): self
     {
         $this->request->retry($times);
-        return $this;
-    }
-
-    /**
-     * Set the pipeline to be used for the request.
-     */
-    public function withPipeline(string $pipeline): self
-    {
-        $this->pipeline = $pipeline;
-
         return $this;
     }
 
@@ -217,6 +191,9 @@ class Manager
         return $this;
     }
 
+    /**
+     * Set a fallback to recover from a failed request.
+     */
     public function fallback(\Closure $callback): self
     {
         $this->fallback = $callback;
@@ -224,13 +201,33 @@ class Manager
     }
 
     /**
-     * Add a callback to be executed after the request is completed.
+     * Register a callback to be called on successful response.
      */
-    public function after(string $alias, \Closure $callback)
+    public function onSuccess(\Closure $callback): self
     {
-        return Pipeline::extend($alias, function ($response, $next) use ($callback) {
-            $callback($response);
-            return $next($response);
-        });
+        $this->onSuccess = $callback;
+        return $this;
+    }
+
+    /**
+     * Register a callback to be called when the request fails (after fallback).
+     */
+    public function onFail(\Closure $callback): self
+    {
+        $this->onFail = $callback;
+        return $this;
+    }
+
+    /**
+     * Generate a fake response for fallback or onFail when an exception occurs.
+     */
+    protected function fakeResponse(\Exception $e): Response
+    {
+        return $this->request->fake([
+            'status' => 'fake',
+            'data' => [
+                'message' => 'This is a fallback response due to an exception: ' . $e->getMessage(),
+            ],
+        ]);
     }
 }

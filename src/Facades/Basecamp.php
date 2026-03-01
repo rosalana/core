@@ -12,13 +12,12 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Rosalana\Accounts\Services\Basecamp\UsersService users()
  * @method static \Rosalana\Accounts\Services\Basecamp\AuthService auth()
  * 
- * @method static \Illuminate\Http\Client\Response get(string $endpoint, ?string $pipeline = null)
- * @method static \Illuminate\Http\Client\Response post(string $endpoint, array $data = [], ?string $pipeline = null)
- * @method static \Illuminate\Http\Client\Response put(string $endpoint, array $data = [], ?string $pipeline = null)
- * @method static \Illuminate\Http\Client\Response patch(string $endpoint, array $data = [], ?string $pipeline = null)
- * @method static \Illuminate\Http\Client\Response delete(string $endpoint, ?string $pipeline = null)
- * 
- * @method static \Rosalana\Core\Services\Basecamp\Manager withPipeline(string $pipeline)
+ * @method static \Illuminate\Http\Client\Response get(string $endpoint, array $data = [])
+ * @method static \Illuminate\Http\Client\Response post(string $endpoint, array $data = [])
+ * @method static \Illuminate\Http\Client\Response put(string $endpoint, array $data = [])
+ * @method static \Illuminate\Http\Client\Response patch(string $endpoint, array $data = [])
+ * @method static \Illuminate\Http\Client\Response delete(string $endpoint, array $data = [])
+ *
  * @method static \Rosalana\Core\Services\Basecamp\Manager withAuth(?string $token = null)
  * @method static \Rosalana\Core\Services\Basecamp\Manager to(string $name)
  * @method static \Rosalana\Core\Services\Basecamp\Manager version(string $version)
@@ -27,7 +26,8 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Rosalana\Core\Services\Basecamp\Manager retry(int $times)
  * @method static \Rosalana\Core\Services\Basecamp\Manager timeout(int $seconds)
  * @method static \Rosalana\Core\Services\Basecamp\Manager fallback(\Closure $callback)
- * @method static \Rosalana\Core\Services\Basecamp\Manager after(string $alias, \Closure $callback)
+ * @method static \Rosalana\Core\Services\Basecamp\Manager onSuccess(\Closure $callback)
+ * @method static \Rosalana\Core\Services\Basecamp\Manager onFail(\Closure $callback)
  * 
  * @see \Rosalana\Core\Services\Basecamp\Manager
  */
