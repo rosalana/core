@@ -9,12 +9,10 @@ use Rosalana\Core\Facades\Basecamp;
 class Manager
 {
     protected Meta $meta;
-    protected Hooks $hooks;
 
-    public function __construct(Meta $meta, Hooks $hooks)
+    public function __construct(Meta $meta)
     {
         $this->meta = $meta;
-        $this->hooks = $hooks;
     }
 
     public function id(): string
@@ -75,11 +73,6 @@ class Manager
     public function context(): Context
     {
         return app('rosalana.context');
-    }
-
-    public function hooks(): Hooks
-    {
-        return $this->hooks;
     }
 
     public function run(Action $action): mixed

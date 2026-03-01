@@ -41,7 +41,6 @@ class RosalanaCoreServiceProvider extends ServiceProvider
         $this->app->singleton('rosalana.app', function () {
             return new \Rosalana\Core\Services\App\Manager(
                 new \Rosalana\Core\Services\App\Meta(),
-                new \Rosalana\Core\Services\App\Hooks(),
             );
         });
 
@@ -51,10 +50,6 @@ class RosalanaCoreServiceProvider extends ServiceProvider
 
         $this->app->singleton('rosalana.outpost', function () {
             return new \Rosalana\Core\Services\Outpost\Manager();
-        });
-
-        $this->app->singleton('rosalana.pipeline', function () {
-            return new \Rosalana\Core\Services\Pipeline\Registry();
         });
 
         $this->app->singleton('rosalana.trace', function () {

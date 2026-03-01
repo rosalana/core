@@ -3,7 +3,6 @@
 namespace Rosalana\Core\Tests;
 
 use Orchestra\Testbench\TestCase as BaseTestCase;
-use Rosalana\Core\Facades\Pipeline;
 use Rosalana\Core\Providers\RosalanaCoreServiceProvider;
 
 abstract class TestCase extends BaseTestCase
@@ -13,11 +12,5 @@ abstract class TestCase extends BaseTestCase
         return [
             RosalanaCoreServiceProvider::class,
         ];
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        Pipeline::flush();
     }
 }
