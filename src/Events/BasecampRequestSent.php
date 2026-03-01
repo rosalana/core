@@ -10,5 +10,6 @@ class BasecampRequestSent
     public function __construct(
         public readonly Request $request,
         public readonly Response $response,
+        public readonly ?string $alias = null,
     ) {}
 }

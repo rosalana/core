@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Illuminate\Http\Client\Response delete(string $endpoint, array $data = [])
  *
  * @method static \Rosalana\Core\Services\Basecamp\Manager withAuth(?string $token = null)
+ * @method static \Rosalana\Core\Services\Basecamp\Manager withAlias(?string $alias = null)
  * @method static \Rosalana\Core\Services\Basecamp\Manager to(string $name)
  * @method static \Rosalana\Core\Services\Basecamp\Manager version(string $version)
  * @method static \Rosalana\Core\Services\Basecamp\Manager mock()

@@ -25,6 +25,8 @@ class Manager
 
     protected \Closure|null $onFail = null;
 
+    protected string|null $alias = null;
+
     public function __construct()
     {
         $this->request = new Request();
@@ -114,7 +116,7 @@ class Manager
                 'pipeline' => '', // remove later
             ]);
 
-            event(new BasecampRequestSent($request, $response));
+            event(new BasecampRequestSent($request, $response, $this->alias));
         }
 
         if ($this->onSuccess && ! $this->ghost) {
@@ -170,6 +172,15 @@ class Manager
         }
 
         $this->request->authorization('Bearer', $token);
+        return $this;
+    }
+
+    /**
+     * Set an alias for the request, which can be used in events and logging.
+     */
+    public function withAlias(?string $alias = null): self
+    {
+        $this->alias = $alias;
         return $this;
     }
 
