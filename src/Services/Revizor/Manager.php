@@ -42,7 +42,7 @@ class Manager
         return new RequestManager(
             method: $request->getMethod(),
             url: $request->getUrlWithoutQuery(),
-            body: $request->getBody()
+            body: $request->getMethod() === 'get' ? [] : $request->getBody()
         );
     }
 
