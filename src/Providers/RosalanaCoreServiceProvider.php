@@ -165,6 +165,11 @@ class RosalanaCoreServiceProvider extends ServiceProvider
                         return $this->originalHandler->render($request, $e);
                     }
 
+                    public function reportable(callable $reportUsing): \Illuminate\Foundation\Exceptions\ReportableHandler
+                    {
+                        return $this->originalHandler->reportable($reportUsing);
+                    }
+
                     public function report(\Throwable $e)
                     {
                         return $this->originalHandler->report($e);
