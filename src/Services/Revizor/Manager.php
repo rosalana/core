@@ -41,7 +41,7 @@ class Manager
     {
         return new RequestManager(
             method: $request->getMethod(),
-            url: $request->getUrl(),
+            url: $request->getUrlWithoutQuery(),
             body: $request->getBody()
         );
     }

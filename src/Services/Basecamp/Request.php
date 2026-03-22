@@ -49,6 +49,11 @@ class Request
         return $this->serializeUrl();
     }
 
+    public function getUrlWithoutQuery(): string
+    {
+        return explode('?', $this->serializeUrl())[0];
+    }
+
     public function getBody(): array
     {
         return $this->body;
@@ -128,7 +133,7 @@ class Request
             $this->strategy->prepare($this);
         }
 
-        $url = $this->serializeUrl();
+        $url = $this->getUrl();
 
         try {
             $http = Http::withHeaders($this->headers)
