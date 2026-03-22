@@ -17,6 +17,7 @@ class Package
         'rosalana/core' => 'Core constracts and services',
         'rosalana/accounts' => 'Package for managing user accounts and authentication',
         'rosalana/roles' => 'Package for managing user roles and permissions',
+        'rosalana/tracker' => 'Package for tracking user activity and events',
     ];
 
     public static function getDescription(string $package): string
