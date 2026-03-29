@@ -33,7 +33,11 @@ class AppStrategy implements RequestStrategy
     public function throw(\Exception|string $e, Response $response): void
     {
         if (is_string($e)) {
-            HttpAppErrorType::tryFrom($e)?->throw($response->json());
+            try {
+                HttpAppErrorType::tryFrom($e)?->throw($response->json());
+            } catch (\Throwable) {
+                throw new AppUnavailableException();
+            }
         } else {
             throw new AppUnavailableException();
         }

@@ -34,7 +34,11 @@ class BasecampStrategy implements RequestStrategy
     public function throw(\Exception|string $e, Response $response): void
     {
         if (is_string($e)) {
-            BasecampErrorType::tryFrom($e)?->throw($response->json());
+            try {
+                BasecampErrorType::tryFrom($e)?->throw($response->json());
+            } catch (\Throwable) {
+                throw new BasecampUnavailableException();
+            }
         } else {
             throw new BasecampUnavailableException();
         }
