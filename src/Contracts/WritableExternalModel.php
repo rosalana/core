@@ -9,6 +9,4 @@ interface WritableExternalModel
     public function create(array $data): Response;
 
     public function update(string|int $id, array $data): Response;
-
-    public function delete(string|int $id): Response;
 }

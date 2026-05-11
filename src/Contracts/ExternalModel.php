@@ -2,4 +2,4 @@
 
 namespace Rosalana\Core\Contracts;
 
-interface ExternalModel extends ReadableExternalModel, WritableExternalModel {}
+interface ExternalModel extends ReadableExternalModel, WritableExternalModel, RemoveableExternalModel {}
