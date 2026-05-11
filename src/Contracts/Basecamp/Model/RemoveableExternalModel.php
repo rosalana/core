@@ -1,6 +1,6 @@
 <?php
 
-namespace Rosalana\Core\Contracts;
+namespace Rosalana\Core\Contracts\Basecamp\Model;
 
 use Illuminate\Http\Client\Response;
 

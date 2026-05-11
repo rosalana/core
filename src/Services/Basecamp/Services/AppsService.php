@@ -2,8 +2,8 @@
 
 namespace Rosalana\Core\Services\Basecamp\Services;
 
-use Rosalana\Core\Contracts\ReadableExternalModel;
 use Rosalana\Core\Services\Basecamp\Service;
+use Rosalana\Core\Contracts\Basecamp\Model\ReadableExternalModel;
 
 class AppsService extends Service implements ReadableExternalModel
 {
