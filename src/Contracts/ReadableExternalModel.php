@@ -2,7 +2,7 @@
 
 namespace Rosalana\Core\Contracts;
 
-interface ReadOnlyExternalModel
+interface ReadableExternalModel
 {
     public function find(string|int $id);
 
