@@ -2,37 +2,24 @@
 
 namespace Rosalana\Core\Services\Basecamp;
 
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Rosalana\Core\Contracts\Basecamp\Model\ReadableExternalModel;
 use Rosalana\Core\Contracts\Basecamp\Model\RemoveableExternalModel;
 use Rosalana\Core\Contracts\Basecamp\Model\WritableExternalModel;
+use Rosalana\Core\Traits\ExternalModel\HasAttributes;
+use Rosalana\Core\Traits\ExternalModel\HasEvents;
 
 abstract class Model
 {
+    use HasEvents, HasAttributes;
+
     /** @var array<string, bool> */
     protected static array $booted = [];
 
-    /** @var array<class-string, array<string, \Closure[]>> */
-    protected static array $modelObservers = [];
-
     protected string $identifier = 'id';
 
-    protected array $attributes = [];
-
-    protected array $original = [];
-
-    protected array $casts = [];
-
-    protected array $appends = [];
-
     protected bool $timestamps = true;
-
-    protected static function provider(): object
-    {
-        return app('rosalana.basecamp')->{Str::plural(Str::camel(class_basename(static::class)))}();
-    }
 
     public function __construct(array $attributes = [])
     {
@@ -40,7 +27,10 @@ abstract class Model
         $this->fill($attributes);
     }
 
-    // --- Boot lifecycle ---
+    protected static function provider(): object
+    {
+        return app('rosalana.basecamp')->{Str::plural(Str::camel(class_basename(static::class)))}();
+    }
 
     protected static function bootIfNotBooted(): void
     {
@@ -56,57 +46,6 @@ abstract class Model
     protected static function boot(): void {}
 
     protected static function booted(): void {}
-
-    // --- Event registration ---
-
-    public static function retrieved(\Closure $callback): void
-    {
-        static::registerModelEvent('retrieved', $callback);
-    }
-
-    public static function creating(\Closure $callback): void
-    {
-        static::registerModelEvent('creating', $callback);
-    }
-
-    public static function created(\Closure $callback): void
-    {
-        static::registerModelEvent('created', $callback);
-    }
-
-    public static function updating(\Closure $callback): void
-    {
-        static::registerModelEvent('updating', $callback);
-    }
-
-    public static function updated(\Closure $callback): void
-    {
-        static::registerModelEvent('updated', $callback);
-    }
-
-    public static function deleting(\Closure $callback): void
-    {
-        static::registerModelEvent('deleting', $callback);
-    }
-
-    public static function deleted(\Closure $callback): void
-    {
-        static::registerModelEvent('deleted', $callback);
-    }
-
-    protected static function registerModelEvent(string $event, \Closure $callback): void
-    {
-        static::$modelObservers[static::class][$event][] = $callback;
-    }
-
-    protected static function fireModelEvent(string $event, self $model): void
-    {
-        foreach (static::$modelObservers[static::class][$event] ?? [] as $callback) {
-            $callback($model);
-        }
-    }
-
-    // --- Static API ---
 
     public static function find(string|int $id): ?static
     {
@@ -180,8 +119,6 @@ abstract class Model
         return $instance;
     }
 
-    // --- Instance API ---
-
     public function refresh(): void
     {
         if (! static::provider() instanceof ReadableExternalModel) {
@@ -228,122 +165,10 @@ abstract class Model
         static::fireModelEvent('deleted', $this);
     }
 
-    public function fill(array $attributes): static
-    {
-        $this->attributes = $attributes;
-
-        return $this;
-    }
-
-    public function syncOriginal(): static
-    {
-        $this->original = $this->attributes;
-
-        return $this;
-    }
-
-    // --- Dirty tracking ---
-
-    public function isDirty(string|array|null $keys = null): bool
-    {
-        $dirty = $this->getDirty();
-
-        if (is_null($keys)) {
-            return count($dirty) > 0;
-        }
-
-        foreach ((array) $keys as $key) {
-            if (array_key_exists($key, $dirty)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public function isClean(string|array|null $keys = null): bool
-    {
-        return ! $this->isDirty($keys);
-    }
-
-    public function getDirty(): array
-    {
-        $dirty = [];
-
-        foreach ($this->attributes as $key => $value) {
-            if (! array_key_exists($key, $this->original) || $value !== $this->original[$key]) {
-                $dirty[$key] = $value;
-            }
-        }
-
-        return $dirty;
-    }
-
-    public function getChanges(): array
-    {
-        return $this->getDirty();
-    }
-
-    public function getOriginal(?string $key = null, mixed $default = null): mixed
-    {
-        if ($key === null) {
-            return $this->original;
-        }
-
-        return $this->original[$key] ?? $default;
-    }
-
-    // --- Attribute access ---
-
-    public function getAttribute(string $key): mixed
-    {
-        $method = 'get' . Str::studly($key) . 'Attribute';
-
-        if (method_exists($this, $method)) {
-            return $this->$method();
-        }
-
-        if (! array_key_exists($key, $this->attributes)) {
-            return null;
-        }
-
-        $type = $this->getCastType($key);
-
-        return $type !== null
-            ? $this->castAttribute($this->attributes[$key], $type)
-            : $this->attributes[$key];
-    }
-
     protected function getKey(): string|int
     {
         return $this->attributes[$this->identifier] ?? 0;
     }
-
-    private function getCastType(string $key): ?string
-    {
-        $casts = $this->timestamps
-            ? array_merge(['created_at' => 'datetime', 'updated_at' => 'datetime'], $this->casts)
-            : $this->casts;
-
-        return $casts[$key] ?? null;
-    }
-
-    private function castAttribute(mixed $value, string $type): mixed
-    {
-        return match ($type) {
-            'int' => (int) $value,
-            'float' => (float) $value,
-            'bool' => (bool) $value,
-            'string' => (string) $value,
-            'array' => (array) $value,
-            'json' => json_decode($value, true),
-            'datetime' => Carbon::parse($value),
-            'date' => Carbon::parse($value)->startOfDay(),
-            default => enum_exists($type) ? $type::from($value) : $value,
-        };
-    }
-
-    // --- Serialization ---
 
     public function toArray(): array
     {
@@ -360,8 +185,6 @@ abstract class Model
     {
         return json_encode($this->toArray());
     }
-
-    // --- Magic methods ---
 
     public function __get(string $key): mixed
     {
