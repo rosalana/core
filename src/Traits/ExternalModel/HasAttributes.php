@@ -17,14 +17,27 @@ trait HasAttributes
 
     protected array $computed = [];
 
+    protected array $with = [];
+
     private array $loadedComputed = [];
 
     public function fill(array $attributes): static
     {
         $this->attributes = $attributes;
-        
-        $this->loadedComputed = []; // Clear loaded computed on fill
-        $this->loadedComputed = $this->getComputed(); // than preload computed attributes
+
+        $this->loadedComputed = [];
+        $this->loadedComputed = $this->getComputed();
+
+        return $this;
+    }
+
+    public function with(string|array ...$params): static
+    {
+        if (count($params) === 1 && is_array($params[0])) {
+            $this->with = $params[0];
+        } else {
+            $this->with = $params;
+        }
 
         return $this;
     }
@@ -89,8 +102,10 @@ trait HasAttributes
     {
         $computed = [];
 
-        foreach ($this->computed as $key) {
-            $computed[$key] = $this->getAttribute($key);
+        foreach ($this->with as $key) {
+            if (in_array($key, $this->computed)) {
+                $computed[$key] = $this->getAttribute($key);
+            }
         }
 
         return $computed;
