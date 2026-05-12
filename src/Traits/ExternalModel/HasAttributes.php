@@ -22,7 +22,9 @@ trait HasAttributes
     public function fill(array $attributes): static
     {
         $this->attributes = $attributes;
-        $this->loadedComputed = $this->getComputed(); // Preload computed on fill every time to ensure unstale computed values are not returned
+        
+        $this->loadedComputed = []; // Clear loaded computed on fill
+        $this->loadedComputed = $this->getComputed(); // than preload computed attributes
 
         return $this;
     }
