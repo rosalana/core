@@ -67,6 +67,11 @@ class QueryBuilder
         return $model;
     }
 
+    public function get(): Collection
+    {
+        return $this->all();
+    }
+
     public function all(): Collection
     {
         if (! $this->provider instanceof ReadableExternalModel) {
@@ -131,6 +136,18 @@ class QueryBuilder
     public function offset(int $offset): static
     {
         $this->query['offset'] = $offset;
+        return $this;
+    }
+
+    public function only(array $identifiers): static
+    {
+        $this->query['only'] = implode(',', $identifiers);
+        return $this;
+    }
+
+    public function omit(array $identifiers): static
+    {
+        $this->query['omit'] = implode(',', $identifiers);
         return $this;
     }
 
