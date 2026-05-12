@@ -2,13 +2,14 @@
 
 namespace Rosalana\Core\Services\Basecamp;
 
-use Illuminate\Support\Collection;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Rosalana\Core\Contracts\Basecamp\Model\ReadableExternalModel;
 use Rosalana\Core\Contracts\Basecamp\Model\RemoveableExternalModel;
 use Rosalana\Core\Contracts\Basecamp\Model\WritableExternalModel;
 use Rosalana\Core\Traits\ExternalModel\HasAttributes;
 use Rosalana\Core\Traits\ExternalModel\HasEvents;
+use Rosalana\Core\Services\Basecamp\Collection;
 use Rosalana\Core\Services\Basecamp\QueryBuilder as Query;
 
 abstract class Model
@@ -53,6 +54,11 @@ abstract class Model
     public static function query(): Query
     {
         return new Query(static::provider(), static::class);
+    }
+
+    public static function queryWithRequest(Request $request)
+    {
+        return static::query()->withRequest($request);
     }
 
     public static function with(string|array $with): Query

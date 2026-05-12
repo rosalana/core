@@ -14,10 +14,10 @@ class AppsService extends Service implements ReadableExternalModel
             ->get('apps/' . $name);
     }
 
-    public function all()
+    public function all(array $query = [])
     {
         return $this->manager
             ->withAuth()
-            ->get('apps');
+            ->get('apps', $query);
     }
 }

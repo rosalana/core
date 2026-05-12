@@ -6,5 +6,5 @@ interface ReadableExternalModel
 {
     public function find(string|int $id);
 
-    public function all();
+    public function all(array $query = []);
 }

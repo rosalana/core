@@ -13,6 +13,9 @@ trait HasAttributes
     /** @var array<string, mixed> */
     protected $original = [];
 
+    /** @var array<string, mixed> */
+    protected $request_meta = [];
+
     /** @var array<string, string> */
     protected $casts = [];
 
@@ -38,6 +41,22 @@ trait HasAttributes
         }
 
         return $this;
+    }
+
+    public function fillRequestMeta(array $meta): static
+    {
+        $this->request_meta = $meta;
+
+        return $this;
+    }
+
+    public function getRequestMeta(?string $key = null, mixed $default = null): mixed
+    {
+        if ($key === null) {
+            return $this->request_meta;
+        }
+
+        return $this->request_meta[$key] ?? $default;
     }
 
     private function compileWith(array $with): array
