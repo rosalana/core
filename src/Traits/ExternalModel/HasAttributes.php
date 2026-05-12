@@ -15,9 +15,14 @@ trait HasAttributes
 
     protected array $appends = [];
 
+    protected array $computed = [];
+
+    private array $loadedComputed = [];
+
     public function fill(array $attributes): static
     {
         $this->attributes = $attributes;
+        $this->loadedComputed = $this->getComputed(); // Preload computed on fill every time to ensure unstale computed values are not returned
 
         return $this;
     }
@@ -78,8 +83,23 @@ trait HasAttributes
         return $this->original[$key] ?? $default;
     }
 
+    public function getComputed(): array
+    {
+        $computed = [];
+
+        foreach ($this->computed as $key) {
+            $computed[$key] = $this->getAttribute($key);
+        }
+
+        return $computed;
+    }
+
     public function getAttribute(string $key): mixed
     {
+        if ($this->hasComputedAttribute($key)) {
+            return $this->getComputedAttribute($key);
+        }
+
         if ($this->hasAppendedAttribute($key)) {
             return $this->getAppendedAttribute($key);
         }
@@ -95,19 +115,29 @@ trait HasAttributes
             : $this->attributes[$key];
     }
 
-    private function appendMethodName(string $key): string
+    private function getDynamicAttributeAccessor(string $key): string
     {
         return 'get' . Str::studly($key) . 'Attribute';
     }
 
     private function hasAppendedAttribute(string $key): bool
     {
-        return method_exists($this, $this->appendMethodName($key)) && in_array($key, $this->appends);
+        return method_exists($this, $this->getDynamicAttributeAccessor($key)) && in_array($key, $this->appends);
     }
 
     private function getAppendedAttribute(string $key): mixed
     {
-        return $this->{$this->appendMethodName($key)}();
+        return $this->{$this->getDynamicAttributeAccessor($key)}();
+    }
+
+    private function hasComputedAttribute(string $key): bool
+    {
+        return method_exists($this, $this->getDynamicAttributeAccessor($key)) && in_array($key, $this->computed);
+    }
+
+    private function getComputedAttribute(string $key): mixed
+    {
+        return $this->loadedComputed[$key] ??= $this->{$this->getDynamicAttributeAccessor($key)}();
     }
 
     private function getCastType(string $key): ?string
