@@ -10,5 +10,4 @@ abstract class Service
     {
         $this->manager = $manager;
     }
-    
 }

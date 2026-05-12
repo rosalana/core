@@ -48,7 +48,7 @@ trait HasEvents
         static::$modelObservers[static::class][$event][] = $callback;
     }
 
-    protected static function fireModelEvent(string $event, self $model): void
+    public static function fireModelEvent(string $event, self $model): void
     {
         foreach (static::$modelObservers[static::class][$event] ?? [] as $callback) {
             $callback($model);

@@ -28,25 +28,24 @@ trait HasAttributes
     /** @var array<string, mixed> */
     private $loadedComputed = [];
 
-    public function fill(array $attributes): static
+    public function fill(array $attributes, ?array $with = null): static
     {
         $this->attributes = $attributes;
 
         $this->loadedComputed = [];
-        $this->loadedComputed = $this->getComputed();
+        foreach ($this->compileWith($with ?? $this->with) as $key) {
+            $this->loadedComputed[$key] = $this->getAttribute($key);
+        }
 
         return $this;
     }
 
-    public function with(string|array ...$params): static
+    private function compileWith(array $with): array
     {
-        if (count($params) === 1 && is_array($params[0])) {
-            $this->with = $params[0];
-        } else {
-            $this->with = $params;
-        }
-
-        return $this;
+        return array_values(array_filter(
+            $this->computed,
+            fn(string $key) => matches($key)->any($with),
+        ));
     }
 
     public function syncOriginal(): static
@@ -109,10 +108,8 @@ trait HasAttributes
     {
         $computed = [];
 
-        foreach ($this->with as $key) {
-            if (in_array($key, $this->computed)) {
-                $computed[$key] = $this->getAttribute($key);
-            }
+        foreach ($this->compileWith($this->with) as $key) {
+            $computed[$key] = $this->getAttribute($key);
         }
 
         return $computed;

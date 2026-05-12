@@ -9,6 +9,7 @@ use Rosalana\Core\Contracts\Basecamp\Model\RemoveableExternalModel;
 use Rosalana\Core\Contracts\Basecamp\Model\WritableExternalModel;
 use Rosalana\Core\Traits\ExternalModel\HasAttributes;
 use Rosalana\Core\Traits\ExternalModel\HasEvents;
+use Rosalana\Core\Services\Basecamp\QueryBuilder as Query;
 
 abstract class Model
 {
@@ -23,10 +24,10 @@ abstract class Model
     /** @var bool */
     protected $timestamps = true;
 
-    public function __construct(array $attributes = [])
+    public function __construct(array $attributes = [], ?array $with = null)
     {
         static::bootIfNotBooted();
-        $this->fill($attributes);
+        $this->fill($attributes, $with);
     }
 
     protected static function provider(): object
@@ -49,76 +50,38 @@ abstract class Model
 
     protected static function booted(): void {}
 
+    public static function query(): Query
+    {
+        return new Query(static::provider(), static::class);
+    }
+
+    public static function with(string|array $with): Query
+    {
+        return static::query()->with($with);
+    }
+
     public static function find(string|int $id): ?static
     {
-        if (! static::provider() instanceof ReadableExternalModel) {
-            abort(500, 'Model is not read-accessible and cannot be queried.');
-        }
-
-        try {
-            return static::findOrFail($id);
-        } catch (\Exception) {
-            return null;
-        }
+        /** @var static|null */
+        return static::query()->find($id);
     }
 
     /** @throws \Exception */
     public static function findOrFail(string|int $id): static
     {
-        if (! static::provider() instanceof ReadableExternalModel) {
-            abort(500, 'Model is not read-accessible and cannot be queried.');
-        }
-
-        try {
-            $model = (new static(static::provider()->find($id)->json('data') ?? []))->syncOriginal();
-        } catch (\Exception $e) {
-            abort(404, "Model not found for identifier `{$id}`.", ['error' => $e->getMessage()]);
-        }
-
-        static::fireModelEvent('retrieved', $model);
-
-        return $model;
+        /** @var static */
+        return static::query()->findOrFail($id);
     }
 
     public static function all(): Collection
     {
-        if (! static::provider() instanceof ReadableExternalModel) {
-            abort(500, 'Model is not read-accessible and cannot be queried.');
-        }
-
-        try {
-            $items = static::provider()->all()->json('data') ?? [];
-        } catch (\Exception) {
-            $items = [];
-        }
-
-        return collect($items)->map(function (array $attrs) {
-            $model = (new static($attrs))->syncOriginal();
-            static::fireModelEvent('retrieved', $model);
-
-            return $model;
-        });
+        return static::query()->all();
     }
 
     public static function create(array $attributes): static
     {
-        if (! static::provider() instanceof WritableExternalModel) {
-            abort(500, 'Model is not write-accessible and cannot be created.');
-        }
-
-        $instance = new static($attributes);
-        static::fireModelEvent('creating', $instance);
-
-        try {
-            $attrs = static::provider()->create($instance->attributes)->json('data') ?? [];
-            $instance->fill($attrs ?: $instance->attributes)->syncOriginal();
-        } catch (\Exception $e) {
-            abort(500, 'Failed to create model.', ['error' => $e->getMessage()]);
-        }
-
-        static::fireModelEvent('created', $instance);
-
-        return $instance;
+        /** @var static */
+        return static::query()->create($attributes);
     }
 
     public function refresh(): void
