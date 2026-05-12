@@ -80,10 +80,8 @@ trait HasAttributes
 
     public function getAttribute(string $key): mixed
     {
-        $method = 'get' . Str::studly($key) . 'Attribute';
-
-        if (method_exists($this, $method)) {
-            return $this->$method();
+        if ($this->hasAppendedAttribute($key)) {
+            return $this->getAppendedAttribute($key);
         }
 
         if (! array_key_exists($key, $this->attributes)) {
@@ -97,7 +95,22 @@ trait HasAttributes
             : $this->attributes[$key];
     }
 
-        private function getCastType(string $key): ?string
+    private function appendMethodName(string $key): string
+    {
+        return 'get' . Str::studly($key) . 'Attribute';
+    }
+
+    private function hasAppendedAttribute(string $key): bool
+    {
+        return method_exists($this, $this->appendMethodName($key)) && in_array($key, $this->appends);
+    }
+
+    private function getAppendedAttribute(string $key): mixed
+    {
+        return $this->{$this->appendMethodName($key)}();
+    }
+
+    private function getCastType(string $key): ?string
     {
         $casts = $this->timestamps
             ? array_merge(['created_at' => 'datetime', 'updated_at' => 'datetime'], $this->casts)
