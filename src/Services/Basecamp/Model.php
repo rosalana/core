@@ -178,6 +178,10 @@ abstract class Model
             $attributes[$key] = $this->getAttribute($key);
         }
 
+        foreach ($this->computed as $key) {
+            $attributes[$key] = $this->getAttribute($key);
+        }
+
         return $attributes;
     }
 
