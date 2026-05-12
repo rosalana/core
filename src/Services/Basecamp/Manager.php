@@ -171,7 +171,7 @@ class Manager
             $token = \Rosalana\Core\Session\TokenSession::get();
         }
 
-        $this->request->authorization('Bearer', $token);
+        $this->request->authorization('Bearer', $token ?? '');
         return $this;
     }
 
