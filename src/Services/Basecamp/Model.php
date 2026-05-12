@@ -18,7 +18,7 @@ use Rosalana\Core\Exceptions\Service\Basecamp\Model\ModelDeleteFailedException;
 use Rosalana\Core\Exceptions\Service\Basecamp\Model\ModelRefreshFailedException;
 use Rosalana\Core\Exceptions\Service\Basecamp\Model\ModelUpdateFailedException;
 
-abstract class Model
+abstract class Model implements \JsonSerializable, \Illuminate\Contracts\Support\Arrayable
 {
     use HasEvents, HasAttributes;
 
@@ -165,6 +165,11 @@ abstract class Model
         }
 
         return $attributes;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
     }
 
     public function toJson(): string
