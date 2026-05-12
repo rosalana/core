@@ -6,6 +6,12 @@ use Illuminate\Http\Request;
 use Rosalana\Core\Contracts\Basecamp\Model\ReadableExternalModel;
 use Rosalana\Core\Services\Basecamp\Collection;
 use Rosalana\Core\Contracts\Basecamp\Model\WritableExternalModel;
+use Rosalana\Core\Exceptions\Http\RosalanaHttpException;
+use Rosalana\Core\Exceptions\Service\Basecamp\Model\AttemptReadFromUnreadableModelException;
+use Rosalana\Core\Exceptions\Service\Basecamp\Model\AttemptWriteToUnwritableModelException;
+use Rosalana\Core\Exceptions\Service\Basecamp\Model\ModelCreateFailedException;
+use Rosalana\Core\Exceptions\Service\Basecamp\Model\ModelFindFailedException;
+use Rosalana\Core\Exceptions\Service\Basecamp\Model\ModelNotFoundException;
 
 class QueryBuilder
 {
@@ -29,13 +35,9 @@ class QueryBuilder
 
     public function find(string|int $id): ?Model
     {
-        if (! $this->provider instanceof ReadableExternalModel) {
-            abort(500, 'Model is not read-accessible and cannot be queried.');
-        }
-
         try {
             return $this->findOrFail($id);
-        } catch (\Exception) {
+        } catch (ModelNotFoundException) {
             return null;
         }
     }
@@ -44,7 +46,7 @@ class QueryBuilder
     public function findOrFail(string|int $id): Model
     {
         if (! $this->provider instanceof ReadableExternalModel) {
-            abort(500, 'Model is not read-accessible and cannot be queried.');
+            throw new AttemptReadFromUnreadableModelException($this->modelClass);
         }
 
         try {
@@ -53,7 +55,11 @@ class QueryBuilder
             $model = $this->newModel($response->json('data') ?? [])->syncOriginal();
             $model->fillRequestMeta($response->json('meta') ?? []);
         } catch (\Exception $e) {
-            abort(404, "Model not found for identifier `{$id}`.", ['error' => $e->getMessage()]);
+            if ($e instanceof RosalanaHttpException && $e->getType() === "NOT_FOUND") {
+                throw new ModelNotFoundException($this->modelClass, $id, $e);
+            } else {
+                throw new ModelFindFailedException($this->modelClass, $id, $e);
+            }
         }
 
         ($this->modelClass)::fireModelEvent('retrieved', $model);
@@ -64,7 +70,7 @@ class QueryBuilder
     public function all(): Collection
     {
         if (! $this->provider instanceof ReadableExternalModel) {
-            abort(500, 'Model is not read-accessible and cannot be queried.');
+            throw new AttemptReadFromUnreadableModelException($this->modelClass);
         }
 
         try {
@@ -86,7 +92,7 @@ class QueryBuilder
     public function create(array $attributes): Model
     {
         if (! $this->provider instanceof WritableExternalModel) {
-            abort(500, 'Model is not write-accessible and cannot be created.');
+            throw new AttemptWriteToUnwritableModelException($this->modelClass);
         }
 
         $instance = $this->newModel($attributes);
@@ -96,7 +102,7 @@ class QueryBuilder
             $attrs = $this->provider->create($attributes)->json('data') ?? [];
             $instance->fill($attrs ?: $attributes)->syncOriginal();
         } catch (\Exception $e) {
-            abort(500, 'Failed to create model.', ['error' => $e->getMessage()]);
+            throw new ModelCreateFailedException($this->modelClass, $e);
         }
 
         ($this->modelClass)::fireModelEvent('created', $instance);

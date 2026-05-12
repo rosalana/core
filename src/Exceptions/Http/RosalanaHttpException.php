@@ -6,7 +6,7 @@ use Exception;
 
 class RosalanaHttpException extends Exception
 {
-    protected array $response;
+    protected array $response = [];
 
     public function __construct(array $response, string $message = '', int $code = 0, ?Exception $previous = null)
     {

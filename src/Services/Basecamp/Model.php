@@ -11,6 +11,12 @@ use Rosalana\Core\Traits\ExternalModel\HasAttributes;
 use Rosalana\Core\Traits\ExternalModel\HasEvents;
 use Rosalana\Core\Services\Basecamp\Collection;
 use Rosalana\Core\Services\Basecamp\QueryBuilder as Query;
+use Rosalana\Core\Exceptions\Service\Basecamp\Model\AttemptReadFromUnreadableModelException;
+use Rosalana\Core\Exceptions\Service\Basecamp\Model\AttemptWriteToUnwritableModelException;
+use Rosalana\Core\Exceptions\Service\Basecamp\Model\AttemptRemoveUnremovableModelException;
+use Rosalana\Core\Exceptions\Service\Basecamp\Model\ModelDeleteFailedException;
+use Rosalana\Core\Exceptions\Service\Basecamp\Model\ModelRefreshFailedException;
+use Rosalana\Core\Exceptions\Service\Basecamp\Model\ModelUpdateFailedException;
 
 abstract class Model
 {
@@ -93,17 +99,22 @@ abstract class Model
     public function refresh(): void
     {
         if (! static::provider() instanceof ReadableExternalModel) {
-            abort(500, 'Model is not read-accessible and cannot be queried.');
+            throw new AttemptReadFromUnreadableModelException(static::class);
         }
 
-        $this->fill(static::provider()->find($this->getKey())->json('data') ?? [])->syncOriginal();
+        try {
+            $this->fill(static::provider()->find($this->getKey())->json('data') ?? [])->syncOriginal();
+        } catch (\Exception $e) {
+            throw new ModelRefreshFailedException(static::class, $this->getKey(), $e);
+        }
+
         static::fireModelEvent('retrieved', $this);
     }
 
     public function update(array $attributes): void
     {
         if (! static::provider() instanceof WritableExternalModel) {
-            abort(500, 'Model is not write-accessible and cannot be updated.');
+            throw new AttemptWriteToUnwritableModelException(static::class);
         }
 
         $this->fill(array_merge($this->attributes, $attributes));
@@ -113,7 +124,7 @@ abstract class Model
             $attrs = static::provider()->update($this->getKey(), $attributes)->json('data') ?? [];
             $this->fill($attrs ?: $this->attributes)->syncOriginal();
         } catch (\Exception $e) {
-            abort(500, 'Failed to update model.', ['error' => $e->getMessage()]);
+            throw new ModelUpdateFailedException(static::class, $this->getKey(), $e);
         }
 
         static::fireModelEvent('updated', $this);
@@ -122,7 +133,7 @@ abstract class Model
     public function delete(): void
     {
         if (! static::provider() instanceof RemoveableExternalModel) {
-            abort(500, 'Model is not allowed to be deleted.');
+            throw new AttemptRemoveUnremovableModelException(static::class);
         }
 
         static::fireModelEvent('deleting', $this);
@@ -130,7 +141,7 @@ abstract class Model
         try {
             static::provider()->delete($this->getKey());
         } catch (\Exception $e) {
-            abort(500, 'Failed to delete model.', ['error' => $e->getMessage()]);
+            throw new ModelDeleteFailedException(static::class, $this->getKey(), $e);
         }
 
         static::fireModelEvent('deleted', $this);
