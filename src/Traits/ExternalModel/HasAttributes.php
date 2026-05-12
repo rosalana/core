@@ -7,19 +7,26 @@ use Illuminate\Support\Carbon;
 
 trait HasAttributes
 {
-    protected array $attributes = [];
+    /** @var array<string, mixed> */
+    protected $attributes = [];
 
-    protected array $original = [];
+    /** @var array<string, mixed> */
+    protected $original = [];
 
-    protected array $casts = [];
+    /** @var array<string, string> */
+    protected $casts = [];
 
-    protected array $appends = [];
+    /** @var list<string> */
+    protected $appends = [];
 
-    protected array $computed = [];
+    /** @var list<string> */
+    protected $computed = [];
 
-    protected array $with = [];
+    /** @var list<string> */
+    protected $with = [];
 
-    private array $loadedComputed = [];
+    /** @var array<string, mixed> */
+    private $loadedComputed = [];
 
     public function fill(array $attributes): static
     {

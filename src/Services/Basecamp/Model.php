@@ -15,11 +15,13 @@ abstract class Model
     use HasEvents, HasAttributes;
 
     /** @var array<string, bool> */
-    protected static array $booted = [];
+    protected static $booted = [];
 
-    protected string $identifier = 'id';
+    /** @var string */
+    protected $identifier = 'id';
 
-    protected bool $timestamps = true;
+    /** @var bool */
+    protected $timestamps = true;
 
     public function __construct(array $attributes = [])
     {

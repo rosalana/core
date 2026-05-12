@@ -5,7 +5,7 @@ namespace Rosalana\Core\Traits\ExternalModel;
 trait HasEvents
 {
     /** @var array<class-string, array<string, \Closure[]>> */
-    protected static array $modelObservers = [];
+    protected static $modelObservers = [];
 
 
     public static function retrieved(\Closure $callback): void
