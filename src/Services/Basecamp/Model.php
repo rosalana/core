@@ -2,6 +2,7 @@
 
 namespace Rosalana\Core\Services\Basecamp;
 
+use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Rosalana\Core\Contracts\Basecamp\Model\ReadableExternalModel;
@@ -17,8 +18,9 @@ use Rosalana\Core\Exceptions\Service\Basecamp\Model\AttemptRemoveUnremovableMode
 use Rosalana\Core\Exceptions\Service\Basecamp\Model\ModelDeleteFailedException;
 use Rosalana\Core\Exceptions\Service\Basecamp\Model\ModelRefreshFailedException;
 use Rosalana\Core\Exceptions\Service\Basecamp\Model\ModelUpdateFailedException;
+use \Illuminate\Contracts\Support\Arrayable;
 
-abstract class Model implements \JsonSerializable, \Illuminate\Contracts\Support\Arrayable
+abstract class Model implements \JsonSerializable, Arrayable, UrlRoutable
 {
     use HasEvents, HasAttributes;
 
@@ -169,6 +171,26 @@ abstract class Model implements \JsonSerializable, \Illuminate\Contracts\Support
     public function toJson(): string
     {
         return json_encode($this->toArray());
+    }
+
+    public function getRouteKey()
+    {
+        return $this->getAttribute($this->getRouteKeyName());
+    }
+
+    public function getRouteKeyName()
+    {
+        return $this->identifier;
+    }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return static::find($value);
+    }
+
+    public function resolveChildRouteBinding($childType, $value, $field)
+    {
+        return null;
     }
 
     public function __get(string $key): mixed
