@@ -154,17 +154,11 @@ abstract class Model implements \JsonSerializable, \Illuminate\Contracts\Support
 
     public function toArray(): array
     {
-        $attributes = $this->attributes;
-
-        foreach ($this->appends as $key) {
-            $attributes[$key] = $this->getAttribute($key);
-        }
-
-        foreach ($this->computed as $key) {
-            $attributes[$key] = $this->getAttribute($key);
-        }
-
-        return $attributes;
+        return collect($this->attributes)
+            ->merge(array_fill_keys($this->appends, null))
+            ->mapWithKeys(fn($_, $key) => [$key => $this->getAttribute($key)])
+            ->merge($this->loadedComputed)
+            ->all();
     }
 
     public function jsonSerialize(): array
