@@ -74,6 +74,19 @@ abstract class Model implements \JsonSerializable, Arrayable, UrlRoutable
         return static::query()->with($with);
     }
 
+    public function load(string|array $with): void
+    {
+        $with = is_array($with) ? $with : [$with];
+
+        foreach ($with as $computed) {
+            if (! in_array($computed, array_keys($this->loadedComputed))) {
+                $this->getAttribute($computed);
+            } else {
+                return;
+            }
+        }
+    }
+
     public static function find(string|int $id): ?static
     {
         /** @var static|null */
