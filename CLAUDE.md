@@ -121,10 +121,11 @@ LOCKED (from Basecamp)  →  UNLOCKED (key decrypted)  →  SIGNED (key removed,
    - Checks format (must be signed state)
    - Checks ticket expiration
    - Checks timestamp freshness (within `signature_ttl` seconds, default 60)
-   - Checks replay (signature not in cache)
    - Looks up ticket on Basecamp (gets original with key)
+   - Checks issued metadata and target app, then unlocks the receiver’s key copy
    - Recomputes signature with original key + received timestamp
    - Compares with `hash_equals()` (timing-safe)
+   - Checks and records replay only after successful signature verification
 
 **Security properties:**
 - Per-ticket keys (compromise of one ticket doesn't affect others)
@@ -134,7 +135,7 @@ LOCKED (from Basecamp)  →  UNLOCKED (key decrypted)  →  SIGNED (key removed,
 - Timing-safe comparison prevents timing attacks
 - Standard crypto primitives (AES-256-CBC, HMAC-SHA256), no custom cryptography
 
-**Known issue in Cipher.php:** The method names `encrypt` and `decrypt` are SWAPPED relative to their actual behavior. `encrypt()` performs decryption (base64_decode → openssl_decrypt) and `decrypt()` performs encryption (openssl_encrypt → base64_encode). This works because callers (Ticket lock/unlock) are consistently inverted too, but it is extremely confusing. The calling convention is: `Cipher::encrypt($value)` = "decrypt/reveal this value", `Cipher::decrypt($value)` = "encrypt/hide this value".
+**Cipher convention:** `encrypt()` encrypts and `decrypt()` decrypts using the Basecamp-compatible AES-256-CBC transport format. Ticket `lock`/`unlock` and Revizor `hide`/`reveal` follow these names. The receiver unlocks its own copy of the ticket before verifying the signature and checks target, audience, and expiration against the issued ticket.
 
 **Why not OAuth:** The author correctly identified that OAuth solves user-centric authorization ("App wants User's data") while Rosalana needs service-to-service authorization ("App A authenticates as itself to App B"). OAuth 2.0 Client Credentials flow could technically work but doesn't provide per-request signing or per-target ticket isolation. The ticket-based approach is more appropriate for this use case.
 
@@ -241,7 +242,7 @@ Runtime tracing system integrated into all major subsystems.
 - Both registered in `internal` middleware group, applied to `/internal/*` routes
 
 ### Support Classes (`src/Support/`)
-- `Cipher`: AES-256-CBC encrypt/decrypt (WARNING: method names are swapped, see Revizor section)
+- `Cipher`: AES-256-CBC encrypt/decrypt compatible with Basecamp secret/unsecret
 - `Signer`: abstract HMAC-SHA256 signer base class
 - `Cryptor`: **LEGACY/DEPRECATED** -- duplicates Cipher + RequestSigner functionality. Uses `env()` directly. Should not be used for new code.
 - `WildcardMatch`: utility for wildcard pattern matching against string collections
@@ -297,7 +298,7 @@ Currently minimal: `tests/Unit/PipelineTest.php` (2 tests). Tests use Orchestra 
 
 ## Known Issues and Gotchas
 
-1. **Cipher method names are inverted**: `Cipher::encrypt()` decrypts, `Cipher::decrypt()` encrypts. All callers are consistently inverted so it works, but be extremely careful if using Cipher directly.
+1. **Cipher names follow their operation**: `Cipher::encrypt()` encrypts, `Cipher::decrypt()` decrypts. Older revisions had inverted implementations; do not compensate for that old behavior in callers.
 2. **Cryptor is legacy code**: duplicates functionality of Cipher + RequestSigner. Uses `env()` instead of `config()`. Do not use for new code.
 3. **Static state in registries**: `Pipeline\Registry::$pipelines` and `Outpost\Registry::$listeners` are static. Be aware of state persistence in long-running processes (workers, Octane).
 4. **ErrorResponse always returns HTTP 200**: error details are in JSON body, not HTTP status code. This is by design for the internal protocol.
