@@ -93,14 +93,17 @@ Custom service-to-service authentication protocol. Two distinct mechanisms:
 Used for all direct Basecamp API calls. Similar to AWS Signature V4.
 
 ```
-Signed data: "{METHOD}\n{URL}\n{timestamp_ms}\n{normalized_body}\n{app_id}"
+Signed data: "{METHOD}\n{URL}\n{timestamp_ms}\n{normalized_body}\n{app_id}\n{nonce}"
 Algorithm: HMAC-SHA256 with shared secret (from config rosalana.basecamp.secret)
 Transport: X-App-Id, X-Timestamp, X-Signature headers
+X-Signature: "{hmac_hex}.{nonce_hex}" -- 64 hex chars, a dot, 16 hex chars
 ```
 
-- `RequestSigner` extends abstract `Signer` which provides `sign()`, `compare()`, timestamp management.
+- `RequestSigner` extends abstract `Signer` which provides `sign()`, `compare()`, timestamp and nonce management.
 - Body normalization handles edge cases: empty arrays/strings/null → empty string, JSON re-encoding for consistency.
 - Timestamp is millisecond-precision (`microtime(true) * 1000`).
+- The nonce lives entirely in `Signer` and is not kept as state: `sign()` mints a fresh one per call, appends it as the last line of the signed data and returns `"{hmac}.{nonce}"`. `compare()` reads it back out of the value it is given and passes it to `sign($identifier)` to recompute. `getData()` in the subclasses is unaware of it.
+- Why it exists: the timestamp is truncated to milliseconds, so two otherwise identical requests in the same millisecond would produce the same signature and the second would be rejected as a replay.
 
 #### 3b. Ticket System (App ↔ App)
 
@@ -115,7 +118,7 @@ LOCKED (from Basecamp)  →  UNLOCKED (key decrypted)  →  SIGNED (key removed,
 **Flow:**
 1. App A calls `Revizor::ticketFor('app-b')` which checks wallet (Redis Context) first, then buys from Basecamp if missing.
 2. Ticket arrives LOCKED: key is AES-256-CBC encrypted with the shared secret.
-3. `ticket->sign()` unlocks (decrypts key) → computes HMAC-SHA256 of `"{ticket_id}\n{timestamp}"` using the key → removes key from payload → adds signature + timestamp.
+3. `ticket->sign()` unlocks (decrypts key) → computes HMAC-SHA256 of `"{ticket_id}\n{timestamp}\n{nonce}"` using the key → removes key from payload → adds signature + timestamp. The signature is `"{hmac}.{nonce}"`, same shape as `X-Signature`.
 4. `ticket->seal()` base64-encodes the payload for transport as Bearer token.
 5. Receiver calls `Ticket::fromRequest()` → unwraps → `TicketValidator::verify()`:
    - Checks format (must be signed state)
@@ -123,14 +126,14 @@ LOCKED (from Basecamp)  →  UNLOCKED (key decrypted)  →  SIGNED (key removed,
    - Checks timestamp freshness (within `signature_ttl` seconds, default 60)
    - Looks up ticket on Basecamp (gets original with key)
    - Checks issued metadata and target app, then unlocks the receiver’s key copy
-   - Recomputes signature with original key + received timestamp
+   - Recomputes signature with original key + received timestamp + the nonce carried in the received signature
    - Compares with `hash_equals()` (timing-safe)
-   - Checks and records replay only after successful signature verification
+   - Only then reserves the signature -- a ticket that fails verification cannot burn a nonce a legitimate one would need
 
 **Security properties:**
 - Per-ticket keys (compromise of one ticket doesn't affect others)
 - Keys never travel in plaintext (locked state for storage, removed for transport)
-- Replay protection via signature caching
+- Replay protection: the signature is reserved once with an atomic `Cache::add()`, so of N concurrent copies exactly one wins. The reservation happens **after** verification and lives for the rest of the acceptance window (`timestamp + signature_ttl - now`), so no accepted signature is ever replayable.
 - Timestamp freshness limits signature reuse window
 - Timing-safe comparison prevents timing attacks
 - Standard crypto primitives (AES-256-CBC, HMAC-SHA256), no custom cryptography
@@ -244,7 +247,6 @@ Runtime tracing system integrated into all major subsystems.
 ### Support Classes (`src/Support/`)
 - `Cipher`: AES-256-CBC encrypt/decrypt compatible with Basecamp secret/unsecret
 - `Signer`: abstract HMAC-SHA256 signer base class
-- `Cryptor`: **LEGACY/DEPRECATED** -- duplicates Cipher + RequestSigner functionality. Uses `env()` directly. Should not be used for new code.
 - `WildcardMatch`: utility for wildcard pattern matching against string collections
 
 ### Service Provider (`src/Providers/RosalanaCoreServiceProvider.php`)
@@ -272,7 +274,8 @@ rosalana.basecamp.version     - API version prefix (default: "v1")
 rosalana.outpost.connection   - Redis connection name (default: "outpost")
 rosalana.outpost.listeners    - namespace prefix for Listener class resolution
 rosalana.revizor.signature_ttl - seconds before signature expires (default: 60)
-rosalana.revizor.cache_prefix - Redis cache key prefix for replay protection
+rosalana.revizor.cache_prefix - cache key prefix for replay protection. Needs a store with an
+                                atomic add(): redis, memcached, database, dynamodb
 rosalana.tracer.runtime.enabled - enable/disable trace system
 ```
 
@@ -299,10 +302,9 @@ Currently minimal: `tests/Unit/PipelineTest.php` (2 tests). Tests use Orchestra 
 ## Known Issues and Gotchas
 
 1. **Cipher names follow their operation**: `Cipher::encrypt()` encrypts, `Cipher::decrypt()` decrypts. Older revisions had inverted implementations; do not compensate for that old behavior in callers.
-2. **Cryptor is legacy code**: duplicates functionality of Cipher + RequestSigner. Uses `env()` instead of `config()`. Do not use for new code.
-3. **Static state in registries**: `Pipeline\Registry::$pipelines` and `Outpost\Registry::$listeners` are static. Be aware of state persistence in long-running processes (workers, Octane).
-4. **ErrorResponse always returns HTTP 200**: error details are in JSON body, not HTTP status code. This is by design for the internal protocol.
-5. **Worker exception handling**: Outpost Worker catches all Throwable silently without logging.
-6. **ContextStore::decrement()** calls `registerScope()` instead of `requireScoped()`.
-7. **ContextStore::shift()** actually prepends (array_unshift), doesn't remove from front.
-8. **ContextStore::pop()** doesn't return the removed value.
+2. **Static state in registries**: `Pipeline\Registry::$pipelines` and `Outpost\Registry::$listeners` are static. Be aware of state persistence in long-running processes (workers, Octane).
+3. **ErrorResponse always returns HTTP 200**: error details are in JSON body, not HTTP status code. This is by design for the internal protocol.
+4. **Worker exception handling**: Outpost Worker catches all Throwable silently without logging.
+5. **ContextStore::decrement()** calls `registerScope()` instead of `requireScoped()`.
+6. **ContextStore::shift()** actually prepends (array_unshift), doesn't remove from front.
+7. **ContextStore::pop()** doesn't return the removed value.
