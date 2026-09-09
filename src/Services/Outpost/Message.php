@@ -30,10 +30,20 @@ class Message
 
     public static function make(string $id, array $data): static
     {
+        $payload = $data['payload'] ?? [];
+
+        if (is_string($payload)) {
+            $payload = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+        }
+
+        if (! is_array($payload)) {
+            throw new \InvalidArgumentException('Outpost message payload must be an array or a JSON object or array.');
+        }
+
         $i = new static(
             id: $id,
             namespace: $data['namespace'] ?? '',
-            payload: $data['payload'] ? json_decode($data['payload'], true) : [],
+            payload: $payload,
             from: $data['from'] ?? '',
             to: $data['to'] ?? '',
             correlationId: $data['correlation_id'] ?? null,
