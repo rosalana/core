@@ -775,7 +775,7 @@ class ContextStore
      */
     protected function isArrayMarkerDotPath(string $dotPath): bool
     {
-        return str_ends_with($dotPath, '.' . self::ARRAY_MARKER);
+        return str_ends_with('.' . $dotPath, '.' . self::ARRAY_MARKER);
     }
 
     /**
