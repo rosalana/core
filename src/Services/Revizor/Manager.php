@@ -46,22 +46,22 @@ class Manager
         );
     }
 
-    public function hide($value)
+    public function hide(string $value)
     {
         return Cipher::encrypt($value);
     }
 
-    public function reveal($value)
+    public function reveal(string $value)
     {
         return Cipher::decrypt($value);
     }
 
-    public function encrypt($value)
+    public function encrypt(string $value)
     {
         return $this->hide($value);
     }
 
-    public function decrypt($value)
+    public function decrypt(string $value)
     {
         return $this->reveal($value);
     }

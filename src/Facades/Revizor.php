@@ -12,10 +12,10 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Rosalana\Core\Services\Revizor\Ticket verifyRequest()
  * @method static \Rosalana\Core\Services\Revizor\Ticket verify(string|array|\Rosalana\Core\Services\Revizor\Ticket $ticket)
  * @method static \Rosalana\Core\Services\Revizor\RequestManager request(\Rosalana\Core\Services\Basecamp\Request $request)
- * @method static string hide(mixed $value)
- * @method static mixed reveal(mixed $value)
- * @method static string encrypt(mixed $value)
- * @method static mixed decrypt(mixed $value)
+ * @method static string hide(string $value)
+ * @method static string reveal(string $value)
+ * @method static string encrypt(string $value)
+ * @method static string decrypt(string $value)
  * 
  * @see \Rosalana\Core\Services\Revizor\Manager
  */
