@@ -8,7 +8,7 @@ This is an internal (not open-source) package under active development. The auth
 
 **Namespace:** `Rosalana\Core\`
 **Laravel version:** 12.x
-**PHP version:** ^8.2
+**PHP version:** ^8.3
 **Key external dependency:** `rosalana/configure` (config file management), `ext-redis` (phpredis)
 
 ---
