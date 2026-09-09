@@ -12,15 +12,15 @@ class Cipher
      */
     public static function encrypt(string $value): string
     {
-        $data = base64_decode($value);
-        $ivLength = openssl_cipher_iv_length('AES-256-CBC');
-
-        $iv = substr($data, 0, $ivLength);
-        $ciphertext = substr($data, $ivLength);
-
         $key = substr(hash('sha256', self::getSecretKey(), true), 0, 32);
+        $iv = random_bytes(openssl_cipher_iv_length('AES-256-CBC'));
+        $encrypted = openssl_encrypt($value, 'AES-256-CBC', $key, 0, $iv);
 
-        return openssl_decrypt($ciphertext, 'AES-256-CBC', $key, 0, $iv);
+        if ($encrypted === false) {
+            throw new \RuntimeException('Cannot encrypt value.');
+        }
+
+        return base64_encode($iv . $encrypted);
     }
 
     /**
@@ -28,12 +28,23 @@ class Cipher
      */
     public static function decrypt(string $value): string
     {
+        $data = base64_decode($value, true);
+        $ivLength = openssl_cipher_iv_length('AES-256-CBC');
+
+        if ($data === false || strlen($data) <= $ivLength) {
+            throw new \InvalidArgumentException('Invalid encrypted value.');
+        }
+
+        $iv = substr($data, 0, $ivLength);
+        $ciphertext = substr($data, $ivLength);
         $key = substr(hash('sha256', self::getSecretKey(), true), 0, 32);
-        $iv = random_bytes(openssl_cipher_iv_length('AES-256-CBC'));
+        $decrypted = openssl_decrypt($ciphertext, 'AES-256-CBC', $key, 0, $iv);
 
-        $encrypted = openssl_encrypt($value, 'AES-256-CBC', $key, 0, $iv);
+        if ($decrypted === false) {
+            throw new \RuntimeException('Cannot decrypt value.');
+        }
 
-        return base64_encode($iv . $encrypted);
+        return $decrypted;
     }
 
     /**

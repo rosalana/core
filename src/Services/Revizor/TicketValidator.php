@@ -120,9 +120,9 @@ class TicketValidator
 
         $this->checkExpiration();
         $this->checkTimestamp();
-        $this->checkReplay();
         $this->checkTicketExists();
         $this->checkSignature();
+        $this->checkReplay();
 
         request()->attributes->set('_revizor_validated', true);
 
@@ -173,7 +173,18 @@ class TicketValidator
             throw new TicketNotFoundException();
         }
 
-        $this->comparing_ticket = $ticket;
+        if ($ticket->isExpired()) {
+            throw new TicketExpiredException('Ticket has expired.');
+        }
+
+        if ($ticket->payload('target') !== App::id()
+            || $ticket->payload('target') !== $this->ticket->payload('target')
+            || $ticket->payload('audience') !== $this->ticket->payload('audience')
+            || $ticket->payload('expires_at') != $this->ticket->payload('expires_at')) {
+            throw new InvalidTicketFormatException('Ticket metadata does not match the issued ticket.');
+        }
+
+        $this->comparing_ticket = $ticket->unlock();
     }
 
     protected function checkSignature()
