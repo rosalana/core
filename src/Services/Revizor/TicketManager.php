@@ -26,16 +26,23 @@ class TicketManager
      */
     public function search(int|Ticket $ticketOrId): ?Ticket
     {
+        $id = $ticketOrId instanceof Ticket ? $ticketOrId->payload('id') : $ticketOrId;
         $list = App::context()->get('well-known.tickets', []);
 
-        if (empty($list) || !is_array($list)) {
-            $list = Basecamp::tickets()->list()->json('data.tickets');
-            App::context()->put('well-known.tickets', $list, 86400);
-        }
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            if ($attempt === 1) {
+                $list = Basecamp::tickets()->list()->json('data.tickets');
+                App::context()->put('well-known.tickets', $list, 86400);
+            }
 
-        foreach ($list as $ticket) {
-            if ($ticket['id'] === (is_int((int)$ticketOrId) ? $ticketOrId : $ticketOrId->payload('id'))) {
-                return Ticket::from($ticket);
+            foreach (is_array($list) ? $list : [] as $ticket) {
+                if ($ticket['id'] === $id) {
+                    $candidate = Ticket::from($ticket);
+
+                    if (! $candidate->isExpired()) {
+                        return $candidate;
+                    }
+                }
             }
         }
 
