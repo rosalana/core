@@ -149,20 +149,18 @@ class TicketValidator
     {
         $signature = $this->ticket->payload(('signature'));
         $ticketId = $this->ticket->payload('id');
-        $cacheKey = $this->CACHE_KEY_PREFIX . $ticketId;
+        $cacheKey = $this->CACHE_KEY_PREFIX . $ticketId . ':' . $signature;
 
-        $signatures = Cache::get($cacheKey, []);
-
-        if (in_array($signature, $signatures, true)) {
+        if (! Cache::add($cacheKey, true, $this->getReplayTtl())) {
             throw new ReplayedSignatureException();
         }
+    }
 
-        $signatures[] = $signature;
-        if (count($signatures) > 1000) {
-            array_shift($signatures);
-        }
+    protected function getReplayTtl(): int
+    {
+        $expiresAt = $this->ticket->payload('timestamp') + ($this->SIGNATURE_TTL * 1000);
 
-        Cache::put($cacheKey, $signatures, now()->addSeconds($this->SIGNATURE_TTL));
+        return max(1, (int) ceil(($expiresAt - (microtime(true) * 1000)) / 1000));
     }
 
     protected function checkTicketExists()
