@@ -131,7 +131,7 @@ class RosalanaCoreServiceProvider extends ServiceProvider
     protected function registerRoutes(): void
     {
         Route::middleware('internal')
-            ->prefix('internal')
+            ->prefix('internal/' . config('rosalana.basecamp.version'))
             ->group(function () {
                 $this->loadRoutesFrom(__DIR__ . '/../../routes/internal.php');
             });
