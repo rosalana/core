@@ -6,33 +6,41 @@ use Rosalana\Core\Facades\App;
 
 abstract class Signer
 {
+    private const SIGNATURE_PATTERN = '/^([a-f0-9]{64})\.([a-f0-9]{16})$/';
+
     protected int $timestamp;
     protected string $signature;
 
     abstract protected function getData(): string;
 
-    public static function make(...$arg): self
+    public static function make(mixed ...$arg): self
     {
         return new static(...$arg);
     }
 
-    public function sign()
+    public function sign(?string $nonce = null): string
     {
-        $data = $this->getData();
+        $nonce = $nonce ?? bin2hex(random_bytes(8));
+
+        $data = $this->getData() . "\n" . $nonce;
         $secret = $this->getSecretKey();
 
         if (!$secret) {
             throw new \RuntimeException('Cannot create signature without secret token.');
         }
 
-        $this->signature = hash_hmac('sha256', $data, $secret);
+        $this->signature = hash_hmac('sha256', $data, $secret) . '.' . $nonce;
 
         return $this->signature;
     }
 
     public function compare(string $signature): bool
     {
-        return hash_equals($signature, $this->sign());
+        if (!preg_match(self::SIGNATURE_PATTERN, $signature, $matches)) {
+            return false;
+        }
+
+        return hash_equals($signature, $this->sign($matches[2]));
     }
 
     protected function now(): int
